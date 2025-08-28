@@ -31,17 +31,19 @@ else:
   fastap = relpath(os.path.join("assembly", assembler, "samples/{sample_id}/output/final.contigs.fa"))
   assembly_ids = assemblies.keys()
 
+
 ### MASTER RULE 
 
 rule done_log:
   name: "viral-benchmark.smk Done. removing tmp files"
   localrule: True
   input:
-    expand(relpath("identify/viral/samples/{sample_id}/intermediate/genomad/final.contigs.filtered_summary/final.contigs.filtered_virus_summary.tsv"), sample_id=assembly_ids), 
+    expand(relpath("identify/viral/samples/{sample_id}/intermediate/genomad/{sample_id}_summary/{sample_id}_virus_summary.tsv"), sample_id=assembly_ids), 
     expand(relpath("identify/viral/samples/{sample_id}/intermediate/dvf/final_score.txt"), sample_id=assembly_ids),
     expand(relpath("identify/viral/samples/{sample_id}/intermediate/phamer/final_prediction/phamer_prediction.tsv"), sample_id=assembly_ids),
     expand(relpath("identify/viral/{sample_id}/intermediate/virsorter2/final-viral-score.tsv"), sample_id=assembly_ids),
     expand(relpath("identify/viral/{sample_id}/intermediate/virfinder/output.tsv"), sample_id=assembly_ids),
+    expand(relpath("identify/viral/{sample_id}/intermediate/vibrant/VIBRANT_phages_{sample_id}/{sample_id}.phages_combined.txt"), sample_id=assembly_ids),
   output:
     os.path.join(logdir, "done_benchmarks.log")
   params:
@@ -58,12 +60,12 @@ rule done_log:
 ### RULES
 
 rule filter_contigs:
-  name: "viral-benchmark.smk filter contigs [length]"
+  name: "viral-benchmark.smk filter short contigs"
   localrule: True
   input:
     fastap
   output:
-    relpath("identify/viral/samples/{sample_id}/tmp/final.contigs.filtered.fa")
+    relpath("identify/viral/samples/{sample_id}/tmp/{sample_id}_filtered.fa")
   params:
     minlen=config['contig-min-len'],
     outdir=relpath("identify/viral/samples/{sample_id}/tmp"),
@@ -85,10 +87,10 @@ rule filter_contigs:
 rule genomad_classify:
   name: "viral-benchmark.smk geNomad classify"
   input:
-    fna=relpath("identify/viral/samples/{sample_id}/tmp/final.contigs.filtered.fa"),
+    fna=relpath("identify/viral/samples/{sample_id}/tmp/{sample_id}_filtered.fa"),
     db=os.path.join(config['genomad-db'], "genomad_db.source")
   output:
-    relpath("identify/viral/samples/{sample_id}/intermediate/genomad/final.contigs.filtered_summary/final.contigs.filtered_virus_summary.tsv")
+    relpath("identify/viral/samples/{sample_id}/intermediate/genomad/{sample_id}_summary/{sample_id}_virus_summary.tsv")
   params:
     genomadparams=config['genomad-params'],
     dbdir=config['genomad-db'],
@@ -123,7 +125,7 @@ rule genomad_classify:
 rule dvf_classify:
   name : "viral-benchmark.smk DeepVirFinder classify"
   input:
-    fna=relpath("identify/viral/samples/{sample_id}/tmp/final.contigs.filtered.fa")
+    fna=relpath("identify/viral/samples/{sample_id}/tmp/{sample_id}_filtered.fa")
   output:
     relpath("identify/viral/samples/{sample_id}/intermediate/dvf/final_score.txt")
   params:
@@ -159,7 +161,7 @@ rule dvf_classify:
 rule phamer_classify:
   name: "viral-benchmark.smk PhaMer classify"
   input:
-    fna=relpath("identify/viral/samples/{sample_id}/tmp/final.contigs.filtered.fa"), 
+    fna=relpath("identify/viral/samples/{sample_id}/tmp/{sample_id}_filtered.fa"), 
     db=os.path.join(config['PhaBox2-db'], "genus2hostlineage.pkl")
   output:
     relpath("identify/viral/samples/{sample_id}/intermediate/phamer/final_prediction/phamer_prediction.tsv")
@@ -196,7 +198,7 @@ rule phamer_classify:
 rule virsorter2:
   name: "viral-benchmark.smk VirSorter2 classify"
   input: 
-    fna=relpath("identify/viral/samples/{sample_id}/tmp/final.contigs.filtered.fa"), 
+    fna=relpath("identify/viral/samples/{sample_id}/tmp/{sample_id}_filtered.fa"), 
     db=os.path.join(config['virsorter2-db'], "db.tgz")
   output: relpath("identify/viral/{sample_id}/intermediate/virsorter2/final-viral-score.tsv")
   params: 
@@ -228,7 +230,7 @@ rule virsorter2:
 
 rule virfinder_parallel:
   name: "viral-benchmark.smk VirFinder Parallel run"
-  input: relpath("identify/viral/samples/{sample_id}/tmp/final.contigs.filtered.fa")
+  input: relpath("identify/viral/samples/{sample_id}/tmp/{sample_id}_filtered.fa")
   output: relpath("identify/viral/{sample_id}/intermediate/virfinder/output.tsv")
   params: 
     parameters=config['vf-params'],
@@ -259,10 +261,10 @@ rule virfinder_parallel:
 rule VIBRANT:
   name: "viral-benchmark.smk VIBRANT classify"
   input:
-    fna=relpath("identify/viral/samples/{sample_id}/tmp/final.contigs.filtered.fa"),
+    fna=relpath("identify/viral/samples/{sample_id}/tmp/{sample_id}_filtered.fa"),
     db=os.path.join(config['vibrant-db'], "files/VIBRANT_machine_model.sav")
   output: 
-    txt=relpath("identify/viral/{sample_id}/intermediate/vibrant/VIBRANT_phages_final.contigs.filtered/final.contigs.filtered.phages_combined.txt")
+    txt=relpath("identify/viral/{sample_id}/intermediate/vibrant/VIBRANT_phages_{sample_id}/{sample_id}.phages_combined.txt")
   params:
     parameters=config['vibrant-params'],
     dbdir=config['vibrant-db'],
@@ -276,15 +278,17 @@ rule VIBRANT:
     mem_mb=lambda wildcards, attempt, input, threads: max(1 * threads * 10**3 * attempt, 8000)
   shell:
     """
-    rm -rf {params.outdir}
-    mkdir -p {params.tmpdir} {params.outdir}
+    rm -rf {params.outdir} {params.tmpdir}
+    mkdir -p {params.outdir}
 
     VIBRANT_run.py \
         -i {input.fna} \
-        -d {params.dbdir}/database/ \
+        -folder {params.tmpdir} \
+        -d {params.dbdir}/databases/ \
         -m {params.dbdir}/files/ \
         -f nucl \
         -t {threads} \
+        {params.parameters} 2> {log}
 
     mv {params.tmpdir}/* {params.outdir}
     """

@@ -166,11 +166,11 @@ rule virsorter2_db:
     """
 
 rule vibrant_db:
-  name: "setup-database.smk VirSorter2 setup database (11.1 G)"
+  name: "setup-database.smk VIBRANT setup database (~11 G)"
   output: os.path.join(config['vibrant-db'], "files/VIBRANT_machine_model.sav")
   params:
     outdir=config['vibrant-db'],
-    tpmdir=os.path.join(tmpd, "vibrant/db")
+    tmpdir=os.path.join(tmpd, "vibrant/db")
   log: os.path.join(logdir, "vibrant_database.log")
   benchmark: os.path.join(benchmarks, "vibrant_database.log")
   conda: "../envs/vibrant.yml"
@@ -183,9 +183,9 @@ rule vibrant_db:
     mkdir -p {params.outdir}
 
     download-db.sh {params.tmpdir}
-    python3 {params.tmpdir}/database/VIBRANT_setup.py
+    #python3 {params.tmpdir}/databases/VIBRANT_setup.py
 
-    mv {params.tmpdir}/* {params.output}
+    mv {params.tmpdir}/* {params.outdir}
     """
 
 
