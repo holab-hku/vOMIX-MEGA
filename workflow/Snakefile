@@ -34,6 +34,8 @@ db_list = ["hostile-index-db", "PhaBox2-db", "genomad-db", "virsorter2-db", "vib
 for db_dir in db_list:
   config[db_dir] = os.path.join(config["basedir"], config[db_dir])
 
+# Validate config file using schema
+validate(config, "../config/config.schema.yml")
 
 # Important utility functions
 

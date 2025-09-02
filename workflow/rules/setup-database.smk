@@ -141,8 +141,8 @@ rule phabox2_db:
 
 
 rule virsorter2_db:
-  name: "setup-database.smk VirSorter2 setup database (X.X G)"
-  output: os.path.join(config['virsorter2-db'], "db.tgz")
+  name: "setup-database.smk VirSorter2 setup database (9.4 G)"
+  output: os.path.join(config['virsorter2-db'], "Done_all_setup")
   params:
     outdir=config['virsorter2-db'],
     tmpdir=os.path.join(tmpd, "virsorter2/db")
@@ -378,4 +378,3 @@ rule iPHoP_download:
 
     mv {params.tmpdir}/* {params.outdir}
     """
-

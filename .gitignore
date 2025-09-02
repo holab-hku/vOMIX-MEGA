@@ -14,13 +14,15 @@
 # but not these subdirectories 
 !config/
 !config/depracated/*
+!config/*
 !docs/
 !resources/
 !workflow/
+!workflow/software/
+!workflow/software/DeepVirFinder
 !vomix/
 !sample/contigs
 
 # except these subdirectories
 workflow/database
 workflow/params
-workflow/software
