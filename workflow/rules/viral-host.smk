@@ -61,7 +61,8 @@ else:
 rule CHERRY:
   name: "viral-host.smk CHERRY host prediction"
   input:
-    fna=fastap
+    fna=fastap, 
+    db=os.path.join(config['PhaBox2-db'], "genus2hostlineage.pkl")
   output:
     phavip=relpath("host/output/CHERRY/final_prediction/phavip_prediction.tsv"), 
     cherry=relpath("host/output/CHERRY/final_prediction/cherry_prediction.tsv"), 

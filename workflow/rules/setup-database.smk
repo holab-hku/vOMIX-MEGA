@@ -122,6 +122,8 @@ rule phabox2_db:
   localrule: True
   output: os.path.join(config['PhaBox2-db'], "genus2hostlineage.pkl")
   params:
+    dbname=config['phabox2-db-name'],
+    dblink=config['phabox2-db-baselink'],
     outdir=config['PhaBox2-db'],
     tmpdir=os.path.join(tmpd, "PhaBox2/db")
   log: os.path.join(logdir, "PhaBox2_db.log")
@@ -130,13 +132,14 @@ rule phabox2_db:
   threads: 1
   shell:
     """
-    rm -rf {params.outdir} {params.tmpdir}/phabox_db_v2
+    rm -rf {params.outdir} {params.tmpdir}/*
     mkdir -p {params.tmpdir} {params.outdir}
 
-    wget -O {params.tmpdir}/phabox_db_v2.zip https://github.com/KennthShang/PhaBOX/releases/download/v2/phabox_db_v2.zip &> {log}
-    unzip -o {params.tmpdir}/phabox_db_v2.zip -d {params.tmpdir} > {log}
+    wget -O {params.tmpdir}/{params.dbname}.zip {params.dblink}/{params.dbname}.zip &> {log}
+    unzip -o {params.tmpdir}/{params.dbname}.zip -d {params.tmpdir} > {log}
 
-    mv {params.tmpdir}/phabox_db_v2/* {params.outdir}
+    mv {params.tmpdir}/{params.dbname}/* {params.outdir}
+    rm -rf {params.tmpdir}/*
     """
 
 
@@ -375,6 +378,34 @@ rule iPHoP_download:
         --db_dir {params.tmpdir} \
         --db_version {params.dbversion} \
         --no_prompt
+
+    mv {params.tmpdir}/* {params.outdir}
+    """
+
+
+rule DRAM_download:
+  name: "setup-database.smk DRAM Database (66.4 G)"
+  output:
+    os.path.join(config["dram-db"], "database_processing.log")
+  params:
+    parameters=config["dram-setup-params"],
+    outdir=os.path.abspath(config["dram-db"]),
+    tmpdir=os.path.join(tmpd, "dram-db")
+  conda: "../envs/dram.yml"
+  log: os.path.join(logdir, "dram_db.log")
+  benchmark: os.path.join(benchmarks, "dram_db.log")
+  threads: 32
+  resources:
+    mem_mb=lambda wildcards, attempt: attempt * 4 * 10**3
+  shell:
+    """
+    rm -rf {params.outdir} {params.tmpdir}
+    mkdir -p {params.tmpdir}
+
+    DRAM-setup.py prepare_databases \
+        --output_dir {params.outdir} \
+        --threads {threads} \
+        {params.parameters} 2> {log}
 
     mv {params.tmpdir}/* {params.outdir}
     """

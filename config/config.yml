@@ -102,3 +102,13 @@ GTDBTk-align-params: ""
 GTDBTk-classify-params: ""
 VAMB-params: "-m 100"
 humann-params: ""
+
+eggNOG-params: ""
+eggNOG-db: "database/eggNOGv2"
+virsorter2-annotate-params: "--min-length 1500"
+dram-v-annotate-params: ""
+dram-v-distill-params: ""
+dram-db: "database/DRAM"
+dram-setup-params: ""
+phabox2-db-name: "phabox_db_v2" # Name to download the database from {phabox-db-baselink}/{phabox-db-name}.zip format 
+phabox2-db-baselink: "https://github.com/KennthShang/PhaBOX/releases/download/v2"
