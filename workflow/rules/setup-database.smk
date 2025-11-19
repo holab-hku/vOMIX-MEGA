@@ -30,7 +30,7 @@ rule done:
 
 if config['hostile-aligner'] == "minimap2":
   rule hostile_db:
-    name: "setup-database.smk Hostile minimap2 index (~12.1 G)"
+    name: "setup-database.smk Hostile minimap2 index 12.1 G"
     output: 
       os.path.join(config['hostile-index-db'], (config['hostile-index-name'] + ".fa.gz")), 
       os.path.join(config['hostile-index-db'], (config['hostile-index-name'] + ".mmi"))
@@ -54,7 +54,7 @@ if config['hostile-aligner'] == "minimap2":
 
 elif config['hostile-aligner'] == "bowtie2":
   rule hostile_db:
-    name: "setup-database.smk Hostile Bowtie2 index (~8.0 G)"
+    name: "setup-database.smk Hostile Bowtie2 index 8.0 G"
     output: 
       expand((os.path.join(config['hostile-index-db'], config['hostile-index-name']) +  ".{i}.bt2"), i = [1, 2, 3, 4])
     params:
@@ -76,7 +76,7 @@ elif config['hostile-aligner'] == "bowtie2":
       """
 
 rule genomad_db:
-  name: "setup-database.smk geNomad database (1.3 G)"
+  name: "setup-database.smk geNomad database 1.3 G"
   localrule: True
   output: os.path.join(config['genomad-db'], "genomad_db.source")
   params:
@@ -97,7 +97,7 @@ rule genomad_db:
 
 
 rule checkv_db:
-  name: "setup-database.smk CheckV database (7.3 G)"
+  name: "setup-database.smk CheckV database 7.3 G"
   localrule: True
   output: expand(os.path.join(config['checkv-db'], "hmm_db/checkv_hmms/{index}.hmm"), index=range(1, 81))
   params:
@@ -118,7 +118,7 @@ rule checkv_db:
 
 
 rule phabox2_db:
-  name: "setup-database.smk PhaBox2 database (1.6 G)"
+  name: "setup-database.smk PhaBox2 database 1.6 G"
   localrule: True
   output: os.path.join(config['PhaBox2-db'], "genus2hostlineage.pkl")
   params:
@@ -144,7 +144,7 @@ rule phabox2_db:
 
 
 rule virsorter2_db:
-  name: "setup-database.smk VirSorter2 setup database (9.4 G)"
+  name: "setup-database.smk VirSorter2 setup database 9.4 G"
   output: os.path.join(config['virsorter2-db'], "Done_all_setup")
   params:
     outdir=config['virsorter2-db'],
@@ -169,7 +169,7 @@ rule virsorter2_db:
     """
 
 rule vibrant_db:
-  name: "setup-database.smk VIBRANT setup database (~11 G)"
+  name: "setup-database.smk VIBRANT setup database 11.3 G"
   output: os.path.join(config['vibrant-db'], "files/VIBRANT_machine_model.sav")
   params:
     outdir=config['vibrant-db'],
@@ -193,7 +193,7 @@ rule vibrant_db:
 
 
 rule chocophlan_db:
-  name: "setup-database.smk HUMAnN3 chocophlan database (16.4 G)"
+  name: "setup-database.smk HUMAnN3 chocophlan database 16.4 G"
   output: os.path.join(config['humann-db'], "chocophlan/alaS.centroids.v201901_v31.ffn.gz")
   params:
     outdir=config['humann-db'],
@@ -216,7 +216,7 @@ rule chocophlan_db:
 
 
 rule uniref_db:
-  name: "setup-database.smk HUMAnN3 uniref database (19.7 G)"
+  name: "setup-database.smk HUMAnN3 uniref database 19.7 G"
   output: os.path.join(config['humann-db'], "uniref/uniref90_201901b_full.dmnd")
   params:
     outdir=config['humann-db'],
@@ -239,7 +239,7 @@ rule uniref_db:
 
 
 rule utilitymap_db:
-  name: "setup-database.smk HUMAnN3 utility mapping database (2.5 G)"
+  name: "setup-database.smk HUMAnN3 utility mapping database 2.5 G"
   output: 
     ecdb=os.path.join(config['humann-db'], "utility_mapping/map_level4ec_uniref90.txt.gz"),
     eggnogdb=os.path.join(config['humann-db'], "utility_mapping/map_eggnog_uniref90.txt.gz"),
@@ -272,7 +272,7 @@ rule utilitymap_db:
 
 
 rule eggnog_download:
-  name: "setup-database.smk eggNOG-mapper v2 Database (43.0 G)"
+  name: "setup-database.smk eggNOG-mapper v2 Database 43.0 G"
   output:
     os.path.join(config['eggNOG-db'], "eggnog.db"),
     os.path.join(config['eggNOG-db'], "eggnog_proteins.dmnd")
@@ -298,7 +298,7 @@ rule eggnog_download:
     """
 
 rule checkm2_download:
-  name: "setup-database.smk CheckM2 Database (2.7 G)"
+  name: "setup-database.smk CheckM2 Database 2.7 G"
   output: 
     os.path.join(config["checkm2-db"], "uniref100.KO.1.dmnd")
   params:
@@ -326,7 +326,7 @@ gtdbtk_db_version = config["GTDBTk-db-version"]
 gtdbtk_dwnld_lnk =f"{gtdbtk_db_base_url}{gtdbtk_db_version}/{gtdbtk_db_version}.0/auxillary_files/gtdbtk_package/full_package/gtdbtk_r{gtdbtk_db_version}_data.tar.gz"
 
 rule GTDBTk_download:
-  name: "setup-database.smk GTDB-Tk Database (63.3 G)"
+  name: "setup-database.smk GTDB-Tk Database 63.3 G"
   output:
     os.path.join(config["GTDBTk-db"], ("gtdbtk_r" + config["GTDBTk-db-version"] + "_data.tar.gz"))
   params:
@@ -356,11 +356,11 @@ rule GTDBTk_download:
 
 
 rule iPHoP_download:
-  name: "setup-database.smk iPHoP Database (318.1 G)"
+  name: "setup-database.smk iPHoP Database 318.1 G"
   output: 
     os.path.join(config["iphop-db"], config["iphop-db-basename"], "md5checkfile.txt")
   params:
-    outdir=os.path.abspath(config["iphop-db"]),
+    outdir=config["iphop-db"],
     dbversion=config["iphop-db-version"],
     tmpdir=os.path.join(tmpd, "iphop-db")
   conda: "../envs/iphop.yml"
@@ -384,12 +384,12 @@ rule iPHoP_download:
 
 
 rule DRAM_download:
-  name: "setup-database.smk DRAM Database (66.4 G)"
+  name: "setup-database.smk DRAM Database 66.4 G"
   output:
     os.path.join(config["dram-db"], "database_processing.log")
   params:
     parameters=config["dram-setup-params"],
-    outdir=os.path.abspath(config["dram-db"]),
+    outdir=config["dram-db"],
     tmpdir=os.path.join(tmpd, "dram-db")
   conda: "../envs/dram.yml"
   log: os.path.join(logdir, "dram_db.log")
@@ -403,7 +403,7 @@ rule DRAM_download:
     mkdir -p {params.tmpdir}
 
     DRAM-setup.py prepare_databases \
-        --output_dir {params.outdir} \
+        --output_dir {params.tmpdir} \
         --threads {threads} \
         {params.parameters} 2> {log}
 
