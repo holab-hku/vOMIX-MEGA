@@ -28,8 +28,7 @@ config["basedir"] =  workflow.basedir
 # Relatavise all database directories to basedir
 # WARNING: For wrapper script, ONLY perform this IF the database directories are default. 
 
-db_list = ["hostile-index-db", "PhaBox2-db", "genomad-db", "virsorter2-db", "vibrant-db", 
-    "checkv-db", "iphop-db", "eggNOG-db", "humann-db", "checkm2-db", "GTDBTk-db"]
+db_list = [key for key in config if key.endswith("db")]
 
 for db_dir in db_list:
   config[db_dir] = os.path.join(config["basedir"], config[db_dir])
@@ -243,6 +242,11 @@ if config["module"] == "prok-community":
 if config["module"] == "prok-annotate":
   include: "rules/prok-annotate.smk"
   targets += [relpath("annotate/prok/logs/done.log")]
+
+# annotation (viral)
+if config["module"] == "viral-annotate":
+  include: "rules/viral-annotate.smk"
+  targets += [relpath("annotate/viral/logs/done.log")]
 
 ###############
 # MASTER RULE #
