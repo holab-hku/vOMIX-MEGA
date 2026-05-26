@@ -25,16 +25,16 @@ console = Console()
 
 def validate_samples(samples):
 	"""
-    	Performs checks on the samples provided in the sample_list.tsv
+    	Performs checks on the samples provided in the sample_list.csv
     	to either verify their existence locally or on the SRA.
 
    	 If you are using local files, you can either:
-   	 1) Provide full file paths in the R1 and R2 columns of sample_list.tsv [only R1 if single-end]
+   	 1) Provide full file paths in the R1 and R2 columns of sample_list.csv [only R1 if single-end]
 	 2) Place the fastq files in the config['datadir'] path with <sample>_{1,2}.fastq.gz naming format.
       	 If a file has no paired {2} label, it is assumed to be single-end.
 
     	"""
-	console.print(Panel.fit("""[dim]Validating availability of local and remote SRA raw sequences.\n\nIf you are using local files, you can either:\n1) Provide full file paths in the R1 and R2 columns of sample_list.tsv [only R1 if single-end]\n2) Place the fastq files in the config['datadir'] path with <sample>_{1,2}.fastq.gz naming format.\nCo-assemblies and mix-assemblies can be setup by writing the same <assembly> column for different samples.\n""", title="Sample Validation", subtitle="In Progress..."))
+	console.print(Panel.fit("""[dim]Validating availability of local and remote SRA raw sequences.\n\nIf you are using local files, you can either:\n1) Provide full file paths in the R1 and R2 columns of sample_list.csv [only R1 if single-end]\n2) Place the fastq files in the config['datadir'] path with <sample>_{1,2}.fastq.gz naming format.\nCo-assemblies and mix-assemblies can be setup by writing the same <assembly> column for different samples.\n""", title="Sample Validation", subtitle="In Progress..."))
 		
 	# 1) LOCAL SEARCH - search if any files exist in local directory
 
@@ -95,9 +95,14 @@ def validate_samples(samples):
 			all_runs = root.findall('.//RUN')
 			
 			for runs in all_runs:
-				accessions.append(runs.attrib['accession'])
-				sizes_byte = runs.attrib['size']
-				sizes_gb.append(round(int(sizes_byte) /pow(1024, 3), 2))
+				accession = runs.attrib.get('accession')
+				# Find SRAFile within this RUN
+				sra_file = runs.find('.//SRAFile')
+				if sra_file is not None:
+					size = sra_file.attrib.get('size')
+					if size:
+						sizes_gb.append(round(int(size) / pow(1024, 3), 2))
+						accessions.append(accession)
 		
 		missing_acc = set(notfound_acc) - set(accessions)
 
@@ -194,7 +199,7 @@ def parse_sample_list(f, datadir, outdir, email, api_key, nowstr):
 		dupid = duplicateid.index.tolist()
 		duplist = duprow + dupid
 
-		console.print(Panel.fit("Duplicate rows or SRA accessions found.\nPlease check your sample_list.tsv file.\nWarning list:\n{}\n\nAt the moment having the same file in different assemblies is not supported, but we are working on it for future versions".format(duplist), title="Sample ID Error", subtitle="Duplicate Sample IDs"))
+		console.print(Panel.fit("Duplicate rows or SRA accessions found.\nPlease check your sample_list.csv file.\nWarning list:\n{}\n\nAt the moment having the same file in different assemblies is not supported, but we are working on it for future versions".format(duplist), title="Sample ID Error", subtitle="Duplicate Sample IDs"))
 		sys.exit(1)
 
 
