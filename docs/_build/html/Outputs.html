@@ -1,0 +1,470 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Table of Contents &mdash; vOMIX-snakemake 1.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=9edc463e" />
+
+  
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=8d563738"></script>
+      <script src="_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            vOMIX-snakemake
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <!-- Local TOC -->
+              <div class="local-toc"><ul>
+<li><a class="reference internal" href="#">Table of Contents</a></li>
+<li><a class="reference internal" href="#general-output-structure">📑 General Output Structure</a><ul>
+<li><a class="reference internal" href="#config-outdir-results">–config outdir=”results”</a></li>
+<li><a class="reference internal" href="#vomix-directory">.vomix Directory</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#module-based-output-structure">📑 Module-based Output Structure</a><ul>
+<li><a class="reference internal" href="#pre-processing">🛠️ Pre-processing</a></li>
+<li><a class="reference internal" href="#assembly-co-assembly">🛠️ Assembly &amp; Co-assembly</a></li>
+<li><a class="reference internal" href="#viral-identify">🦠 Viral Identify</a></li>
+<li><a class="reference internal" href="#viral-taxonomy">🦠 Viral Taxonomy</a></li>
+<li><a class="reference internal" href="#viral-host-analysis">🦠 Viral Host Analysis</a></li>
+<li><a class="reference internal" href="#viral-annotate-coming-soon">🦠 Viral Annotate (Coming Soon)</a></li>
+<li><a class="reference internal" href="#viral-community">🦠 Viral Community</a></li>
+<li><a class="reference internal" href="#viral-annotation-coming-soon">🦠 Viral Annotation (Coming Soon)</a></li>
+<li><a class="reference internal" href="#prokaryotic-community">🧫 Prokaryotic Community</a></li>
+<li><a class="reference internal" href="#prokaryotic-binning-coming-soon">🧫 Prokaryotic Binning (Coming Soon)</a></li>
+<li><a class="reference internal" href="#prokaryotic-annotate-coming-soon">🧫 Prokaryotic Annotate (Coming Soon)</a></li>
+<li><a class="reference internal" href="#end-to-end">💻 End-to-end</a></li>
+<li><a class="reference internal" href="#clustering-fast-votu">⚙️ Clustering Fast (vOTU)</a></li>
+<li><a class="reference internal" href="#checkv-pyhmmer">⚙️ CheckV PyHMMER</a></li>
+<li><a class="reference internal" href="#setup-database">⚙️ Setup Database</a></li>
+<li><a class="reference internal" href="#viral-benchmark-tools-coming-soon">⚙️ Viral Benchmark Tools (Coming Soon)</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#troubleshooting-guide">⚙️ Troubleshooting Guide</a></li>
+</ul>
+</div>
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">vOMIX-snakemake</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Table of Contents</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/Outputs.md.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="table-of-contents">
+<h1>Table of Contents<a class="headerlink" href="#table-of-contents" title="Link to this heading"></a></h1>
+<ul class="simple">
+<li><p>🛠️ <a class="reference internal" href="#%EF%B8%8F-pre-processing"><span class="xref myst">Preprocessing</span></a></p></li>
+<li><p>🛠️ <a class="reference internal" href="#%EF%B8%8F-assembly--co-assembly"><span class="xref myst">Assembly &amp; Co-assembly</span></a></p></li>
+<li><p>🦠 <a class="reference internal" href="#-viral-identify"><span class="xref myst">Viral Identify</span></a></p></li>
+<li><p>🦠 <a class="reference internal" href="#-viral-taxonomy"><span class="xref myst">Viral Taxonomy</span></a></p></li>
+<li><p>🦠 <a class="reference internal" href="#-viral-host-analysis"><span class="xref myst">Viral Host Analysis</span></a></p></li>
+<li><p>🦠 <a class="reference internal" href="#-viral-annotate"><span class="xref myst">Viral Annotate</span></a></p></li>
+<li><p>🦠 <a class="reference internal" href="#-viral-community"><span class="xref myst">Viral Community</span></a></p></li>
+<li><p>🧫 <a class="reference internal" href="#-prokaryotic-community"><span class="xref myst">Prokaryotic Community</span></a></p></li>
+<li><p>🧫 <a class="reference internal" href="#-prokaryotic-binning"><span class="xref myst">Prokaryotic Binning</span></a></p></li>
+<li><p>🧫 <a class="reference internal" href="#-prokaryotic-annotate"><span class="xref myst">Prokaryotic Annotate</span></a></p></li>
+<li><p>💻 <a class="reference internal" href="#-end-to-end"><span class="xref myst">End-to-end</span></a></p></li>
+<li><p>⚙️ <a class="reference internal" href="#%EF%B8%8F-clustering-fast-votu"><span class="xref myst">Clustering Fast (vOTU)</span></a></p></li>
+<li><p>⚙️ <a class="reference internal" href="#%EF%B8%8F-checkv-pyhmmer"><span class="xref myst">CheckV PyHMMER</span></a></p></li>
+<li><p>⚙️ <a class="reference internal" href="#%EF%B8%8F-setup-database"><span class="xref myst">Setup Database</span></a></p></li>
+<li><p>⚙️ <a class="reference internal" href="#%EF%B8%8F-viral-benchmark-tools"><span class="xref myst">Viral Benchmark Tools</span></a></p></li>
+</ul>
+</section>
+<section id="general-output-structure">
+<h1>📑 General Output Structure<a class="headerlink" href="#general-output-structure" title="Link to this heading"></a></h1>
+<section id="config-outdir-results">
+<h2>–config outdir=”results”<a class="headerlink" href="#config-outdir-results" title="Link to this heading"></a></h2>
+<p>You can set a relative output directory using the <code class="docutils literal notranslate"><span class="pre">outdir</span></code> configuration in the <code class="docutils literal notranslate"><span class="pre">config/config.yml</span></code> file or pass it on to snakemake as <code class="docutils literal notranslate"><span class="pre">--config</span> <span class="pre">outidr=&quot;results&quot;</span></code>. By default, <code class="docutils literal notranslate"><span class="pre">./results/</span></code> is used. All outputs of vOMIX-MEGA will be written in a structured, hierarchal manner, relative to this directory.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="o">{</span>OUTDIR<span class="o">}</span>
+├──<span class="w"> </span><span class="o">{</span>MODULE<span class="w"> </span>NAME<span class="o">}</span>
+<span class="w">    </span>└──<span class="w"> </span>viral
+<span class="w">        </span>└──<span class="w"> </span>output
+<span class="w">        </span>├──<span class="w"> </span>samples
+<span class="w">        </span>├──<span class="w"> </span>assemblies
+<span class="w">        </span>├──<span class="w"> </span>benchmarks
+<span class="w">        </span>├──<span class="w"> </span>logs
+<span class="w">        </span>└──<span class="w"> </span>tmp
+<span class="w">        </span>└──<span class="w"> </span>reports
+<span class="w">    </span>└──<span class="w"> </span>prokaryotic
+</pre></div>
+</div>
+<p><em>Subdirectories:</em></p>
+<ol class="arabic simple">
+<li><p><strong>Output</strong>: Holds a specific module’s final, cleaned, and aggregated outputs.</p></li>
+<li><p><strong>Samples</strong>: Stores sample-based or assembly-based analysis specific to an individual assembly.</p></li>
+<li><p><strong>Assemblies</strong>: Holds assembly-based analysis when there is also sample-based analysis.</p></li>
+<li><p><strong>Benchmarks</strong>: Stores all benchmarking parameters. Includes runtime, memory usage, (MiB), in/out, CPU time, and job ID.</p></li>
+<li><p><strong>Logs</strong>: Holds the STDOUT and STDERR of jobs for troubleshooting.</p></li>
+<li><p><strong>Temporary</strong>: Stores temporary files deleted after job completion.</p></li>
+<li><p><strong>Reports</strong>: If applicable, will hold general reports such as assembly statistics, pre-processing reports, etc.</p></li>
+</ol>
+</section>
+<section id="vomix-directory">
+<h2>.vomix Directory<a class="headerlink" href="#vomix-directory" title="Link to this heading"></a></h2>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>.vomix
+├──<span class="w"> </span>samples.json<span class="w"> </span><span class="c1"># Latest Run</span>
+├──<span class="w"> </span>assemblies.json<span class="w"> </span><span class="c1"># Latest Run</span>
+└──<span class="w"> </span>log
+<span class="w">    </span>├──<span class="w"> </span>vomixYYYYMMDD_HHMMSS<span class="w"> </span><span class="c1"># Run History</span>
+<span class="w">       </span>├──<span class="w"> </span>sample.json
+<span class="w">       </span>├──<span class="w"> </span>assemblies.json
+<span class="w">       </span>└──<span class="w"> </span>config.json
+</pre></div>
+</div>
+<p>The <code class="docutils literal notranslate"><span class="pre">.vomix</span></code> directory is a hidden folder in the <code class="docutils literal notranslate"><span class="pre">results</span></code> directory. It holds are the run-specific information for your job including the current <code class="docutils literal notranslate"><span class="pre">sample.json</span></code> and <code class="docutils literal notranslate"><span class="pre">assemblies.json</span></code> as well as a history of them in <code class="docutils literal notranslate"><span class="pre">log</span></code> alongside the full configuration <code class="docutils literal notranslate"><span class="pre">config.json</span></code> used in that run.</p>
+<blockquote>
+<div><p>NOTE: Snakemake also has its own cache and history in the <code class="docutils literal notranslate"><span class="pre">.snakemake</span></code> file where the Snakefile resides. Please read more at https://snakemake.readthedocs.io/en/stable/</p>
+</div></blockquote>
+</section>
+</section>
+<section id="module-based-output-structure">
+<h1>📑 Module-based Output Structure<a class="headerlink" href="#module-based-output-structure" title="Link to this heading"></a></h1>
+<section id="pre-processing">
+<h2>🛠️ Pre-processing<a class="headerlink" href="#pre-processing" title="Link to this heading"></a></h2>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>preprocess
+├──<span class="w"> </span>samples
+<span class="w">    </span>├──<span class="w"> </span>SampleA
+<span class="w">        </span>├──<span class="w"> </span>output
+<span class="w">            </span>├──<span class="w"> </span>SampleA_R1_cut.trim.filt.fastq.gz
+<span class="w">            </span>├──<span class="w"> </span>SampleA_R2_cut.trim.filt.fastq.gz
+<span class="w">            </span>├──<span class="w"> </span>SampleA_R1_cut.trim.filt.nodecontam.fastq.gz<span class="w"> </span><span class="c1"># If host-decontamination is performed</span>
+<span class="w">            </span>└──<span class="w"> </span>SampleA_R2_cut.trim.filt.nodecontam.fastq.gz<span class="w"> </span><span class="c1"># If host-decontamination is performed</span>
+<span class="w">        </span>├──<span class="w"> </span>report.fastp.html
+<span class="w">        </span>├──<span class="w"> </span>report.fastp.json
+<span class="w">        </span>├──<span class="w"> </span>SampleA_R1.fastq.gz<span class="w"> </span><span class="c1"># Symbolic link</span>
+<span class="w">        </span>└──<span class="w"> </span>SampleA_R2.fastq.gz<span class="w"> </span><span class="c1"># Symbolic link</span>
+<span class="w">    </span>├──<span class="w"> </span>SampleB
+<span class="w">    </span>├──<span class="w"> </span>SampleC
+├──<span class="w"> </span>logs
+├──<span class="w"> </span>benchmarks
+├──<span class="w"> </span>reports
+<span class="w">    </span>├──<span class="w"> </span>preprocess_report.html
+<span class="w">    </span>└──<span class="w"> </span>library_size_stats.csv
+└──<span class="w"> </span>tmp
+</pre></div>
+</div>
+<p>The main output of this module is cleaned paired-end fastq files <code class="docutils literal notranslate"><span class="pre">SampleA_R1.fastq.gz</span></code> and <code class="docutils literal notranslate"><span class="pre">SampleA_R2.fastq.gz</span></code>. You can also find an HTML report on the quality filtering at <code class="docutils literal notranslate"><span class="pre">reports/preprocess_report.html</span></code>. Before continuing the analysis, you may filter out certain samples from your <code class="docutils literal notranslate"><span class="pre">sample_list.csv</span></code> file.</p>
+<blockquote>
+<div><p>NOTE: You may perform host decontamination in the pre-processing step. Please read more about this step in the Runs &amp; Configurations page</p>
+</div></blockquote>
+<blockquote>
+<div><p>NOTE: The <code class="docutils literal notranslate"><span class="pre">reports/library_size_stats.csv</span></code> file contains library size and summary information before and after filtering for each sample.</p>
+</div></blockquote>
+</section>
+<section id="assembly-co-assembly">
+<h2>🛠️ Assembly &amp; Co-assembly<a class="headerlink" href="#assembly-co-assembly" title="Link to this heading"></a></h2>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>assembly/megahit
+├──<span class="w"> </span>samples
+<span class="w">    </span>├──<span class="w"> </span>SampleA
+<span class="w">        </span>├──<span class="w"> </span>output
+<span class="w">            </span>├──<span class="w"> </span>checkpoints.txt
+<span class="w">            </span>├──<span class="w"> </span><span class="k">done</span>
+<span class="w">            </span>├──<span class="w"> </span>final.contigs.fa
+<span class="w">            </span>├──<span class="w"> </span>intermediate_contigs
+<span class="w">        </span>├──<span class="w"> </span>log
+<span class="w">        </span>├──<span class="w"> </span>options.json
+<span class="w">    </span>├──<span class="w"> </span>SampleB
+<span class="w">    </span>├──<span class="w"> </span>SampleC
+├──<span class="w"> </span>logs
+├──<span class="w"> </span>benchmarks
+├──<span class="w"> </span>reports
+└──<span class="w"> </span>tmp
+</pre></div>
+</div>
+<p>The main output from this module is the assembly file <code class="docutils literal notranslate"><span class="pre">final.contigs.fa</span></code> which includes the final contigs generated by <code class="docutils literal notranslate"><span class="pre">megahit</span></code> or <code class="docutils literal notranslate"><span class="pre">SPAdes</span></code>. These contigs will be used for many steps in downstream analysis.</p>
+<blockquote>
+<div><p>NOTE: Co-assembly is available only with megahit at the moment. SPAdes analysis will be kept separately in a different subdirectory <code class="docutils literal notranslate"><span class="pre">assembly/SPAdes</span></code> when setting the <code class="docutils literal notranslate"><span class="pre">--config</span> <span class="pre">assembler=&quot;spades&quot;</span></code> parameter.</p>
+</div></blockquote>
+</section>
+<section id="viral-identify">
+<h2>🦠 Viral Identify<a class="headerlink" href="#viral-identify" title="Link to this heading"></a></h2>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>viral/identify
+├── output
+    ├── classification_summary_vOTUs.csv
+    ├── combined.final.vOTUs.fa
+    ├── GC_content_vOTUs.tsv
+    ├── provirus.final.vOTUs.fa
+    ├── provirus.list.txt
+    ├── virus.final.vOTUs.fa
+    └── virus.list.txt
+├── samples
+├── intermediate
+├── logs
+├── benchmarks
+└── tmp
+</pre></div>
+</div>
+<p>The main output from this module is <code class="docutils literal notranslate"><span class="pre">classification_summary_vOTUs.csv</span></code> in comma separated format (CSV) and includes the following columns:</p>
+<div class="highlight-csv notranslate"><div class="highlight"><pre><span></span>	checkv_contig_length	checkv_provirus	checkv_proviral_length	checkv_gene_count	checkv_viral_genes	checkv_host_genes	checkv_quality	checkv_miuvig_quality	checkv_completeness	checkv_completeness_method	checkv_contamination	checkv_kmer_freq	checkv_warnings	genomad_length	genomad_topology	genomad_coordinates	genomad_n_genes	genomad_genetic_code	genomad_virus_score	genomad_fdr	genomad_n_hallmarks	genomad_marker_enrichment	genomad_taxonomy	sequence_id	sample_id	hit-score	provirus-hit-score	type
+k141_100002_R0453-CKC	174529	No		173	1	104	High-quality	High-quality	100	HMM-based (lower-bound)	0	1		31003	Provirus	2-31004	34	11	0.8521	0.0259	0	4.0464	Viruses;Duplodnaviria;Heunggongvirae;Uroviricota;Caudoviricetes	k141_100002	R0453-CKC	1	1	Provirus (Low-Confidence)
+k141_100009_R0637	47649	No		61	11	0	Complete	High-quality	100	DTR (high-confidence)	0	1		47649	DTR		61	11	0.9993	0.0007	2	79.3241	Viruses;Duplodnaviria;Heunggongvirae;Uroviricota;Caudoviricetes	k141_100009	R0637	1	0	Virus
+k141_100011_R0347-KKS	126146	Yes	25378	145	16	79	Medium-quality	Genome-fragment	66.08	AAI-based (high-confidence)	79.88	1	contig &gt;1.5x longer than expected genome length	29908	Provirus	1-29908	39	11	0.9992	0.0008	11	41.8736	Viruses;Duplodnaviria;Heunggongvirae;Uroviricota;Caudoviricetes	k141_100011	R0347-KKS	1	2	Provirus
+k141_10001_R0144-CMS	40691	Yes	38137	58	21	4	Medium-quality	Genome-fragment	79.09	AAI-based (high-confidence)	6.28	1		40691	No terminal repeats		58	11	0.9992	0.0008	13	66.3957	Viruses;Duplodnaviria;Heunggongvirae;Uroviricota;Caudoviricetes	k141_10001	R0144-CMS	1	1	Provirus (Low-Confidence)
+k141_100023_R0532	87316	No		114	13	2	High-quality	High-quality	100	AAI-based (high-confidence)	0	1		87316	No terminal repeats		114	11	0.9993	0.0007	11	158.404	Viruses;Duplodnaviria;Heunggongvirae;Uroviricota;Caudoviricetes	k141_100023	R0532	1	0	Virus
+k141_100030_R0178-PCW-DNA	265780	Yes	44386	282	21	183	Complete	High-quality	100	Provirus (medium-confidence)	83.3	1	contig &gt;1.5x longer than expected genome length	48575	Provirus	37758-86332	58	11	0.9987	0.0009	13	62.2384	Viruses;Duplodnaviria;Heunggongvirae;Uroviricota;Caudoviricetes	k141_100030	R0178-PCW-DNA	1	2	Provirus
+k141_100030_R0470-LNY	51802	Yes	34319	63	26	11	High-quality	High-quality	92.29	AAI-based (high-confidence)	33.75	1		40032	Provirus	11760-51791	50	11	0.9988	0.0009	16	60.238	Viruses;Duplodnaviria;Heunggongvirae;Uroviricota;Caudoviricetes	k141_100030	R0470-LNY	1	2	Provirus
+</pre></div>
+</div>
+<p><em>Columns:</em></p>
+<ol class="arabic simple">
+<li><p><strong>checkv_</strong>: Columns from analysis using CheckV. Read more at https://bitbucket.org/berkeleylab/checkv/src/master/</p></li>
+<li><p><strong>genomad_</strong>: Columns from analysis using geNomad. Read more at https://portal.nersc.gov/genomad/</p></li>
+</ol>
+</section>
+<section id="viral-taxonomy">
+<h2>🦠 Viral Taxonomy<a class="headerlink" href="#viral-taxonomy" title="Link to this heading"></a></h2>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>taxonomy/viral
+├── output
+│   └── merged_taxonomy.csv
+├── logs
+├── benchmarks
+├── intermediate
+│   ├── diamond
+│   ├── genomad
+│   ├── phagcn
+│   ├── prodigal
+│   ├── viphogs
+└── tmp
+</pre></div>
+</div>
+<p>The main output from this module is <code class="docutils literal notranslate"><span class="pre">merged_taxonomy.csv</span></code>, a CSV table summarising the outputs of Diamond, PhaGCN, geNomad, and VIRify ViPhOGs database HMMER search. It includes the following columns:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>	<span class="n">diamond_species</span>	<span class="n">diamond_genus</span>	<span class="n">diamond_family</span>	<span class="n">diamond_order</span>	<span class="n">diamond_class</span>	<span class="n">diamond_phylum</span>	<span class="n">diamond_kingdom</span>	<span class="n">viphogs_genus</span>	<span class="n">viphogs_family</span>	<span class="n">viphogs_order</span>	<span class="n">viphogs_class</span>	<span class="n">phagcn_species</span>	<span class="n">phagcn_genus</span>	<span class="n">phagcn_family</span>	<span class="n">phagcn_order</span>	<span class="n">phagcn_class</span>	<span class="n">phagcn_phylum</span>	<span class="n">phagcn_kingdom</span>	<span class="n">genomad_genomad_virus_score</span>	<span class="n">genomad_virus</span>	<span class="n">genomad_realm</span>	<span class="n">genomad_kingdom</span>	<span class="n">genomad_phylum</span>	<span class="n">genomad_class</span>	<span class="n">genomad_order</span>	<span class="n">genomad_family</span>
+<span class="n">k141_100002_R0453</span><span class="o">-</span><span class="n">CKC</span>					<span class="n">Caudoviricetes</span>	<span class="n">Uroviricota</span>	<span class="n">Viruses</span>									<span class="n">Caudoviricetes</span>	<span class="n">Uroviricota</span>	<span class="n">Viruses</span>	<span class="mf">0.8521</span>	<span class="n">Viruses</span>	<span class="n">Duplodnaviria</span>	<span class="n">Heunggongvirae</span>	<span class="n">Uroviricota</span>	<span class="n">Caudoviricetes</span>		
+<span class="n">k141_100009_R0637</span>			<span class="n">Chaseviridae</span>		<span class="n">Caudoviricetes</span>	<span class="n">Uroviricota</span>	<span class="n">Viruses</span>							<span class="n">Chaseviridae</span>		<span class="n">Caudoviricetes</span>	<span class="n">Uroviricota</span>	<span class="n">Viruses</span>	<span class="mf">0.9993</span>	<span class="n">Viruses</span>	<span class="n">Duplodnaviria</span>	<span class="n">Heunggongvirae</span>	<span class="n">Uroviricota</span>	<span class="n">Caudoviricetes</span>		
+<span class="n">k141_100011_R0347</span><span class="o">-</span><span class="n">KKS</span>					<span class="n">Caudoviricetes</span>	<span class="n">Uroviricota</span>	<span class="n">Viruses</span>				<span class="n">Caudoviricetes</span>					<span class="n">Caudoviricetes</span>	<span class="n">Uroviricota</span>	<span class="n">Viruses</span>	<span class="mf">0.9992</span>	<span class="n">Viruses</span>	<span class="n">Duplodnaviria</span>	<span class="n">Heunggongvirae</span>	<span class="n">Uroviricota</span>	<span class="n">Caudoviricetes</span>		
+<span class="n">k141_10001_R0144</span><span class="o">-</span><span class="n">CMS</span>					<span class="n">Caudoviricetes</span>	<span class="n">Uroviricota</span>	<span class="n">Viruses</span>									<span class="n">Caudoviricetes</span>	<span class="n">Uroviricota</span>	<span class="n">Viruses</span>	<span class="mf">0.9992</span>	<span class="n">Viruses</span>	<span class="n">Duplodnaviria</span>	<span class="n">Heunggongvirae</span>	<span class="n">Uroviricota</span>	<span class="n">Caudoviricetes</span>		
+<span class="n">k141_100023_R0532</span>					<span class="n">Caudoviricetes</span>	<span class="n">Uroviricota</span>	<span class="n">Viruses</span>									<span class="n">Caudoviricetes</span>	<span class="n">Uroviricota</span>	<span class="n">Viruses</span>	<span class="mf">0.9993</span>	<span class="n">Viruses</span>	<span class="n">Duplodnaviria</span>	<span class="n">Heunggongvirae</span>	<span class="n">Uroviricota</span>	<span class="n">Caudoviricetes</span>		
+<span class="n">k141_100030_R0178</span><span class="o">-</span><span class="n">PCW</span><span class="o">-</span><span class="n">DNA</span>					<span class="n">Caudoviricetes</span>	<span class="n">Uroviricota</span>	<span class="n">Viruses</span>				<span class="n">Caudoviricetes</span>					<span class="n">Caudoviricetes</span>	<span class="n">Uroviricota</span>	<span class="n">Viruses</span>	<span class="mf">0.9987</span>	<span class="n">Viruses</span>	<span class="n">Duplodnaviria</span>	<span class="n">Heunggongvirae</span>	<span class="n">Uroviricota</span>	<span class="n">Caudoviricetes</span>		
+</pre></div>
+</div>
+<p>We are still in the process of testing taxonomic annotation tools. In our experience, higher-level taxonomic annotations (e.g. Phylum, Class, Order, Family) are reliable with <code class="docutils literal notranslate"><span class="pre">geNomad</span></code>, while lower-level annotations (e.g. Genus, Species) are quite reliable in <code class="docutils literal notranslate"><span class="pre">PhaGCN</span></code>. PhaGCN annotations are consistent with Viral Ref-seq Diamond annotations since they are trained on the same data, but PhaGCN’s database is much smaller, hence why we are slowly deprecating ViPhogs &amp; Diamond annotations.</p>
+</section>
+<section id="viral-host-analysis">
+<h2>🦠 Viral Host Analysis<a class="headerlink" href="#viral-host-analysis" title="Link to this heading"></a></h2>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>host
+├── output
+    ├── merged_host.tsv
+    ├── cherry_network_nodes.tsv
+    ├── cherry_network_edges.tsv
+    ├── CHERRY/
+    └── PhaTYP/
+├── logs
+├── benchmarks
+└── tmp
+</pre></div>
+</div>
+<p>The main output from this module is <code class="docutils literal notranslate"><span class="pre">merged_host.csv</span></code>, a CSV table summarising the outputs of CHERRY, PhaTYP, and PhaVIP (All tools from the PhaBOX2 suite). It includes the following columns:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Accession</span>	<span class="n">cherry_Length</span>	<span class="n">cherry_Host</span>	<span class="n">cherry_CHERRYScore</span>	<span class="n">cherry_Method</span>	<span class="n">cherry_Host_NCBI_lineage</span>	<span class="n">cherry_Host_GTDB_lineage</span>	<span class="n">cherry_Length</span>	<span class="n">phatyp_TYPE</span>	<span class="n">phatyp_PhaTYPScore</span>	<span class="n">phatyp_Length</span>	<span class="n">phavip_Protein_num</span>	<span class="n">phavip_Annotated_num</span>	<span class="n">phavip_Annotation_rate</span>
+<span class="n">k141_99987_R0609</span>	<span class="mi">36891</span>	<span class="n">species</span><span class="p">:</span><span class="n">Eubacterium</span> <span class="n">sp</span><span class="o">.</span> <span class="n">AM46</span><span class="o">-</span><span class="mi">8</span>	<span class="mi">1</span>	<span class="n">CRISPR</span><span class="o">-</span><span class="n">based</span> <span class="p">(</span><span class="n">DB</span><span class="p">)</span>	<span class="n">d__Bacteria</span><span class="p">;</span><span class="n">p__Firmicutes</span><span class="p">;</span><span class="n">c__Clostridia</span><span class="p">;</span><span class="n">o__Clostridiales</span><span class="p">;</span><span class="n">f__Eubacteriaceae</span><span class="p">;</span><span class="n">g__Eubacterium</span><span class="p">;</span><span class="n">s__Eubacterium</span> <span class="n">sp</span><span class="o">.</span> <span class="n">AM46</span><span class="o">-</span><span class="mi">8</span>	<span class="n">d__Bacteria</span><span class="p">;</span><span class="n">p__Bacillota_A</span><span class="p">;</span><span class="n">c__Clostridia</span><span class="p">;</span><span class="n">o__Lachnospirales</span><span class="p">;</span><span class="n">f__Lachnospiraceae</span><span class="p">;</span><span class="n">g__Lachnospira</span><span class="p">;</span><span class="n">s__Lachnospira</span> <span class="n">sp003451515</span>	<span class="mi">33871</span>	<span class="n">temperate</span>	<span class="mf">0.97</span>	<span class="mi">33871</span>	<span class="mi">53</span>	<span class="mi">18</span>	<span class="mf">0.34</span>
+<span class="n">k141_99984_R0546</span>	<span class="mi">229590</span>	<span class="n">species</span><span class="p">:</span><span class="n">Ruminococcus</span> <span class="n">sp</span><span class="o">.</span> <span class="n">AM36</span><span class="o">-</span><span class="mi">17</span>	<span class="mi">1</span>	<span class="n">CRISPR</span><span class="o">-</span><span class="n">based</span> <span class="p">(</span><span class="n">DB</span><span class="p">)</span>	<span class="n">d__Bacteria</span><span class="p">;</span><span class="n">p__Firmicutes</span><span class="p">;</span><span class="n">c__Clostridia</span><span class="p">;</span><span class="n">o__Clostridiales</span><span class="p">;</span><span class="n">f__Ruminococcaceae</span><span class="p">;</span><span class="n">g__Ruminococcus</span><span class="p">;</span><span class="n">s__Ruminococcus</span> <span class="n">sp</span><span class="o">.</span> <span class="n">AM36</span><span class="o">-</span><span class="mi">17</span>	<span class="n">Not</span> <span class="n">found</span>	<span class="mi">63241</span>	<span class="n">temperate</span>	<span class="mf">0.99</span>	<span class="mi">63241</span>	<span class="mi">72</span>	<span class="mi">22</span>	<span class="mf">0.31</span>
+<span class="n">k141_99971_R0131</span><span class="o">-</span><span class="n">LFL</span><span class="o">-</span><span class="n">DNA</span>	<span class="mi">18971</span>	<span class="n">species</span><span class="p">:</span><span class="n">Clostridium</span> <span class="n">sp</span><span class="o">.</span> <span class="n">AM43</span><span class="o">-</span><span class="mi">3</span><span class="n">BH</span>	<span class="mi">1</span>	<span class="n">CRISPR</span><span class="o">-</span><span class="n">based</span> <span class="p">(</span><span class="n">DB</span><span class="p">)</span>	<span class="n">d__Bacteria</span><span class="p">;</span><span class="n">p__Firmicutes</span><span class="p">;</span><span class="n">c__Clostridia</span><span class="p">;</span><span class="n">o__Clostridiales</span><span class="p">;</span><span class="n">f__Clostridiaceae</span><span class="p">;</span><span class="n">g__Clostridium</span><span class="p">;</span><span class="n">s__Clostridium</span> <span class="n">sp</span><span class="o">.</span> <span class="n">AM43</span><span class="o">-</span><span class="mi">3</span><span class="n">BH</span>	<span class="n">d__Bacteria</span><span class="p">;</span><span class="n">p__Bacillota_A</span><span class="p">;</span><span class="n">c__Clostridia</span><span class="p">;</span><span class="n">o__Lachnospirales</span><span class="p">;</span><span class="n">f__Lachnospiraceae</span><span class="p">;</span><span class="n">g__Otoolea</span><span class="p">;</span><span class="n">s__Otoolea</span> <span class="n">fessa</span>	<span class="mi">50366</span>	<span class="n">virulent</span>	<span class="mi">1</span>	<span class="mi">50366</span>	<span class="mi">77</span>	<span class="mi">67</span>	<span class="mf">0.87</span>
+<span class="n">k141_99969_R0565</span>	<span class="mi">34469</span>	<span class="n">species</span><span class="p">:</span><span class="n">Escherichia</span> <span class="n">albertii</span>	<span class="mi">1</span>	<span class="n">CRISPR</span><span class="o">-</span><span class="n">based</span> <span class="p">(</span><span class="n">DB</span><span class="p">)</span>	<span class="n">d__Bacteria</span><span class="p">;</span><span class="n">p__Proteobacteria</span><span class="p">;</span><span class="n">c__Gammaproteobacteria</span><span class="p">;</span><span class="n">o__Enterobacterales</span><span class="p">;</span><span class="n">f__Enterobacteriaceae</span><span class="p">;</span><span class="n">g__Escherichia</span><span class="p">;</span><span class="n">s__Escherichia</span> <span class="n">albertii</span>	<span class="n">d__Bacteria</span><span class="p">;</span><span class="n">p__Pseudomonadota</span><span class="p">;</span><span class="n">c__Gammaproteobacteria</span><span class="p">;</span><span class="n">o__Enterobacterales</span><span class="p">;</span><span class="n">f__Enterobacteriaceae</span><span class="p">;</span><span class="n">g__Escherichia</span><span class="p">;</span><span class="n">s__Escherichia</span> <span class="n">albertii</span>	<span class="mi">36712</span>	<span class="n">temperate</span>	<span class="mi">1</span>	<span class="mi">36712</span>	<span class="mi">50</span>	<span class="mi">20</span>	<span class="mf">0.4</span>
+<span class="n">k141_99969_R0252</span><span class="o">-</span><span class="n">TLP</span><span class="o">-</span><span class="n">DNA</span>	<span class="mi">64577</span>	<span class="n">species</span><span class="p">:</span><span class="n">Faecalibacterium</span> <span class="n">prausnitzii</span>	<span class="mi">1</span>	<span class="n">CRISPR</span><span class="o">-</span><span class="n">based</span> <span class="p">(</span><span class="n">DB</span><span class="p">)</span>	<span class="n">d__Bacteria</span><span class="p">;</span><span class="n">p__Firmicutes</span><span class="p">;</span><span class="n">c__Clostridia</span><span class="p">;</span><span class="n">o__Clostridiales</span><span class="p">;</span><span class="n">f__Ruminococcaceae</span><span class="p">;</span><span class="n">g__Faecalibacterium</span><span class="p">;</span><span class="n">s__Faecalibacterium</span> <span class="n">prausnitzii</span>	<span class="n">d__Bacteria</span><span class="p">;</span><span class="n">p__Bacillota_A</span><span class="p">;</span><span class="n">c__Clostridia</span><span class="p">;</span><span class="n">o__Oscillospirales</span><span class="p">;</span><span class="n">f__Ruminococcaceae</span><span class="p">;</span><span class="n">g__Faecalibacterium</span><span class="p">;</span><span class="n">s__Faecalibacterium</span> <span class="n">prausnitzii_E</span>	<span class="mi">42296</span>	<span class="n">temperate</span>	<span class="mi">1</span>	<span class="mi">42296</span>	<span class="mi">61</span>	<span class="mi">15</span>	<span class="mf">0.25</span>
+<span class="n">k141_99968_R0101</span><span class="o">-</span><span class="n">HFP</span><span class="o">-</span><span class="n">M</span>	<span class="mi">34751</span>	<span class="n">species</span><span class="p">:</span><span class="n">Acinetobacter</span> <span class="n">sp</span><span class="o">.</span> <span class="n">CIP</span> <span class="mi">102143</span>	<span class="mf">0.9</span>	<span class="n">CRISPR</span><span class="o">-</span><span class="n">based</span> <span class="p">(</span><span class="n">DB</span><span class="p">)</span>	<span class="n">d__Bacteria</span><span class="p">;</span><span class="n">p__Proteobacteria</span><span class="p">;</span><span class="n">c__Gammaproteobacteria</span><span class="p">;</span><span class="n">o__Pseudomonadales</span><span class="p">;</span><span class="n">f__Moraxellaceae</span><span class="p">;</span><span class="n">g__Acinetobacter</span><span class="p">;</span><span class="n">s__Acinetobacter</span> <span class="n">sp</span><span class="o">.</span> <span class="n">CIP</span> <span class="mi">102143</span>	<span class="n">d__Bacteria</span><span class="p">;</span><span class="n">p__Pseudomonadota</span><span class="p">;</span><span class="n">c__Gammaproteobacteria</span><span class="p">;</span><span class="n">o__Pseudomonadales</span><span class="p">;</span><span class="n">f__Moraxellaceae</span><span class="p">;</span><span class="n">g__Acinetobacter</span><span class="p">;</span><span class="n">s__Acinetobacter</span> <span class="n">parvus</span>	<span class="mi">37876</span>	<span class="n">temperate</span>	<span class="mi">1</span>	<span class="mi">37876</span>	<span class="mi">64</span>	<span class="mi">28</span>	<span class="mf">0.44</span>
+<span class="n">k141_99955_R0626</span>	<span class="mi">34662</span>	<span class="n">species</span><span class="p">:</span><span class="n">Bacteroides</span> <span class="n">sp</span><span class="o">.</span> <span class="n">AM16</span><span class="o">-</span><span class="mi">15</span>	<span class="mi">1</span>	<span class="n">CRISPR</span><span class="o">-</span><span class="n">based</span> <span class="p">(</span><span class="n">DB</span><span class="p">)</span>	<span class="n">d__Bacteria</span><span class="p">;</span><span class="n">p__Bacteroidetes</span><span class="p">;</span><span class="n">c__Bacteroidia</span><span class="p">;</span><span class="n">o__Bacteroidales</span><span class="p">;</span><span class="n">f__Bacteroidaceae</span><span class="p">;</span><span class="n">g__Bacteroides</span><span class="p">;</span><span class="n">s__Bacteroides</span> <span class="n">sp</span><span class="o">.</span> <span class="n">AM16</span><span class="o">-</span><span class="mi">15</span>	<span class="n">Not</span> <span class="n">found</span>	<span class="mi">68414</span>	<span class="n">temperate</span>	<span class="mi">1</span>	<span class="mi">68414</span>	<span class="mi">77</span>	<span class="mi">28</span>	<span class="mf">0.36</span>
+</pre></div>
+</div>
+<p>The <code class="docutils literal notranslate"><span class="pre">cherry_network_nodes.tsv</span></code> and <code class="docutils literal notranslate"><span class="pre">cherry_network_edges.tsv</span></code> files can come in handy as well to plot virus-host interaction networks to visualize the relationships between the community.</p>
+<blockquote>
+<div><p>NOTE: We are working on integrating a version of this module that can take prokaryotic MAGs made from the data itself to the analysis here.</p>
+</div></blockquote>
+<blockquote>
+<div><p>NOTE: You may alternatively use iPHoP for host analysis, but the database is huge and it takes a very large amount of memory and computation time. Since vOMIX-MEGA is all about accessibility, our comprehensive testing found CHERRY to be superior to all other approaches!</p>
+</div></blockquote>
+</section>
+<section id="viral-annotate-coming-soon">
+<h2>🦠 Viral Annotate (Coming Soon)<a class="headerlink" href="#viral-annotate-coming-soon" title="Link to this heading"></a></h2>
+</section>
+<section id="viral-community">
+<h2>🦠 Viral Community<a class="headerlink" href="#viral-community" title="Link to this heading"></a></h2>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>community/viral
+├── output
+    ├── vOTU_table_rpkm.tsv
+    └── vOTU_table_tpm.tsv
+├── samples
+├── logs
+├── benchmarks
+└── tmp
+</pre></div>
+</div>
+<p>The main output from this module is <code class="docutils literal notranslate"><span class="pre">vOTU_table_rpkm.tsv</span></code> and <code class="docutils literal notranslate"><span class="pre">vOTU_table_tpm.tsv</span></code>, both TSV tables summarising the estimated abundance of viral OTUS (vOTUs) identified, clustered, and annotated in the Viral Identify module. The TPM table is in essence a relative abundance table.</p>
+<blockquote>
+<div><p>NOTE: Please note that Viral Community estimations come with lots of precautions, including the fact that each vOTU could be a viral fragment rather than representative of an entire genome unlike Prokaryotic Community abundance estimation. Please proceed analysis with caution.</p>
+</div></blockquote>
+</section>
+<section id="viral-annotation-coming-soon">
+<h2>🦠 Viral Annotation (Coming Soon)<a class="headerlink" href="#viral-annotation-coming-soon" title="Link to this heading"></a></h2>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>annotate/viral
+├── output
+├── samples
+├── logs
+├── benchmarks
+└── tmp
+</pre></div>
+</div>
+</section>
+<section id="prokaryotic-community">
+<h2>🧫 Prokaryotic Community<a class="headerlink" href="#prokaryotic-community" title="Link to this heading"></a></h2>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>community/metaphlan
+├── output
+    ├── metaphlan_out_SGB.txt
+    ├── metaphlan_out_species.txt
+    ├── metaphlan_out_genus.txt
+    ├── metaphlan_out_family.txt
+    ├── metaphlan_out_order.txt
+    ├── metaphlan_out_class.txt   
+    ├── metaphlan_out_phylum.txt
+    └── metaphlan_out.txt
+├── samples
+├── logs
+├── benchmarks
+└── tmp
+</pre></div>
+</div>
+<p>The main output from this module is <code class="docutils literal notranslate"><span class="pre">metaphlan_out.txt</span></code>, a tab-delimited TXT file directly from MetaPhlAn4 and its latest database. The associated files derived from this output, such as the <code class="docutils literal notranslate"><span class="pre">metaphlan_out_SGB.txt</span></code> has each entry at SGB level while other levels are filtered out.</p>
+</section>
+<section id="prokaryotic-binning-coming-soon">
+<h2>🧫 Prokaryotic Binning (Coming Soon)<a class="headerlink" href="#prokaryotic-binning-coming-soon" title="Link to this heading"></a></h2>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>binning/prok
+├── output
+├── samples
+├── logs
+├── benchmarks
+└── tmp
+</pre></div>
+</div>
+</section>
+<section id="prokaryotic-annotate-coming-soon">
+<h2>🧫 Prokaryotic Annotate (Coming Soon)<a class="headerlink" href="#prokaryotic-annotate-coming-soon" title="Link to this heading"></a></h2>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>annotate/prok
+├── output
+├── samples
+├── logs
+├── benchmarks
+└── tmp
+</pre></div>
+</div>
+</section>
+<section id="end-to-end">
+<h2>💻 End-to-end<a class="headerlink" href="#end-to-end" title="Link to this heading"></a></h2>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>results
+├──<span class="w"> </span>preprocess
+├──<span class="w"> </span>assembly
+<span class="w">    </span>├──<span class="w"> </span>megahit
+<span class="w">    </span>└──<span class="w"> </span>spades
+├──<span class="w"> </span>identify
+<span class="w">    </span>└──<span class="w"> </span>viral
+├──<span class="w"> </span>taxonomy
+<span class="w">    </span>└──<span class="w"> </span>viral
+├──<span class="w"> </span>host
+├──<span class="w"> </span>community
+<span class="w">    </span>└──<span class="w"> </span>viral
+├──<span class="w"> </span>annotate
+<span class="w">    </span>└──<span class="w"> </span>viral
+└──<span class="w"> </span>binning
+</pre></div>
+</div>
+</section>
+<section id="clustering-fast-votu">
+<h2>⚙️ Clustering Fast (vOTU)<a class="headerlink" href="#clustering-fast-votu" title="Link to this heading"></a></h2>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>
+</pre></div>
+</div>
+</section>
+<section id="checkv-pyhmmer">
+<h2>⚙️ CheckV PyHMMER<a class="headerlink" href="#checkv-pyhmmer" title="Link to this heading"></a></h2>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>
+</pre></div>
+</div>
+</section>
+<section id="setup-database">
+<h2>⚙️ Setup Database<a class="headerlink" href="#setup-database" title="Link to this heading"></a></h2>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>
+</pre></div>
+</div>
+</section>
+<section id="viral-benchmark-tools-coming-soon">
+<h2>⚙️ Viral Benchmark Tools (Coming Soon)<a class="headerlink" href="#viral-benchmark-tools-coming-soon" title="Link to this heading"></a></h2>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="troubleshooting-guide">
+<h1>⚙️ Troubleshooting Guide<a class="headerlink" href="#troubleshooting-guide" title="Link to this heading"></a></h1>
+<p>We have specific guidelines for troubleshooting vOMIX-MEGA so we can help you out in your analysis journey as efficiently as possible! If you run into any unexpected errors, warnings, etc. please visit our <a class="reference external" href="https://github.com/holab-hku/vOMIX-MEGA/wiki/Troubleshooting">Troubleshooting Guide</a>.</p>
+</section>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2026, Ho Lab, HKU.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
