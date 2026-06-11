@@ -386,7 +386,8 @@ rule iPHoP_download:
 rule DRAM_download:
   name: "setup-database.smk DRAM Database 66.4 G"
   output:
-    os.path.join(config["dram-db"], "database_processing.log")
+    loga=os.path.join(config["dram-db"], "database_processing.log"), 
+    json=os.path.join(config["dram-db"], "dram_config.json")
   params:
     parameters=config["dram-setup-params"],
     outdir=config["dram-db"],
@@ -394,18 +395,68 @@ rule DRAM_download:
   conda: "../envs/dram.yml"
   log: os.path.join(logdir, "dram_db.log")
   benchmark: os.path.join(benchmarks, "dram_db.log")
-  threads: 32
+  threads: 4
+  resources:
+    mem_mb=lambda wildcards, attempt: attempt * 150 * 10**3
+  shell:
+    """
+    rm -rf {params.outdir} {params.tmpdir}
+    mkdir -p {params.tmpdir} {params.outdir}
+
+    DRAM-setup.py prepare_databases \
+        --output_dir {params.tmpdir} \
+        --threads {threads} \
+        --skip_uniref \
+        {params.parameters} 2> {log}
+
+    mv {params.tmpdir}/* {params.outdir}
+    DRAM-setup.py export_config > {output.json}
+    """
+
+rule metacerberus_download:
+  name: "setup-database.smk MetaCerberus Database 4.2 G"
+  output:
+    expand(os.path.join(config["metacerberus-db"], "{db}.{extension}"), db = ["PVOG", "VOG"], extension = ["tsv", "hmm.gz"])
+  params:
+    parameters=config["metacerberus-setup-params"],
+    outdir=config["metacerberus-db"],
+    tmpdir=os.path.join(tmpd, "metacerberus-db")
+  conda: "../envs/metacerberus.yml"
+  log: os.path.join(logdir, "metacerberus_db.log")
+  benchmark: os.path.join(benchmarks, "metacerberus_db.log")
+  threads: 4
   resources:
     mem_mb=lambda wildcards, attempt: attempt * 4 * 10**3
   shell:
     """
     rm -rf {params.outdir} {params.tmpdir}
-    mkdir -p {params.tmpdir}
+    mkdir -p {params.tmpdir} {params.outdir}
 
-    DRAM-setup.py prepare_databases \
-        --output_dir {params.tmpdir} \
-        --threads {threads} \
-        {params.parameters} 2> {log}
+    metacerberus.py --setup
+    metacerberus.py --download --db-path {params.tmpdir}
+
+    mv {params.tmpdir}/* {params.outdir}
+    """
+
+rule pharokka_download:
+  name: "setup-database.smk Pharokka Database 1.8 G"
+  output:
+    os.path.join(config["pharokka-db"], "all_phrogs.h3m")
+  params:
+    outdir=config["pharokka-db"],
+    tmpdir=os.path.join(tmpd, "pharokka-db")
+  conda: "../envs/pharokka.yml"
+  log: os.path.join(logdir, "pharokka_db.log")
+  benchmark: os.path.join(benchmarks, "pharokka_db.log")
+  threads: 4
+  resources:
+    mem_mb=lambda wildcards, attempt: attempt * 4 * 10**3
+  shell:
+    """
+    rm -rf {params.outdir} {params.tmpdir}
+    mkdir -p {params.tmpdir} {params.outdir}
+
+    install_databases.py -o {params.tmpdir}
 
     mv {params.tmpdir}/* {params.outdir}
     """
