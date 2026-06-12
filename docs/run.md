@@ -1,20 +1,20 @@
 # Run & Configuration
 ## Table of Contents
-* 🛠️ [Preprocessing](##%EF%B8%8F-pre-processing)
-* 🛠️ [Assembly & Co-assembly](##%EF%B8%8F-assembly--co-assembly) 
-* 🦠 [Viral Identify](###-viral-identify)
-* 🦠 [Viral Taxonomy](###-viral-taxonomy) 
-* 🦠 [Viral Host Analysis](##-viral-host)
-* 🦠 [Viral Annotate](###-viral-annotate) 
-* 🦠 [Viral Community](#-#viral-community)
-* 🧫 [Prokaryotic Community](#-#prokaryotic-community)
-* 🧫 [Prokaryotic Binning](#-#prokaryotic-binning)
-* 🧫 [Prokaryotic Annotate](#-#prokaryotic-annotate)
-* 💻 [End-to-end](#-#end-to-end) 
-* ⚙️ [Clustering Fast (vOTU)](##%EF%B8%8F-clustering-fast-votu)
-* ⚙️ [CheckV PyHMMER](##%EF%B8%8F-checkv-pyhmmer)
-* ⚙️ [Setup Database](##%EF%B8%8F-setup-database)
-* ⚙️ [Viral Benchmark Tools](##%EF%B8%8F-viral-benchmark-tools)
+* 🛠️ [Preprocessing](#pre-processing)
+* 🛠️ [Assembly & Co-assembly](#assembly-co-assembly) 
+* 🦠 [Viral Identify](##viral-identify)
+* 🦠 [Viral Taxonomy](##viral-taxonomy) 
+* 🦠 [Viral Host Analysiss](#viral-host)
+* 🦠 [Viral Annotate](##viral-annotate) 
+* 🦠 [Viral Community](#-viral-community)
+* 🧫 [Prokaryotic Community](#prokaryotic-community)
+* 🧫 [Prokaryotic Binning](#-prokaryotic-binning)
+* 🧫 [Prokaryotic Annotate](##prokaryotic-annotate)
+* 💻 [End-to-end](#end-to-end) 
+* ⚙️ [Clustering Fast (vOTU)](#clustering-fast-votu)
+* ⚙️ [CheckV PyHMMER](#checkv-pyhmmer)
+* ⚙️ [Setup Database](#setup-database)
+* ⚙️ [Viral Benchmark Tools](#viral-benchmark-tools)
 
 ## 📑 General Configuration 
 All the parameters of vOMIX-snakemake are configured using the `config/config.yml` file. You can create a custom `config.yml` by downloading the template from our GitHub page, altering the parameters, and passing it to the `--configfile config.yml` parameter. 
@@ -281,7 +281,7 @@ _Accepted Inputs:_
 2. Single Fasta ❌
 3. Multi Fasta Directory ❌
 
-### 🧫 Prokaryotic Binning (Coming Soon)
+### 🧫 Prokaryotic Binning 
 _Quick Run:_
 ```bash
 snakemake --config module="prok-binning" outdir="sample/results" datadir="sample/fastq" samplelist="sample/sample_list.csv" --use-conda -j 4 --latency-wait 20
@@ -416,7 +416,7 @@ _Accepted Inputs:_
 3. Multi Fasta Directory ❌
 
 
-### ⚙️ Viral Benchmark (Coming Soon)
+### ⚙️ Viral Benchmark
 
 
 ## ⚙️ Troubleshooting Guide

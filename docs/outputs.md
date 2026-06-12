@@ -1,20 +1,20 @@
 # Outputs
 ## Table of Contents
-* 🛠️ [Preprocessing](#%EF%B8%8F-pre-processing)
-* 🛠️ [Assembly & Co-assembly](#%EF%B8%8F-assembly--co-assembly) 
-* 🦠 [Viral Identify](#-viral-identify)
-* 🦠 [Viral Taxonomy](#-viral-taxonomy) 
-* 🦠 [Viral Host Analysis](#-viral-host-analysis)
-* 🦠 [Viral Annotate](#-viral-annotate) 
-* 🦠 [Viral Community](#-viral-community)
-* 🧫 [Prokaryotic Community](#-prokaryotic-community)
-* 🧫 [Prokaryotic Binning](#-prokaryotic-binning)
-* 🧫 [Prokaryotic Annotate](#-prokaryotic-annotate)
-* 💻 [End-to-end](#-end-to-end) 
-* ⚙️ [Clustering Fast (vOTU)](#%EF%B8%8F-clustering-fast-votu)
-* ⚙️ [CheckV PyHMMER](#%EF%B8%8F-checkv-pyhmmer)
-* ⚙️ [Setup Database](#%EF%B8%8F-setup-database)
-* ⚙️ [Viral Benchmark Tools](#%EF%B8%8F-viral-benchmark-tools)
+* 🛠️ [Preprocessing](#pre-processing)
+* 🛠️ [Assembly & Co-assembly](#assembly-co-assembly) 
+* 🦠 [Viral Identify](#-iral-identify)
+* 🦠 [Viral Taxonomy](#-iral-taxonomy) 
+* 🦠 [Viral Host Analysis](#-iral-host-analysis)
+* 🦠 [Viral Annotate](#-iral-annotate) 
+* 🦠 [Viral Community](#-iral-community)
+* 🧫 [Prokaryotic Community](#-rokaryotic-community)
+* 🧫 [Prokaryotic Binning](#-rokaryotic-binning)
+* 🧫 [Prokaryotic Annotate](#-rokaryotic-annotate)
+* 💻 [End-to-end](#-nd-to-end) 
+* ⚙️ [Clustering Fast (vOTU)](#clustering-fast-votu)
+* ⚙️ [CheckV PyHMMER](#checkv-pyhmmer)
+* ⚙️ [Setup Database](#setup-database)
+* ⚙️ [Viral Benchmark Tools](#viral-benchmark-tools)
 
 ## 📑 General Output Structure
 ### --config outdir="results"
@@ -209,7 +209,7 @@ The `cherry_network_nodes.tsv` and `cherry_network_edges.tsv` files can come in 
 
 > NOTE: You may alternatively use iPHoP for host analysis, but the database is huge and it takes a very large amount of memory and computation time. Since vOMIX-MEGA is all about accessibility, our comprehensive testing found CHERRY to be superior to all other approaches!
 
-### 🦠 Viral Annotate (Coming Soon)
+### 🦠 Viral Annotate 
 
 ### 🦠 Viral Community 
 ```
@@ -227,7 +227,7 @@ The main output from this module is `vOTU_table_rpkm.tsv` and `vOTU_table_tpm.ts
 > NOTE: Please note that Viral Community estimations come with lots of precautions, including the fact that each vOTU could be a viral fragment rather than representative of an entire genome unlike Prokaryotic Community abundance estimation. Please proceed analysis with caution. 
 
 
-### 🦠 Viral Annotation (Coming Soon)
+### 🦠 Viral Annotation 
 ```
 annotate/viral
 ├── output
@@ -257,7 +257,7 @@ community/metaphlan
 ```
 The main output from this module is `metaphlan_out.txt`, a tab-delimited TXT file directly from MetaPhlAn4 and its latest database. The associated files derived from this output, such as the `metaphlan_out_SGB.txt` has each entry at SGB level while other levels are filtered out. 
 
-### 🧫 Prokaryotic Binning (Coming Soon)
+### 🧫 Prokaryotic Binning 
 ```
 binning/prok
 ├── output
@@ -267,7 +267,7 @@ binning/prok
 └── tmp
 ```
 
-### 🧫 Prokaryotic Annotate (Coming Soon)
+### 🧫 Prokaryotic Annotatee
 ```
 annotate/prok
 ├── output
@@ -308,12 +308,11 @@ results
 ```bash
 ```
 
-### ⚙️ Viral Benchmark Tools (Coming Soon)
+### ⚙️ Viral Benchmark Tools
 ```bash
 ```
 
 ## ⚙️ Troubleshooting Guide
 
-We have specific guidelines for troubleshooting vOMIX-MEGA so we can help you out in your analysis journey as efficiently as possible! If you run into any unexpected errors, warnings, etc. please visit our [Troubleshooting Guide](https://github.com/holab-hku/vOMIX-MEGA/wiki/Troubleshooting).
-
+We have specific guidelines for troubleshooting vOMIX-MEGA so we can help you out in your analysis journey as efficiently as possible! If you run into any unexpected errors, warnings, etc. please visit our [Troubleshooting Guide](/troubleshoot.md)..
 
