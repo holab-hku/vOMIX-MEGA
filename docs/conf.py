@@ -22,13 +22,13 @@ html_theme = "furo"
 pygments_style = "tango"
 pygments_dark_style = "tango"
 html_theme_options = {
-    # This prevents Sphinx from hiding the other chapters when you leave the homepage
-    'globaltoc_collapse': True,
-    
-    # Optional: If you want the sidebar to expand automatically 
-    # to show sub-headers on the active page
-    'collapse_navigation': True,
+    "sidebar_hide_name": False,  # Optional: keeps your project title visible
+    "navigation_with_keys": True,
 }
+
+# Add this so MyST automatically generates tracking anchors for markdown headers (up to H3)
+myst_heading_anchors = 3
+
 
 # 4. Markdown Settings
 # Configures MyST to support advanced GitHub Markdown features like tables and colon blocks

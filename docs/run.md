@@ -421,5 +421,5 @@ _Accepted Inputs:_
 
 ## ⚙️ Troubleshooting Guide
 
-We have specific guidelines for troubleshooting vOMIX-snakemake so we can help you out in your analysis journey as efficiently as possible! If you run into any unexpected errors, warnings, etc. please visit our :doc:`Troubelshooting Guide <troubleshoot>`.
+We have specific guidelines for troubleshooting vOMIX-snakemake so we can help you out in your analysis journey as efficiently as possible! If you run into any unexpected errors, warnings, etc. please visit our :doc:`Troubelshooting Guide </troubleshoot>`.
 
