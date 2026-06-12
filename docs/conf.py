@@ -23,11 +23,11 @@ pygments_style = "tango"
 pygments_dark_style = "tango"
 html_theme_options = {
     # This prevents Sphinx from hiding the other chapters when you leave the homepage
-    'globaltoc_collapse': False,
+    'globaltoc_collapse': True,
     
     # Optional: If you want the sidebar to expand automatically 
     # to show sub-headers on the active page
-    'collapse_navigation': False,
+    'collapse_navigation': True,
 }
 
 # 4. Markdown Settings

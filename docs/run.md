@@ -1,33 +1,33 @@
 # Run & Configuration
 ## Table of Contents
-* 🛠️ [Preprocessing](#%EF%B8%8F-pre-processing)
-* 🛠️ [Assembly & Co-assembly](#%EF%B8%8F-assembly--co-assembly) 
-* 🦠 [Viral Identify](#-viral-identify)
-* 🦠 [Viral Taxonomy](#-viral-taxonomy) 
-* 🦠 [Viral Host Analysis](#-viral-host)
-* 🦠 [Viral Annotate](#-viral-annotate) 
-* 🦠 [Viral Community](#-viral-community)
-* 🧫 [Prokaryotic Community](#-prokaryotic-community)
-* 🧫 [Prokaryotic Binning](#-prokaryotic-binning)
-* 🧫 [Prokaryotic Annotate](#-prokaryotic-annotate)
-* 💻 [End-to-end](#-end-to-end) 
-* ⚙️ [Clustering Fast (vOTU)](#%EF%B8%8F-clustering-fast-votu)
-* ⚙️ [CheckV PyHMMER](#%EF%B8%8F-checkv-pyhmmer)
-* ⚙️ [Setup Database](#%EF%B8%8F-setup-database)
-* ⚙️ [Viral Benchmark Tools](#%EF%B8%8F-viral-benchmark-tools)
+* 🛠️ [Preprocessing](##%EF%B8%8F-pre-processing)
+* 🛠️ [Assembly & Co-assembly](##%EF%B8%8F-assembly--co-assembly) 
+* 🦠 [Viral Identify](###-viral-identify)
+* 🦠 [Viral Taxonomy](###-viral-taxonomy) 
+* 🦠 [Viral Host Analysis](##-viral-host)
+* 🦠 [Viral Annotate](###-viral-annotate) 
+* 🦠 [Viral Community](#-#viral-community)
+* 🧫 [Prokaryotic Community](#-#prokaryotic-community)
+* 🧫 [Prokaryotic Binning](#-#prokaryotic-binning)
+* 🧫 [Prokaryotic Annotate](#-#prokaryotic-annotate)
+* 💻 [End-to-end](#-#end-to-end) 
+* ⚙️ [Clustering Fast (vOTU)](##%EF%B8%8F-clustering-fast-votu)
+* ⚙️ [CheckV PyHMMER](##%EF%B8%8F-checkv-pyhmmer)
+* ⚙️ [Setup Database](##%EF%B8%8F-setup-database)
+* ⚙️ [Viral Benchmark Tools](##%EF%B8%8F-viral-benchmark-tools)
 
 ## 📑 General Configuration 
-All the parameters of vOMIX-MEGA are configured using the `config/config.yml` file. You can create a custom `config.yml` by downloading the template from our GitHub page, altering the parameters, and passing it to the `--configfile config.yml` parameter. 
+All the parameters of vOMIX-snakemake are configured using the `config/config.yml` file. You can create a custom `config.yml` by downloading the template from our GitHub page, altering the parameters, and passing it to the `--configfile config.yml` parameter. 
 
-> NOTE: The config.yml file needs to maintain the correct formatting. We check the format of the config file using JSON schemas and will throw warnings if the proper formatting is not maintained. You can always reference the original correct formatting of [config.yml here](https://github.com/holab-hku/vOMIX-MEGA/blob/main/config/config.yml).  
+> NOTE: The config.yml file needs to maintain the correct formatting. We check the format of the config file using JSON schemas and will throw warnings if the proper formatting is not maintained. You can always reference the original correct formatting of [config.yml here](https://github.com/holab-hku/vOMIX-snakemake/blob/main/config/config.yml).  
 
-Alternatively, you can pass individual parameters to snakemake using the `--config` flag, which we will demonstrate in this tutorial per module. Even though vOMIX-MEGA is rigorously benchmarked and we use the best standard settings for all modules, we've made it entirely adjustable to your use. 
+Alternatively, you can pass individual parameters to snakemake using the `--config` flag, which we will demonstrate in this tutorial per module. Even though vOMIX-snakemake is rigorously benchmarked and we use the best standard settings for all modules, we've made it entirely adjustable to your use. 
 
 _Universal Configuration:_
 ```
 --config
     module
-        Chooses the vOMIX-MEGA module to run || default: "end-to-end"
+        Chooses the vOMIX-snakemake module to run || default: "end-to-end"
     workdir
         Set the working directory for Snakefile (We recommend not changing this)
     outdir
@@ -43,13 +43,13 @@ _To check the full snakemake run options run:_
 snakemake -h
 ```
 ## 📑 Command Line Format 
-Running vOMIX-MEGA with snakemake on the command line is simple. The general structure of running an analysis with vOMIX-MEGA is made up of three different components
+Running vOMIX-snakemake with snakemake on the command line is simple. The general structure of running an analysis with vOMIX-snakemake is made up of three different components
 
 ```bash
 # 1) Snakemake command
 snakemake 
 
-# 2) --config to pass vOMIX-MEGA commands 
+# 2) --config to pass vOMIX-snakemake commands 
 --config module="preprocess" outdir="sample/results" datadir="sample/fastq" samplelist="sample/sample_list.csv" 
 
 # 3) Snakemake execution parameters 
@@ -60,9 +60,9 @@ _Together they make:_
 ```bash
 snakemake --config module="preprocess" outdir="sample/results" datadir="sample/fastq" samplelist="sample/sample_list.csv" --use-conda -j 4 --latency-wait 20
 ```
-> NOTE: To view all configurations you can pass to vOMIX-MEGA using `--config`, you can check the `config/config.yml` file. To view all Snakemake execution parameters, you can run `snakemake -h`
+> NOTE: To view all configurations you can pass to vOMIX-snakemake using `--config`, you can check the `config/config.yml` file. To view all Snakemake execution parameters, you can run `snakemake -h`
 
-You can use three different input types to pass on data to vOMIX-MEGA following the format:
+You can use three different input types to pass on data to vOMIX-snakemake following the format:
 ```bash
 # sample_list.csv format with datadir for fastq files
 snakemake --config module="viral-identify" samplelist="sample/sample_list.csv" datadir="sample/fastq" outdir="sample/results" --use-conda -j 4 --latency-wait 20
@@ -75,7 +75,7 @@ snakemake --config module="viral-identify" fastadir="sample/contigs/" outdir="sa
 
 ```
 
-> NOTE: Not all modules accept all three inputs. Please check this page for each module to see what inputs are accepted. In general, `sample_list.csv` is what you will need for comprehensive analysis, while `fasta` and `fastadir` allow each module to be used independently without the need for running previous vOMIX-MEGA steps.  
+> NOTE: Not all modules accept all three inputs. Please check this page for each module to see what inputs are accepted. In general, `sample_list.csv` is what you will need for comprehensive analysis, while `fasta` and `fastadir` allow each module to be used independently without the need for running previous vOMIX-snakemake steps.  
 
 ## 📑 Module-Based Analysis 
 
@@ -117,9 +117,9 @@ _Options:_
 ```
 --config
     megahit-minlen
-        Minimum length for MEGAHIT to use for contig building || default: 300
+        Minimum length for snakemakeHIT to use for contig building || default: 300
     megahit-params
-        Extra parameters to hand off to MEGAHIT software https://github.com/voutcn/megahit || default: "--prune-level 3"
+        Extra parameters to hand off to snakemakeHIT software https://github.com/voutcn/megahit || default: "--prune-level 3"
     spades-params
         Parameters to pass on fastp software https://github.com/OpenGene/fastp || default: "--meta"
     spades-memory
@@ -149,13 +149,13 @@ _Options:_
     genomad-cutoff
         Parameters for hostile decontamination https://github.com/bede/hostile|| default: 0.7 [INT]
     checkv-original
-        Flag to use CheckV original instead of the much faster version in vOMIX-MEGA, CheckV-PyHMMER. || default: False [True or False]
+        Flag to use CheckV original instead of the much faster version in vOMIX-snakemake, CheckV-PyHMMER. || default: False [True or False]
     checkv-params
         Additional parameters to pass on to CheckV. Read more at https://bitbucket.org/berkeleylab/CheckV/src || default: "" [STR]
     checkv-database
         Path to CheckV's database || default: "workflow/database/checkv" [STR]
     clustering-fast
-        Flag to run fast clustering using CheckV's MEGABLAST approach. If set to False, CD-HIT will be used. Proceed with caution as it can be extremely slow at large sequence numbers. || default: True [True or False]
+        Flag to run fast clustering using CheckV's snakemakeBLAST approach. If set to False, CD-HIT will be used. Proceed with caution as it can be extremely slow at large sequence numbers. || default: True [True or False]
     cdhit-params
         Additional parameters to pass on to CD-HIT if clustering-fast is set to False. Read more at https://github.com/weizhongli/cdhit/blob/master/doc/cdhit-user-guide.wiki || default: "-c 0.95 -aS 0.85 -d 400 -M 0 -n 5" [STR]
     vOTU-ani
@@ -349,7 +349,7 @@ _Options:_
 ```
 --config
     clustering-fast
-        Flag to run fast clustering using CheckV's MEGABLAST approach. If set to False, CD-HIT will be used. Proceed with caution as it can be extremely slow at large sequence numbers. || default: True [True or False]
+        Flag to run fast clustering using CheckV's snakemakeBLAST approach. If set to False, CD-HIT will be used. Proceed with caution as it can be extremely slow at large sequence numbers. || default: True [True or False]
     cdhit-params
         Additional parameters to pass on to CD-HIT if clustering-fast is set to False. Read more at https://github.com/weizhongli/cdhit/blob/master/doc/cdhit-user-guide.wiki || default: "-c 0.95 -aS 0.85 -d 400 -M 0 -n 5" [STR]
     vOTU-ani
@@ -373,7 +373,7 @@ _Options:_
 ```
 --config
     checkv-original
-        Flag to use CheckV original instead of the much faster version in vOMIX-MEGA, CheckV-PyHMMER. || default: False [True or False]
+        Flag to use CheckV original instead of the much faster version in vOMIX-snakemake, CheckV-PyHMMER. || default: False [True or False]
     checkv-params
         Additional parameters to pass on to CheckV. Read more at https://bitbucket.org/berkeleylab/CheckV/src || default: "" [STR]
     checkv-database
@@ -421,5 +421,5 @@ _Accepted Inputs:_
 
 ## ⚙️ Troubleshooting Guide
 
-We have specific guidelines for troubleshooting vOMIX-MEGA so we can help you out in your analysis journey as efficiently as possible! If you run into any unexpected errors, warnings, etc. please visit our [Troubleshooting Guide](https://github.com/holab-hku/vOMIX-MEGA/wiki/Troubleshooting).
+We have specific guidelines for troubleshooting vOMIX-snakemake so we can help you out in your analysis journey as efficiently as possible! If you run into any unexpected errors, warnings, etc. please visit our :doc:`Troubelshooting Guide <troubleshoot>`.
 

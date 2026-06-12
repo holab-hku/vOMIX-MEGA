@@ -1,6 +1,8 @@
-# vOMIX-MEGA snakemake back-end  
+# vOMIX-snakemake
 
-This repository operates the back-end of the vOMIX-MEGA: A reproducible, scalable, and fast viral metagenomic pipeline with rigorously benchmarked backing on its results. If you would like to use the snakemake back-end of our software without a wrapper script, you can use this repository. Otherwise, you may visit https://github.com/erfanshekarriz/vOMIX-MEGA !
+vOMIX-snakemake is the (very raw) back-end pipeline running behind the (very beautiful) ready-to-use command line front-end tool vOMIX-MEGA: A reproducible, scalable, and fast viral metagenomic pipeline with rigorously benchmarked backing on its results.
+
+If you would like to use the snakemake back-end of our software without a wrapper script, you can use this repository. Otherwise, you may visit the official [vOMIX-MEGA](https://github.com/holab-hku/vOMIX-MEGA) page!
 
 
 # Quick Start 
@@ -43,7 +45,7 @@ snakemake --config module="viral-identify" outdir="test_res" fasta="sample/conti
 
 # Wiki
 
-For the full documentation on inputs, outputs, configurations, and modules of vomix-snakemake, please visit our Wiki page on github at https://vomix-snakemake.readthedocs.io/en/latest !
+For the full documentation on inputs, outputs, configurations, and modules of vomix-snakemake, please visit our [Wiki page](https://vomix-snakemake.readthedocs.io/en/latest)!
 
 
 ```{toctree}
