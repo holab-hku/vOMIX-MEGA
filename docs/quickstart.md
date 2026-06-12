@@ -150,7 +150,7 @@ The pipeline handles all processes. To run on a cluster, you can visit Advanced 
 
 > **Note:** Conda environments for each module will be installed automatically at the beginning of the command. Databases will be downloaded for each software automatically before the command is run.
 
-# ⚙️ Troubleshooting Guide
+## ⚙️ Troubleshooting Guide
 
 We have specific guidelines for troubleshooting vOMIX-MEGA so we can help you out in your analysis journey as efficiently as possible! If you run into any unexpected errors, warnings, etc. please visit our Troubleshooting Guide.
 
