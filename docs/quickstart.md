@@ -2,7 +2,7 @@
 
 vOMIX-MEGA is a big pipeline, and we know it can feel intimidating. Still, we'd like to show you otherwise! vOMIX-MEGA is here to simplify everything, remove tedious ad-hoc coding, and speed up viral metagenomic analysis by miles, all while maintaining full freedom to tune parameters to your liking. To have a quick start on your analysis, you need to: 
 
-1. **Install vOMIX-MEGA**
+1. **Install vOMIX-MEGA** (See [Installation Guide](/installation.md)
 2. **Configure a `sample_list.csv` file**
 3. **Start your end-to-end viral metagenomic analysis!**
 

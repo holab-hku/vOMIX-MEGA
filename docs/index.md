@@ -60,6 +60,7 @@ self
 :maxdepth: 3
 :caption: vomix-snakemake
 
+install
 quickstart
 run
 outputs
