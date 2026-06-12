@@ -1,38 +1,32 @@
-# conf.py
+# docs/conf.py
 import os
 import sys
-sys.path.insert(0, os.path.abspath('.'))
 
-# -- Project information -----------------------------------------------------
+# 1. Project Information
 project = 'vOMIX-snakemake'
 copyright = '2026, Ho Lab, HKU'
 author = 'Ho Lab, HKU'
 release = '1.0.0'
 
-# -- General configuration ---------------------------------------------------
-# Enable MyST for Markdown processing and standard Sphinx extensions
+# 2. Extensions Setup
+# These modules allow Sphinx to read Markdown and format code blocks properly
 extensions = [
-    'myst_parser',
-    'sphinx.ext.autodoc',
-    'sphinx.ext.napoleon',
-    'sphinx.ext.viewcode'
+    'myst_parser',          # Enables Markdown (.md) support
+    'sphinx.ext.autodoc',   # Core documentation generator
+    'sphinx.ext.viewcode'   # Adds links to source code
 ]
 
-# Paths that contain templates here, relative to this directory.
-templates_path = ['_templates']
-
-# List of patterns, relative to source directory, that match files and
-# directories to ignore when looking for source files.
-exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
-
-# -- Options for HTML output -------------------------------------------------
-# Use the official ReadTheDocs responsive theme
+# 3. Theme Customization
+# Sets the classic, mobile-friendly ReadTheDocs sidebar layout
 html_theme = 'sphinx_rtd_theme'
-html_static_path = []
 
-# Configure MyST Parser to handle common Markdown flavors (like tables)
+# 4. Markdown Settings
+# Configures MyST to support advanced GitHub Markdown features like tables and colon blocks
 myst_enable_extensions = [
     "colon_fence",
     "deflist",
     "fieldlist",
 ]
+
+# 5. Build Exclusions
+exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']

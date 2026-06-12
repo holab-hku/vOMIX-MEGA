@@ -154,19 +154,3 @@ The pipeline handles all processes. To run on a cluster, you can visit Advanced 
 
 We have specific guidelines for troubleshooting vOMIX-MEGA so we can help you out in your analysis journey as efficiently as possible! If you run into any unexpected errors, warnings, etc. please visit our Troubleshooting Guide.
 
----
-
-```{toctree}
-:maxdepth: 2
-:caption: Pages
-
-quickstart
-run
-outputs
-advanced
-troubleshoot
-```
-
-
-
-
