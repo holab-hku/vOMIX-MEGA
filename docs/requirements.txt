@@ -2,4 +2,4 @@ sphinx==7.2.6
 furo==2024.08.06
 sphinx-rtd-theme==2.0.0
 myst-parser==2.0.0
-sphinx-tabs==3.5.0
+sphinx_design==0.7.0

@@ -14,10 +14,8 @@ extensions = [
     'myst_parser',          # Enables Markdown (.md) support
     'sphinx.ext.autodoc',   # Core documentation generator
     'sphinx.ext.viewcode',  # Adds links to source code
-    'sphinx_tabs.tabs',     # Allows code tabs
+    'sphinx_design',     # Allows code tabs and other pretty things
 ]
-sphinx_tabs_valid_builders = ['linkcheck']
-sphinx_tabs_disable_tab_closing = True
 
 # 3. Theme Customization
 # Sets the classic, mobile-friendly ReadTheDocs sidebar layout
