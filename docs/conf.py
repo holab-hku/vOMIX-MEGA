@@ -5,7 +5,7 @@ import sys
 # 1. Project Information
 project = 'vOMIX-snakemake'
 copyright = '2026, Ho Lab, HKU'
-author = 'Ho Lab, HKU'
+author = 'Erfan Shekarriz, HKU'
 release = '1.0.0'
 
 # 2. Extensions Setup

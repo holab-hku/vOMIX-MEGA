@@ -57,7 +57,7 @@ self
 
 
 ```{toctree}
-:maxdepth: 1
+:maxdepth: 3
 :caption: vomix-snakemake
 
 quickstart
@@ -67,7 +67,7 @@ troubleshoot
 ```
 
 ```{toctree}
-:maxdepth: 1 
+:maxdepth: 3 
 :caption: Advanced Usage
 
 advanced
