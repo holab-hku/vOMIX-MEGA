@@ -1,4 +1,5 @@
-# Table of Contents
+# Run & Configuration
+## Table of Contents
 * 🛠️ [Preprocessing](#%EF%B8%8F-pre-processing)
 * 🛠️ [Assembly & Co-assembly](#%EF%B8%8F-assembly--co-assembly) 
 * 🦠 [Viral Identify](#-viral-identify)
@@ -15,8 +16,8 @@
 * ⚙️ [Setup Database](#%EF%B8%8F-setup-database)
 * ⚙️ [Viral Benchmark Tools](#%EF%B8%8F-viral-benchmark-tools)
 
-# 📑 General Output Structure
-## --config outdir="results"
+## 📑 General Output Structure
+### --config outdir="results"
 
 You can set a relative output directory using the `outdir` configuration in the `config/config.yml` file or pass it on to snakemake as `--config outidr="results"`. By default, `./results/` is used. All outputs of vOMIX-MEGA will be written in a structured, hierarchal manner, relative to this directory. 
 
@@ -57,9 +58,9 @@ The `.vomix` directory is a hidden folder in the `results` directory. It holds a
 
 > NOTE: Snakemake also has its own cache and history in the `.snakemake` file where the Snakefile resides. Please read more at https://snakemake.readthedocs.io/en/stable/ 
 
-# 📑 Module-based Output Structure
+## 📑 Module-based Output Structure
 
-## 🛠️ Pre-processing
+### 🛠️ Pre-processing
 ```bash
 preprocess
 ├── samples
@@ -88,7 +89,7 @@ The main output of this module is cleaned paired-end fastq files `SampleA_R1.fas
 
 > NOTE: The `reports/library_size_stats.csv` file contains library size and summary information before and after filtering for each sample.  
 
-## 🛠️ Assembly & Co-assembly
+### 🛠️ Assembly & Co-assembly
 ```bash
 assembly/megahit
 ├── samples
@@ -112,7 +113,7 @@ The main output from this module is the assembly file `final.contigs.fa` which i
 
 > NOTE: Co-assembly is available only with megahit at the moment. SPAdes analysis will be kept separately in a different subdirectory `assembly/SPAdes` when setting the `--config assembler="spades"` parameter. 
 
-## 🦠 Viral Identify
+### 🦠 Viral Identify
 ```
 viral/identify
 ├── output
@@ -147,7 +148,7 @@ _Columns:_
 2. **genomad_**: Columns from analysis using geNomad. Read more at https://portal.nersc.gov/genomad/
 
 
-## 🦠 Viral Taxonomy
+### 🦠 Viral Taxonomy
 ```
 taxonomy/viral
 ├── output
@@ -177,7 +178,7 @@ k141_100030_R0178-PCW-DNA					Caudoviricetes	Uroviricota	Viruses				Caudoviricet
 We are still in the process of testing taxonomic annotation tools. In our experience, higher-level taxonomic annotations (e.g. Phylum, Class, Order, Family) are reliable with `geNomad`, while lower-level annotations (e.g. Genus, Species) are quite reliable in `PhaGCN`. PhaGCN annotations are consistent with Viral Ref-seq Diamond annotations since they are trained on the same data, but PhaGCN's database is much smaller, hence why we are slowly deprecating ViPhogs & Diamond annotations. 
 
 
-## 🦠 Viral Host Analysis
+### 🦠 Viral Host Analysis
 ```
 host
 ├── output
@@ -208,9 +209,9 @@ The `cherry_network_nodes.tsv` and `cherry_network_edges.tsv` files can come in 
 
 > NOTE: You may alternatively use iPHoP for host analysis, but the database is huge and it takes a very large amount of memory and computation time. Since vOMIX-MEGA is all about accessibility, our comprehensive testing found CHERRY to be superior to all other approaches!
 
-## 🦠 Viral Annotate (Coming Soon)
+### 🦠 Viral Annotate (Coming Soon)
 
-## 🦠 Viral Community 
+### 🦠 Viral Community 
 ```
 community/viral
 ├── output
@@ -226,7 +227,7 @@ The main output from this module is `vOTU_table_rpkm.tsv` and `vOTU_table_tpm.ts
 > NOTE: Please note that Viral Community estimations come with lots of precautions, including the fact that each vOTU could be a viral fragment rather than representative of an entire genome unlike Prokaryotic Community abundance estimation. Please proceed analysis with caution. 
 
 
-## 🦠 Viral Annotation (Coming Soon)
+### 🦠 Viral Annotation (Coming Soon)
 ```
 annotate/viral
 ├── output
@@ -237,7 +238,7 @@ annotate/viral
 ```
 
 
-## 🧫 Prokaryotic Community
+### 🧫 Prokaryotic Community
 ```
 community/metaphlan
 ├── output
@@ -256,7 +257,7 @@ community/metaphlan
 ```
 The main output from this module is `metaphlan_out.txt`, a tab-delimited TXT file directly from MetaPhlAn4 and its latest database. The associated files derived from this output, such as the `metaphlan_out_SGB.txt` has each entry at SGB level while other levels are filtered out. 
 
-## 🧫 Prokaryotic Binning (Coming Soon)
+### 🧫 Prokaryotic Binning (Coming Soon)
 ```
 binning/prok
 ├── output
@@ -266,7 +267,7 @@ binning/prok
 └── tmp
 ```
 
-## 🧫 Prokaryotic Annotate (Coming Soon)
+### 🧫 Prokaryotic Annotate (Coming Soon)
 ```
 annotate/prok
 ├── output
@@ -276,7 +277,7 @@ annotate/prok
 └── tmp
 ```
 
-## 💻 End-to-end 
+### 💻 End-to-end 
 ```bash
 results
 ├── preprocess
@@ -295,23 +296,23 @@ results
 └── binning
 ```
 
-## ⚙️ Clustering Fast (vOTU)
+### ⚙️ Clustering Fast (vOTU)
 ```bash
 ```
 
-## ⚙️ CheckV PyHMMER
+### ⚙️ CheckV PyHMMER
 ```bash
 ```
 
-## ⚙️ Setup Database
+### ⚙️ Setup Database
 ```bash
 ```
 
-## ⚙️ Viral Benchmark Tools (Coming Soon)
+### ⚙️ Viral Benchmark Tools (Coming Soon)
 ```bash
 ```
 
-# ⚙️ Troubleshooting Guide
+## ⚙️ Troubleshooting Guide
 
 We have specific guidelines for troubleshooting vOMIX-MEGA so we can help you out in your analysis journey as efficiently as possible! If you run into any unexpected errors, warnings, etc. please visit our [Troubleshooting Guide](https://github.com/holab-hku/vOMIX-MEGA/wiki/Troubleshooting).
 
