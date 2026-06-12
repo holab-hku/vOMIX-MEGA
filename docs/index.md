@@ -46,20 +46,26 @@ snakemake --config module="viral-identify" outdir="test_res" fasta="sample/conti
 For the full documentation on inputs, outputs, configurations, and modules of vomix-snakemake, please visit our Wiki page on github at https://vomix-snakemake.readthedocs.io/en/latest !
 
 
+```{toctree}
+:hidden:
 
+self
+```
 
 
 ```{toctree}
-:maxdepth: 3
+:maxdepth: 1
 :caption: vomix-snakemake
 
 quickstart
 run
 outputs
-advanced
 troubleshoot
 ```
 
+```{toctree}
+:maxdepth: 1 
+:caption: Advanced Usage
 
-
-
+advanced
+```
