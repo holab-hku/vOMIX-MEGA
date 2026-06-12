@@ -157,7 +157,7 @@ We have specific guidelines for troubleshooting vOMIX-MEGA so we can help you ou
 ---
 
 ```{toctree}
-:maxdepth: 2
+:maxdepth: 3
 :caption: vomix-snakemake
 
 quickstart

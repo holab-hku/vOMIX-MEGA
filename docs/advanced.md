@@ -1,9 +1,10 @@
-# HPC Job Scheduling
+# Advanced Usage
+## HPC Job Scheduling
 One great thing about vOMIX-MEGA is that is can automatically schedule jobs for you if you use a cluster system. To do that, you will need to download and install a few extra steps through the [Snakemake Plug-in Catalouge](https://snakemake.github.io/snakemake-plugin-catalog/). Here we will take you through a few common systems, but Snakemake has a general cluster manager that will allow virtually any method to be used. 
 
-### SLURM
+#### SLURM
 
-### PBS
+#### PBS
 ```bash
 # install into your pre-existing conda environment
 conda activate vomix
@@ -22,15 +23,15 @@ qstat
 
 > Note: Make sure to change the queue name and your email when running the command above
 
-### General Cluster
+#### General Cluster
 
-# Cloud Execution 
+## Cloud Execution 
 
-# Docker & Containerization
+## Docker & Containerization
 
-# Snakemake Back-end
+## Snakemake Back-end
 
-# Quick Updating vOMIX-MEGA
+## Quick Updating vOMIX-MEGA
 
 While we're working on a stable version of vOMIX-MEGA, we've made it easy to update the development version to facilitate quick bug fixes for your analysis. 
 
@@ -53,7 +54,7 @@ vomix_update.sh .
 > NOTE: The `vomix_update.sh` command will ONLY update the i) Snakefile ii) config.yml file iii) rules iv) environments v) scripts IF they have changed since your current version. It will not affect any other file in your directory including analysis. 
  
 
-# Sample List CSV
+## Sample List CSV
 ```bash
 snakemake --config module="end-to-end" datadir="sample/fastq" samplelist="sample/sample_list.csv" outdir="sample/results" --use-conda -j 4 -c 4 --latency-wait 30
 ```
