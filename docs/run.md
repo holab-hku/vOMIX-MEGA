@@ -1,4 +1,5 @@
-# Table of Contents
+# Run & Configuration
+## Table of Contents
 * 🛠️ [Preprocessing](#%EF%B8%8F-pre-processing)
 * 🛠️ [Assembly & Co-assembly](#%EF%B8%8F-assembly--co-assembly) 
 * 🦠 [Viral Identify](#-viral-identify)
@@ -15,7 +16,7 @@
 * ⚙️ [Setup Database](#%EF%B8%8F-setup-database)
 * ⚙️ [Viral Benchmark Tools](#%EF%B8%8F-viral-benchmark-tools)
 
-# 📑 General Configuration 
+## 📑 General Configuration 
 All the parameters of vOMIX-MEGA are configured using the `config/config.yml` file. You can create a custom `config.yml` by downloading the template from our GitHub page, altering the parameters, and passing it to the `--configfile config.yml` parameter. 
 
 > NOTE: The config.yml file needs to maintain the correct formatting. We check the format of the config file using JSON schemas and will throw warnings if the proper formatting is not maintained. You can always reference the original correct formatting of [config.yml here](https://github.com/holab-hku/vOMIX-MEGA/blob/main/config/config.yml).  
@@ -41,7 +42,7 @@ _To check the full snakemake run options run:_
 ```h
 snakemake -h
 ```
-# 📑 Command Line Format 
+## 📑 Command Line Format 
 Running vOMIX-MEGA with snakemake on the command line is simple. The general structure of running an analysis with vOMIX-MEGA is made up of three different components
 
 ```bash
@@ -76,9 +77,9 @@ snakemake --config module="viral-identify" fastadir="sample/contigs/" outdir="sa
 
 > NOTE: Not all modules accept all three inputs. Please check this page for each module to see what inputs are accepted. In general, `sample_list.csv` is what you will need for comprehensive analysis, while `fasta` and `fastadir` allow each module to be used independently without the need for running previous vOMIX-MEGA steps.  
 
-# 📑 Module-Based Analysis 
+## 📑 Module-Based Analysis 
 
-## 🛠️ Pre-processing
+### 🛠️ Pre-processing
 
 _Quick Run:_
 ```bash
@@ -107,7 +108,7 @@ _Accepted Inputs:_
 2. Single Fasta ❌
 3. Multi Fasta Directory ❌
 
-## 🛠️ Assembly & Co-assembly
+### 🛠️ Assembly & Co-assembly
 _Quick Run:_
 ```bash
 snakemake --config module="assembly" assembler="megahit" outdir="sample/results" datadir="sample/fastq" samplelist="sample/sample_list.csv" --use-conda -j 4 --latency-wait 20
@@ -129,7 +130,7 @@ _Accepted Inputs:_
 2. Single Fasta ❌
 3. Multi Fasta Directory ❌
 
-## 🦠 Viral Identify
+### 🦠 Viral Identify
 _Quick Run:_
 ```bash
 snakemake --config module="viral-identify" outdir="sample/results" datadir="sample/fastq" samplelist="sample/sample_list.csv" --use-conda -j 4 --latency-wait 20
@@ -169,7 +170,7 @@ _Accepted Inputs:_
 2. Single Fasta ✅
 3. Multi Fasta Directory ✅
 
-## 🦠 Viral Taxonomy
+### 🦠 Viral Taxonomy
 _Quick Run:_
 ```
 snakemake --config module="viral-taxonomy" fasta="sample/contigs/contigs_simulated_viral_nonviral.fasta" outdir="sample/results"  --use-conda -j 4 --latency-wait 20
@@ -199,7 +200,7 @@ _Accepted Inputs:_
 2. Single Fasta ✅
 3. Multi Fasta Directory ❌
 
-## 🦠 Viral Host
+### 🦠 Viral Host
 _Quick Run:_
 ```
 snakemake --config module="viral-host" fasta="sample/contigs/contigs_simulated_viral_nonviral.fasta" outdir="sample/results"  --use-conda -j 4 --latency-wait 20
@@ -222,7 +223,7 @@ _Accepted Inputs:_
 2. Single Fasta ✅
 3. Multi Fasta Directory ❌
 
-## 🦠 Viral Community
+### 🦠 Viral Community
 _Quick Run:_
 ```
 snakemake --config module="viral-community" outdir="sample/results" datadir="sample/fastq" samplelist="sample/sample_list.csv" --use-conda -j 4 -c 4 --latency-wait 20
@@ -242,7 +243,7 @@ _Accepted Inputs:_
 3. Multi Fasta Directory ❌
 
 
-## 🦠 Viral Annotate
+### 🦠 Viral Annotate
 _Quick Run:_
 ```
 snakemake --config module="viral-annotate" outdir="sample/results" datadir="sample/fastq" samplelist="sample/sample_list.csv" --use-conda -j 4 --latency-wait 20
@@ -261,7 +262,7 @@ _Accepted Inputs:_
 2. Single Fasta ✅
 3. Multi Fasta Directory ❌
 
-## 🧫 Prokaryotic Community
+### 🧫 Prokaryotic Community
 _Quick Run:_
 ```
 snakemake --config module="prok-community" outdir="sample/results" datadir="sample/fastq" samplelist="sample/sample_list.csv" --use-conda -j 4 -c 4 --latency-wait 20
@@ -280,7 +281,7 @@ _Accepted Inputs:_
 2. Single Fasta ❌
 3. Multi Fasta Directory ❌
 
-## 🧫 Prokaryotic Binning (Coming Soon)
+### 🧫 Prokaryotic Binning (Coming Soon)
 _Quick Run:_
 ```bash
 snakemake --config module="prok-binning" outdir="sample/results" datadir="sample/fastq" samplelist="sample/sample_list.csv" --use-conda -j 4 --latency-wait 20
@@ -313,7 +314,7 @@ _Accepted Inputs:_
 2. Single Fasta ❌
 3. Multi Fasta Directory ❌
 
-## 🧫 Prokaryotic Annotate
+### 🧫 Prokaryotic Annotate
 _Quick Run:_
 ```bash
 snakemake --config module="prok-annotate" outdir="sample/results" datadir="sample/fastq" samplelist="sample/sample_list.csv" --use-conda -j 4 --latency-wait 20
@@ -327,7 +328,7 @@ _Accepted Inputs:_
 2. Single Fasta ✅
 3. Multi Fasta Directory ❌
 
-## 💻 End-to-end
+### 💻 End-to-end
 _Quick Run:_
 ```
 snakemake --config module="end-to-end" outdir="sample/results" datadir="sample/fastq" samplelist="sample/sample_list.csv" --use-conda -j 4 -c 4
@@ -339,7 +340,7 @@ _Accepted Inputs:_
 2. Single Fasta ❌
 3. Multi Fasta Directory ❌
 
-## ⚙️ Cluster Fast
+### ⚙️ Cluster Fast
 _Quick Run:_
 ```
 snakemake --config module="cluster-fast" fasta="sample/contigs/contigs_simulated_viral_nonviral.fasta" outdir="sample/results"  --use-conda -j 4 --latency-wait 20
@@ -363,7 +364,7 @@ _Accepted Inputs:_
 2. Single Fasta ✅
 3. Multi Fasta Directory ❌
 
-## ⚙️ CheckV-PyHMMER
+### ⚙️ CheckV-PyHMMER
 _Quick Run:_
 ```
 snakemake --config module="checkv-pyhmmer" fasta="sample/contigs/contigs_simulated_viral_nonviral.fasta" outdir="sample/results"  --use-conda -j 4 --latency-wait 20
@@ -383,7 +384,7 @@ _Accepted Inputs:_
 2. Single Fasta ✅
 3. Multi Fasta Directory ❌
 
-## ⚙️ Setup-Database
+### ⚙️ Setup-Database
 _Quick Run:_
 ```
 snakemake --config module="setup-database" fasta="sample/contigs/contigs_simulated_viral_nonviral.fasta" outdir="sample/results"  --use-conda -j 4 --latency-wait 20
@@ -415,10 +416,10 @@ _Accepted Inputs:_
 3. Multi Fasta Directory ❌
 
 
-## ⚙️ Viral Benchmark (Coming Soon)
+### ⚙️ Viral Benchmark (Coming Soon)
 
 
-# ⚙️ Troubleshooting Guide
+## ⚙️ Troubleshooting Guide
 
 We have specific guidelines for troubleshooting vOMIX-MEGA so we can help you out in your analysis journey as efficiently as possible! If you run into any unexpected errors, warnings, etc. please visit our [Troubleshooting Guide](https://github.com/holab-hku/vOMIX-MEGA/wiki/Troubleshooting).
 

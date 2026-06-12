@@ -1,4 +1,4 @@
-# Run & Configuration
+# Outputs
 ## Table of Contents
 * 🛠️ [Preprocessing](#%EF%B8%8F-pre-processing)
 * 🛠️ [Assembly & Co-assembly](#%EF%B8%8F-assembly--co-assembly) 
