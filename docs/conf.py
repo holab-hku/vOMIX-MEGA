@@ -18,7 +18,17 @@ extensions = [
 
 # 3. Theme Customization
 # Sets the classic, mobile-friendly ReadTheDocs sidebar layout
-html_theme = 'sphinx_rtd_theme'
+html_theme = "furo"
+pygments_style = "tango"
+pygments_dark_style = "tango"
+html_theme_options = {
+    # This prevents Sphinx from hiding the other chapters when you leave the homepage
+    'globaltoc_collapse': False,
+    
+    # Optional: If you want the sidebar to expand automatically 
+    # to show sub-headers on the active page
+    'collapse_navigation': False,
+}
 
 # 4. Markdown Settings
 # Configures MyST to support advanced GitHub Markdown features like tables and colon blocks

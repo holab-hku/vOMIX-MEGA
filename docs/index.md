@@ -48,6 +48,7 @@ For the full documentation on inputs, outputs, configurations, and modules of vo
 
 ```{toctree}
 :hidden:
+:caption: Introduction
 
 self
 ```

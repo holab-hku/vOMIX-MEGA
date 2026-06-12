@@ -1,3 +1,5 @@
+# Troubleshooting Guide 
+
 ### 📑 Troubleshooting Guide
 
  To troubleshoot a certain job on vOMIX-MEGA, please follow our recommended protocol. 
