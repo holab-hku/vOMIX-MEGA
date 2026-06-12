@@ -24,6 +24,8 @@ pygments_dark_style = "tango"
 html_theme_options = {
     "sidebar_hide_name": False,  # Optional: keeps your project title visible
     "navigation_with_keys": True,
+    "collapse_navigation": True,
+    "navigation_depth": 3,
 }
 
 # Add this so MyST automatically generates tracking anchors for markdown headers (up to H3)
