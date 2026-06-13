@@ -5,28 +5,48 @@ vOMIX-snakemake is the back-end pipline of the command-line tool vOMIX-MEGA: a r
 vOMIX-snakemake and vOMIX-MEGA providee numerous modules for end-to-end. Here are some of it's handy features:
 
 ::::{grid} 2
-:::{grid-item-card} High Speed
+
+:::{grid-item-card} 
+***High Speed***
+^^^
 vOMIX operates 10-1000 times faster than current pipelines due to engineering of multiple slow underlying software.
 :::
-:::{grid-item-card} Stable Memory Footprint
+
+:::{grid-item-card} 
+***Stable Memory Footprint***
+^^^
 The standard viral end-to-end analysis takes a maximum memory of 24 Gb due to selection and fine-tuning of tools.
 :::
-:::{grid-item-card} Modular Analysis
+
+:::{grid-item-card} 
+***Modular Analysis***
+^^^
 Each module can be separately used with a variety of different inputs, and each software can be fine-tuned for your needs.
+:::
+
 ::::
 
 ::::{grid} 2
-:::{grid-item-card} Benchmarked
+
+:::{grid-item-card} 
+***Benchmarked***
+^^^
 We've benchmarked our viral identification on experimental as well as mock-data and use the best performing tools.
 :::
-:::{grid-item-card} Reproducible & Dockerized 
+
+:::{grid-item-card} 
+***Reproducible & Dockerized***
+^^^
 All analysis is done via a snakemake back-end which is configured with Docker to allow full reproducibility.
 :::
-:::{grid-item-card} Easy SRA Input
-Simply feed vOMIX your SRA accession codes and it will download, process, and analyse the viral community of your samples automatically. 
-:::
-::::
 
+:::{grid-item-card} 
+***Easy SRA Input***
+^^^
+Simply feed vOMIX your SRA accession codes and it will download, process, and analyse the viral community of your samples automatically.
+:::
+
+::::
 
 ### {rocket}`rocket;0.85em` Getting Started
 
