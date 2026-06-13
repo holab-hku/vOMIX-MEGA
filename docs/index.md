@@ -1,8 +1,10 @@
 ## vOMIX-snakemake
 
-vOMIX-snakemake is the back-end pipline of the command-line tool vOMIX-MEGA: a reproducible, scalable, and fast viral metagenomic pipeline for analyzing large-scale bulk-metagenomic and viromic data. We have engineered multiple bottlenecks in current state-ofthe-art software to allow rapid and well-benchmarked viral metagenomic analysis. vOMIX-snakemake and vOMIX-MEGA (referred collectively as vOMIX) provides numerous modules for end-to-end. Here are some of it's handy features !
+vOMIX-snakemake is the back-end pipline of the command-line tool vOMIX-MEGA: a reproducible, scalable, and fast viral metagenomic pipeline for analyzing large-scale bulk-metagenomic and viromic data. We have engineered multiple bottlenecks in current state-ofthe-art software to allow rapid and well-benchmarked viral metagenomic analysis. 
 
-::::{grid} :gutter: 2
+vOMIX-snakemake and vOMIX-MEGA providee numerous modules for end-to-end. Here are some of it's handy features:
+
+::::{grid} 2
 :::{grid-item-card} High Speed
 vOMIX operates 10-1000 times faster than current pipelines due to engineering of multiple slow underlying software.
 :::
@@ -13,7 +15,7 @@ The standard viral end-to-end analysis takes a maximum memory of 24 Gb due to se
 Each module can be separately used with a variety of different inputs, and each software can be fine-tuned for your needs.
 ::::
 
-::::{grid} :gutter: 2
+::::{grid} 2
 :::{grid-item-card} Benchmarked
 We've benchmarked our viral identification on experimental as well as mock-data and use the best performing tools.
 :::
