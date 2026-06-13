@@ -2,24 +2,38 @@
 
 vOMIX-snakemake is a comprehensive pipeline, and we know that big-data analysis can feel intimidating. Still, we'd like to show you how easy it can be! vOMIX-MEGA is here to simplify everything, remove tedious ad-hoc coding, and speed up viral metagenomic analysis by miles, all while maintaining full freedom to tune parameters to your liking. Here are three different quick analysese you can do. 
 
-## Identify Viral Contigs
+## Tutorial 1: Identify Viruses in Contig File
 
 You can quickly analyse and analyse a mock dataset of viral and non-viral mixed contigs using the `viral-identify` module.The sample data should already be included in your directory, or can be downloaded via `wget https://github.com/holab-hku/vomix-snakemake/tree/main/sample`.
+
+``` {admonition} Databases & Environments
+:class: Note
+Conda environments for each module will be installed automatically at the beginning of the command. Databases will be downloaded for each software automatically before the command is run.
+```
+
+``` {admonition} Skip Database Setup
+:class: Note
+If you would like to skip database setup, you can add `--config setup-database=False` to your command.
+```
 
 ::::{tab-set}
 :::{tab-item} Conda
 ```bash
-snakemake --config module="viral-identify" outdir="test_res" fasta="sample/contigs/contigs_simulated_viral_nonviral.fasta" splits=0 -j 4 --latency-wait 20
+# Use more memory (22 GB) but run faster (~10 mins)
+snakemake --use-conda --config module="viral-identify" outdir="test_res" splits=0 fasta="sample/contigs/contigs_simulated_viral_nonviral.fasta" -j 4 --latency-wait 20
+
+# Use less memory (8 GB) but run slower (~40 mins)
+snakemake --use-conda --config module="viral-identify" outdir="test_res" splits=8 fasta="sample/contigs/contigs_simulated_viral_nonviral.fasta" -j 4 --latency-wait 20
 ```
 :::
 :::{tab-item} Docker
 ```bash
-snakemake --config module="viral-identify" outdir="test_res" fasta="sample/contigs/contigs_simulated_viral_nonviral.fasta" splits=0 -j 4 --latency-wait 20 --use-container --sdm conda
+snakemake --use-container --sdm conda --config module="viral-identify" outdir="test_res" fasta="sample/contigs/contigs_simulated_viral_nonviral.fasta" splits=0 -j 4 --latency-wait 20
 ```
 :::
 :::{tab-item} Apptainer
 ```bash
-snakemake --config module="viral-identify" outdir="test_res" fasta="sample/contigs/contigs_simulated_viral_nonviral.fasta" splits=0 -j 4 --latency-wait 20 --sdm conda apptainer
+snakemake --sdm conda apptainer  --config module="viral-identify" outdir="test_res" fasta="sample/contigs/contigs_simulated_viral_nonviral.fasta" splits=0 -j 4 --latency-wait 20
 ```
 :::
 ::::
@@ -27,18 +41,18 @@ snakemake --config module="viral-identify" outdir="test_res" fasta="sample/conti
 
 ```{admonition} Inputs
 :class: note 
-the `viral-identify` module can either take a single fasta file as input, or a directory of different fasta files corresponding to contig files generated from multiple samples.
+the `viral-identify` module can either take a single fasta file as input via the `--config fasta="sample.fasta"` input, or a directory of different fasta files corresponding to contig files generated from multiple samples via the `--config fastadir="sample/fastadir/" input.
 ``` 
 
 ::::{tab-set}
 :::{tab-item} Single Fasta File Input
 ```bash
-snakemake --config module="viral-identify" outdir="test_res" fasta="sample/contigs/contigs_simulated_viral_nonviral.fasta" splits=0 -j 4 --latency-wait 20
+snakemake --config module="viral-identify" fasta="sample/contigs/contigs_simulated_viral_nonviral.fasta" outdir="test_res"  splits=0 -j 4 --latency-wait 20
 ```
 :::
 :::{tab-item} Fasta Directory Input
 ```bash 
-snakemake --config module="viral-identify" outdir="test_res" fasta="sample/contigs" splits=0 -j 4 --latency-wait 20
+snakemake --config module="viral-identify" fastadir="sample/contigs" outdir="test_res" splits=0 -j 4 --latency-wait 20
 ```
 :::
 ::::
@@ -48,150 +62,45 @@ snakemake --config module="viral-identify" outdir="test_res" fasta="sample/conti
 The standard viral identification analysis of vOMIX-snakemake is desinged to be at a maximum of 24Gb, used by geNomad during viral contig identification. If you are on a small computer, you can further reduce this number by introducing the `--config splits=8` which will reduce memory use at the expense of computation time.
 ```
 
-## Benchmark Viral Contig Tools
+## Tutorial 2: Benchmark Viral Contig Tools
 
 
-## Perform End-to-End Analysis on SRA Samples
+## Tutorial 3: Perform End-to-End Analysis on SRA Samples
 
-> **NOTE:** The `sample_list.csv` takes SRA accessions and automatically downloads and processes the data for you!
+You can to full end-to-end viral analysis on a set of samples using the `
 
-> **NOTE:** vOMIX-MEGA has been designed to use a maximum of 24Gb of memory regardless of the size of data and number of threads used. That's what makes vOMIX-MEGA awesome. You can further reduce this number by introducing the `--config splits=8` which will reduce memory use at the expense of computation time. More on that later.
+You can quickly analyse and analyse a mock dataset of viral and non-viral mixed contigs using the `viral-identify` module.The sample data should already be included in your directory, or can be downloaded via `wget https://github.com/holab-hku/vomix-snakemake/tree/main/sample`.
 
-***
-
-## 1. Install vOMIX-MEGA
-
-> **NOTE:** Before installation, please make sure that your conda is up to date for snakemake compatibility.
-
-_1.1 Install the vOMIX-MEGA base environment:_
-
+::::{tab-set}
+:::{tab-item} Conda
 ```bash
-# Make sure conda is updated for snakemake compatibility [IMPORTANT]
-# Set channel priority to strict before running vOMIX-MEGA to ensure reproducibility [IMPORTANT]
-conda config --add channels bioconda
-conda config --add channels conda-forge
-conda config --set channel_priority strict
-
-# Install base environment
-conda create -n vomix -c conda-forge snakemake=8.25.5 biopython=1.84 -y
-conda activate vomix
-
-# Verify the two essential base tools are running
-snakemake -v
-
-```
-
-*1.2 Download the GitHub repository*
-
-```bash
-# clone from GitHub
-git clone [https://github.com/holab-hku/vOMIX-MEGA](https://github.com/holab-hku/vOMIX-MEGA)
-cd vOMIX-MEGA
-
-```
-
-*1.3 Test Viral Contig Identification using Sample Data*
-
-```bash
-# Use more memory (22 GB) but run faster (~10 mins)
-snakemake --use-conda --config module="viral-identify" outdir="test_res" splits=0 fasta="sample/contigs/contigs_simulated_viral_nonviral.fasta" -j 4 --latency-wait 20     
-
-# Use less memory (8 GB) but run slower (~40 mins)
-snakemake --use-conda --config module="viral-identify" outdir="test_res" splits=8 fasta="sample/contigs/contigs_simulated_viral_nonviral.fasta" -j 4 --latency-wait 20                                 
-
-```
-
-*Options:*
-
-```text
---use-conda
-    Prompts snakemake to use conda to run environments [Required]
-
---sdm conda
-    Choose conda as the environment manager [Required]
-
---latency-wait
-    Wait-time to check for files when they are created. Min 20 seconds for CheckV-PyHMMER
-
---cores 
-   Use at most N CPU cores/jobs in parallel. If N is omitted or 'all', the limit is set to the number of available CPU cores.
-
---config
-    module
-        Chooses the vOMIX-MEGA module to run || default: "end-to-end"
-    fasta
-        Single-sample fasta input for analysis. Available only in certain modules.
-    outdir
-        Select the output directory for hierarchal results formatting || default: "./results"
-    splits
-        Splits data into N chunks to reduce memory usage wherever possible || default: 0
-
-```
-
-> **NOTE:** To see all snakemake parameters run `snakemake -h`. Configurations nested after `--config` are all specific to vOMIX-MEGA and can only be accessed via the `config/config.yml` file. Please read more in our Run & Configuration documentation page.
-
----
-
-## 2. Configure a `sample_list.csv` file
-
-```tsv
-sample_id       accession       assembly        R1      R2
-        SRR5898936
-        SRR5898937
-        SRR5898934
-
-```
-
-The sample_list.csv is a comma-delimited table noting sample names and their assemblies, and pointing to the location of the paired-end sequencing files if available. The easiest way to run vOMIX-MEGA is by writing NCBI SRA accession names as noted above. For the full tutorial, please visit our Advanced Usage documentation page.
-
----
-
-## 3. Start your end-to-end viral metagenomic analysis!
-
-```bash
-# Dry run to check which analysis steps will be performed
+# Dry run (check jobs)
 snakemake --use-conda --configfile config/config.yml --config module="end-to-end" decontam-host=False outdir="sample/results" datadir="sample/fastq" samplelist="sample/sample_list.csv" -j 4 --dry-run
 
 # Run your pipeline
 snakemake --use-conda --configfile config/config.yml --config module="end-to-end" decontam-host=False outdir="sample/results" datadir="sample/fastq" samplelist="sample/sample_list.csv" -j 4 --latency-wait 20
+```
+:::
+:::{tab-item} Docker
+```bash
+snakemake --use-container --sdm condaa --configfile config/config.yml --config module="end-to-end" decontam-host=False outdir="sample/results" datadir="sample/fastq" samplelist="sample/sample_list.csv" -j 4 --latency-wait 20
+```
+:::
+:::{tab-item} Apptainer
+```bash
+snakemake --sdm conda apptainer --configfile config/config.yml --config module="end-to-end" decontam-host=False outdir="sample/results" datadir="sample/fastq" samplelist="sample/sample_list.csv" -j 4 --latency-wait 20
+```
+:::
+::::
 
+```{admonition} Sample List Format
+:class: Tip 
+The `sample_list.csv` takes SRA accessions and automatically downloads and processes the data for you. Please see the [guide](/advanced.md#sample-list-csv) to setting up your sample list. 
 ```
 
-*Options:*
 
-```text
---use-conda
-    Prompts snakemake to use conda to run environments [Required]
 
---sdm conda
-    Choose conda as the environment manager [Required]
-
---latency-wait
-    Wait-time to check for files when they are created. Min 20 seconds for CheckV-PyHMMER
-
---cores 
-   Use at most N CPU cores/jobs in parallel.
-
---jobs 
-   Use at most N CPU cluster/cloud jobs in parallel.
-
---dry-run
-    Dry-run flag. Show all analysis to be done without running anything
-
---configfile
-    Specify or overwrite the config file of the workflow. 
-
---config 
-    decontam-host=False
-        Flag to decontaminate host during pre-processing. If set to True it will automatically download and use the human-t2t-hla index
-    outdir
-        Directory in which results will be written
-    datadir
-        Directory in which the paired-end fasta files will be downloaded or already reside
-    samplelist
-        Specify the sample_list.csv file with sample information 
-
-```
+> **NOTE:** To see all snakemake parameters run `snakemake -h`. Configurations nested after `--config` are all specific to vOMIX-MEGA and can only be accessed via the `config/config.yml` file. Please read more in our Run & Configuration documentation page.
 
 The pipeline handles all processes. To run on a cluster, you can visit Advanced Usage for a detailed setup guide. To change the pipeline configuration, you may change the `config.yml` file or visit Run & Configuration for a detailed run and configuration explanation.
 
