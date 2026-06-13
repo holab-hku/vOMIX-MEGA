@@ -10,7 +10,6 @@ You can quickly analyse and analyse a mock dataset of viral and non-viral mixed 
 :::{tab-item} Conda
 ```bash
 snakemake --config module="viral-identify" outdir="test_res" fasta="sample/contigs/contigs_simulated_viral_nonviral.fasta" splits=0 -j 4 --latency-wait 20
-
 ```
 :::
 :::{tab-item} Docker
@@ -30,6 +29,7 @@ snakemake --config module="viral-identify" outdir="test_res" fasta="sample/conti
 :class: note 
 the `viral-identify` module can either take a single fasta file as input, or a directory of different fasta files corresponding to contig files generated from multiple samples.
 ``` 
+
 ::::{tab-set}
 :::{tab-item} Single Fasta File Input
 ```bash
@@ -41,6 +41,7 @@ snakemake --config module="viral-identify" outdir="test_res" fasta="sample/conti
 snakemake --config module="viral-identify" outdir="test_res" fasta="sample/contigs" splits=0 -j 4 --latency-wait 20
 ```
 :::
+::::
 
 ```{admonition} Memory Footprint
 :class: note
