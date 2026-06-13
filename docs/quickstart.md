@@ -1,10 +1,56 @@
 # Quick Start
 
-vOMIX-MEGA is a big pipeline, and we know it can feel intimidating. Still, we'd like to show you otherwise! vOMIX-MEGA is here to simplify everything, remove tedious ad-hoc coding, and speed up viral metagenomic analysis by miles, all while maintaining full freedom to tune parameters to your liking. To have a quick start on your analysis, you need to: 
+vOMIX-snakemake is a comprehensive pipeline, and we know that big-data analysis can feel intimidating. Still, we'd like to show you how easy it can be! vOMIX-MEGA is here to simplify everything, remove tedious ad-hoc coding, and speed up viral metagenomic analysis by miles, all while maintaining full freedom to tune parameters to your liking. Here are three different quick analysese you can do. 
 
-1. **Install vOMIX-MEGA** (See [Installation Guide](/installation.md)
-2. **Configure a `sample_list.csv` file**
-3. **Start your end-to-end viral metagenomic analysis!**
+## Identify Viral Contigs
+
+You can quickly analyse and analyse a mock dataset of viral and non-viral mixed contigs using the `viral-identify` module.The sample data should already be included in your directory, or can be downloaded via `wget https://github.com/holab-hku/vomix-snakemake/tree/main/sample`.
+
+::::{tab-set}
+:::{tab-item} Conda
+```bash
+snakemake --config module="viral-identify" outdir="test_res" fasta="sample/contigs/contigs_simulated_viral_nonviral.fasta" splits=0 -j 4 --latency-wait 20
+
+```
+:::
+:::{tab-item} Docker
+```bash
+snakemake --config module="viral-identify" outdir="test_res" fasta="sample/contigs/contigs_simulated_viral_nonviral.fasta" splits=0 -j 4 --latency-wait 20 --use-container --sdm conda
+```
+:::
+:::{tab-item} Apptainer
+```bash
+snakemake --config module="viral-identify" outdir="test_res" fasta="sample/contigs/contigs_simulated_viral_nonviral.fasta" splits=0 -j 4 --latency-wait 20 --sdm conda apptainer
+```
+:::
+::::
+
+
+```{admonition} Inputs
+:class: note 
+the `viral-identify` module can either take a single fasta file as input, or a directory of different fasta files corresponding to contig files generated from multiple samples.
+``` 
+::::{tab-set}
+:::{tab-item} Single Fasta File Input
+```bash
+snakemake --config module="viral-identify" outdir="test_res" fasta="sample/contigs/contigs_simulated_viral_nonviral.fasta" splits=0 -j 4 --latency-wait 20
+```
+:::
+:::{tab-item} Fasta Directory Input
+```bash 
+snakemake --config module="viral-identify" outdir="test_res" fasta="sample/contigs" splits=0 -j 4 --latency-wait 20
+```
+:::
+
+```{admonition} Memory Footprint
+:class: note
+The standard viral identification analysis of vOMIX-snakemake is desinged to be at a maximum of 24Gb, used by geNomad during viral contig identification. If you are on a small computer, you can further reduce this number by introducing the `--config splits=8` which will reduce memory use at the expense of computation time.
+```
+
+## Benchmark Viral Contig Tools
+
+
+## Perform End-to-End Analysis on SRA Samples
 
 > **NOTE:** The `sample_list.csv` takes SRA accessions and automatically downloads and processes the data for you!
 
