@@ -67,7 +67,7 @@ else:
       intermediate=expand(relpath("preprocess/samples/{sample_id}/output/{sample_id}_R{i}_cut.trim.filt.nodecontam.fastq.gz"), sample_id=samples.keys(), i=[1, 2])
     shell:
       """
-      rm {params.intermediate}
+      rm -f {params.intermediate}
       touch {output}
       """
 

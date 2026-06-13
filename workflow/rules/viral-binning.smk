@@ -24,7 +24,7 @@ rule prodigal_gv:
     fna=relpath("binning/viral/intermediate/prodigal/proteins.vOTUs.fna"),
     faa=relpath("binning/viral/intermediate/prodigal/proteins.vOTUs.faa")
   params:
-    script="workflow/software/prodigal-gv/parallel-prodigal-gv.py",
+    script="workflow/scripts/parallel_prodigal_gv.py",
     outdir=relpath("binning/viral/intermediate/prodigal/"),
     tmpdir=os.path.join(tmpd, "prodigal")
   conda: "../envs/prodigal-gv.yml"

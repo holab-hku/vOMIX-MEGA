@@ -1,4 +1,5 @@
 import os
+containerized: os.path.join(config["basedir"], "Dockerfile")
 
 logdir=relpath("identify/viral/logs")
 benchmarks=relpath("identify/viral/benchmarks")
@@ -293,4 +294,5 @@ rule VIBRANT:
     """
 
 #rule ppr-meta:
-#rule seeker:
+#rule HVSeekr
+#rule PharaCon

@@ -96,7 +96,7 @@ rule genomad_classify:
   log: os.path.join(logdir, "genomad_{sample_id}.log")
   benchmark: os.path.join(benchmarks, "genomad_{sample_id}.log")
   conda: "../envs/genomad.yml"
-  threads: 64
+  threads: 32
   resources:
     mem_mb=lambda wildcards, attempt, input: 24 * 10**3 * attempt
   shell:

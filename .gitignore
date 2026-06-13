@@ -2,6 +2,7 @@
 *
  
 # but not these files
+!.readthedocs.yaml
 !.gitignore
 !pyproject.toml
 !mkdocs.yml
@@ -16,6 +17,7 @@
 !config/depracated/*
 !config/*
 !docs/
+!docs/**
 !resources/
 !workflow/
 !workflow/software/
