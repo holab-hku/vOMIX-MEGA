@@ -4,7 +4,7 @@ vOMIX-snakemake is the back-end pipline of the command-line tool vOMIX-MEGA: a r
 
 vOMIX-snakemake and vOMIX-MEGA providee numerous modules for end-to-end. Here are some of it's handy features:
 
-::::{grid} 2
+::::{grid} 3
 
 :::{grid-item-card} 
 ***High Speed***
@@ -26,7 +26,7 @@ Each module can be separately used with a variety of different inputs, and each 
 
 ::::
 
-::::{grid} 2
+::::{grid} 3
 
 :::{grid-item-card} 
 ***Benchmarked***
@@ -48,7 +48,7 @@ Simply feed vOMIX your SRA accession codes and it will download, process, and an
 
 ::::
 
-### {rocket}`rocket;0.85em` Getting Started
+### {octicon}`rocket;0.85em` Getting Started
 
 :::{card} Installation
 :link: installation
