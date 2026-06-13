@@ -1,35 +1,22 @@
 # Installation
 
-## Installing vOMIX-snakemake
+## Conda & Mamba
 
-You can install geNomad in you computer using either a general-purpose package manager (`pixi`, `mamba`, `conda`) or a Python-specific package manager (`uv` or `pip`).
+You can install vOMIX-snakemake in you computer using general-purpose package managers ( `mamba`, `conda`). .
 
 ::::{tab-set}
-
-:::{tab-item} Pixi
-[Pixi](https://pixi.sh/latest/) is probably the simplest way to install geNomad. It takes care of all the dependencies for you and doesn't require any environment management, meaning the `genomad` command will be available globally.
-
-```bash
-pixi global install -c conda-forge -c bioconda genomad
-genomad --help
-```
-:::
 
 :::{tab-item} Mamba
 [Mamba](https://mamba.readthedocs.io/en/latest/) is a package manager that handles all your dependencies for you. To install vOMIX-snakemake mad using Mamba, you need to create a new environment and activate it before running the `snakemake` command.
 
 ```bash
-# Make sure conda is updated for snakemake compatibility [IMPORTANT]
-# Set channel priority to strict before running vOMIX-snakemake to ensure reproducibility [IMPORTANT]
-mamba config --add channels bioconda
-mamba config --add channels conda-forge
-mamba config --set channel_priority strict
-
 # Install base environment
 mamba create -n vomix -c conda-forge snakemake=8.25.5 biopython=1.84 -y
+
+# Activate environment
 mamba activate vomix
 
-# Verify the two essential base tools are running
+# Verify Installation
 snakemake -v
 ```
 :::
@@ -38,69 +25,50 @@ snakemake -v
 [Conda](https://docs.conda.io/projects/conda/en/stable/) is a package manager that handles all your dependencies for you. To install vOMIX-snakemake using Conda, you need to create a new environment and activate it before running the `snakemake` command.
 
 ```bash
-# Make sure conda is updated for snakemake compatibility [IMPORTANT]
-# Set channel priority to strict before running vOMIX-snakemake to ensure reproducibility [IMPORTANT]
-conda config --add channels bioconda
-conda config --add channels conda-forge
-conda config --set channel_priority strict
-
 # Install base environment
 conda create -n vomix -c conda-forge snakemake=8.25.5 biopython=1.84 -y
+
+# Activate environment
 conda activate vomix
 
-# Verify the two essential base tools are running
+# Verify Installation
 snakemake -v
 ```
 :::
 
 ::::
 
-```{admonition} Non-python dependencies
+```{admonition} Conda Channel Priorities
 :class: attention
-Pixi, Mamba, and Conda will install both the Python dependencies and the non-Python dependencies required by geNomad. If you install geNomad using `uv` or `pip`, make sure to add [`MMseqs2`](https://github.com/soedinglab/MMseqs2/) and [`ARAGORN`](http://www.ansikte.se/ARAGORN/) to your `$PATH`.
+If you are using conda or mamba, make sure to set channel orders correctly and set channel priority to strict. Via the `conda config --add channels bioconda`, `conda config --add channels conda-forge`, and `conda config --set channel_priority strict` respectively. For mamba replace `conda` with `mamba` respectively.  
 ```
 
-## Running geNomad using containers
+## Docker & Apptainer
 
-You can also execute geNomad using containerization tools, such as Docker and Podman. To pull the image, execute the command below.
+vOMIX-snakemake is built on a snakemake back-end, which facilitates native `Docker` and `Apptainer` employment. The container image generated a container image contains all required environments. This makes our pipeline truly and fully-reproducible, whereas `conda` and `mamba` installations might not work on Windows or Mac-ARM systems. 
 
 ::::{tab-set}
 
 :::{tab-item} Docker
 ```bash
-docker pull antoniopcamargo/genomad
+snakemake --use-container --use-conda --cores 4
 ```
 :::
 
-:::{tab-item} Podman
+:::{tab-item} Apptainer
 ```bash
-podman pull docker.io/antoniopcamargo/genomad
+snakemake --software-deployment-method conda apptainer
 ```
 :::
 
 ::::
 
-To start a geNomad container you have to mount a folder from the host system into the container with the `-v` argument. The following command mounts the current working directory (`$(pwd)`) under `/app` inside the container and then executes the `genomad download-database` and `genomad end-to-end` commands.
-
-::::{tab-set}
-
-:::{tab-item} Docker
-```bash
-docker run -ti --rm -v "$(pwd):/app" antoniopcamargo/genomad download-database .
-docker run -ti --rm -v "$(pwd):/app" antoniopcamargo/genomad end-to-end input.fna output genomad_db
+```{admonition} Using Conda within Containers
+:class: attention
+All jobs within vOMIX-snakemake have specified conda environments. The containers built via snakemake is then just a light-weight image of a standard linux OS with conda environments being built on top, meaning it still relies on conda environment installation. You must set `--software-deployment-method conda apptainer` or `--sdm conda apptainer`, even if you are running on containers. 
 ```
-:::
-
-:::{tab-item} Podman
-```bash
-podman run -u 0 -ti --rm -v "$(pwd):/app" antoniopcamargo/genomad download-database .
-podman run -u 0 -ti --rm -v "$(pwd):/app" antoniopcamargo/genomad end-to-end input.fna output genomad_db
-```
-:::
-
-::::
 
 ## ⚙️ Troubleshooting Guide
 
-We have specific guidelines for troubleshooting vOMIX-snakemake so we can help you out in your analysis journey as efficiently as possible! If you run into any unexpected errors, warnings, etc. please visit our Troubleshooting Guide.
+We have specific guidelines for troubleshooting vOMIX-snakemake so we can help you out in your analysis journey as efficiently as possible! If you run into any unexpected errors, warnings, etc. please visit our [Troubleshooting Guide](/troubleshoot.md).
 
