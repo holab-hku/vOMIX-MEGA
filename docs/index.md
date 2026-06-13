@@ -1,7 +1,7 @@
 ## vOMIX-snakemake
 
 vOMIX-snakemake is the back-end pipline of the command-line tool vOMIX-MEGA: a reproducible, scalable, and fast viral metagenomic pipeline for analyzing large-scale bulk-metagenomic and viromic data. We have engineered multiple bottlenecks in current state-ofthe-art software to allow rapid and well-benchmarked viral metagenomic analysis. Here are some of vOMIX-snakemake's handy features:
-\
+
 ::::{grid} 3
 
 :::{grid-item-card} 
@@ -47,6 +47,8 @@ Simply feed vOMIX-MEGA a list  your SRA accession codes and it will download, pr
 ::::
 
 ### {octicon}`rocket;0.85em` Getting Started
+
+To start using vOMIX-snakemake, read the installation and quickstart guides below. In case you want to dive deeper into each module and the outputs it produces, visit the pages listed in the sidebar.
 
 :::{card} Installation
 :link: installation.md
