@@ -51,13 +51,13 @@ Simply feed vOMIX-MEGA a list  your SRA accession codes and it will download, pr
 To start using vOMIX-snakemake, read the installation and quickstart guides below. In case you want to dive deeper into each module and the outputs it produces, visit the pages listed in the sidebar.
 
 :::{card} Installation
-:link: installation.md
+:link: install
 :link-type: doc
 Instructions on how to install vOMIX-snakemake on your computer or server.
 :::
 
 :::{card} Quickstart
-:link: quickstart.md
+:link: quickstart
 :link-type: doc
 Learn how to run vOMIX-snakemake on a sample dataset.
 :::
@@ -68,7 +68,7 @@ Learn how to run vOMIX-snakemake on a sample dataset.
 If you use vOMIX-MEGA in your work, please consider citing its pre-print manuscript:
 
 :::{card}
-:link: insert link heret
+:link: https://vomix-mega.readthedocs.io/en/latest/
 
 **vOMIX-MEGA: A critical speed enhancement for end-to-end viral metagenomics**
 ^^^
