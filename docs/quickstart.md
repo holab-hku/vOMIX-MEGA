@@ -2,7 +2,7 @@
 
 vOMIX-snakemake is a comprehensive pipeline, and we know that big-data analysis can feel intimidating. We'd like to make that as easy as possible for you. vOMIX-snakemake simplifies analysis by removing tedious ad-hoc coding, and speeds up viral metagenomic analysis through job optimization and mecnhmarking, all while maintaining full freedom to tune parameters to your liking. Here are three different quick analysese you can do. 
 
-## {octicon}`checkbox;0.85em` Quick Tutorial #1: Identify Viruses in Mock Contig File
+## {octicon}`circle;0.85em` Quick Tutorial #1: Identify Viruses in Mock Contig File
 
 You can quickly analyse a mock dataset of 988 viral and non-viral mixed contigs using the `viral-identify` module.The sample data should already be included in your directory, or can be downloaded via `wget https://github.com/holab-hku/vomix-snakemake/tree/main/sample`. 
 
@@ -64,7 +64,7 @@ Conda environments for each module will be installed automatically at the beginn
 The standard viral identification analysis of vOMIX-snakemake is desinged to be at a maximum of 24Gb, used by geNomad during viral contig identification. If you are on a small computer, you can further reduce this number by introducing the `--config splits=8` which will reduce memory use at the expense of computation time.
 ```
 
-## {octicon}`checkbox;0.85em` Quick Tutorial #2: Benchmark 6 Different Viral Contig Identification Tools
+## {octicon}`circle;0.85em` Quick Tutorial #2: Benchmark 6 Different Viral Contig Identification Tools
 
 Although not part of the standard vOMIX-snakemake analysis, the `viral-benchmark` module for you to quickly benchmark 6 different viral contig identification tools including geNomad, DeepVirFinder, Phamer, VirSorter2, VirFinder, and VIBRANT. You can view all softwares cited via our [references](/reference.md) page. Please note that we have extensively [benchmarked](/benchmark.md) geNomad to be the best performing general tool for viral contig identification.
 
@@ -116,7 +116,7 @@ head -n 20 test_res/identify/viral/output/benchmark_results_merged.csv
 :::
 ::::
 
-## {octicon}`checkbox;.85em` Quick Tutorial #003: Perform End-to-End Analysis on SRA Samples
+## {octicon}`circle;0.85em` Quick Tutorial #003: Perform End-to-End Analysis on SRA Samples
 
 The main purpose of vOMIX-snakemake is to make end-to-end viral metagenomic analysis straightforward. You can provide a list of SRA accessions or combine them with local fastq.gz  files via the `sample_list.csv`. The `viral-end-to-end` module will automatically run `preprocess`, `assembly`, `viral-identify`, `viral-taxonomy`, `viral-host`, and `viral-annotate`.
 

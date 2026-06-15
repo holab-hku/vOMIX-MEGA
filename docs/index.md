@@ -97,8 +97,7 @@ self
 install
 quickstart
 run
-outputs
-troubleshoot
+output
 ```
 
 ```{toctree}
@@ -107,4 +106,5 @@ troubleshoot
 :hidden:
 
 advanced
+troubleshoot
 ```
