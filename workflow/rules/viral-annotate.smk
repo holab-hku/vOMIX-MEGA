@@ -28,7 +28,7 @@ rule done_log:
     relpath("annotate/viral/output/PhaVIP/final_prediction/phavip_prediction.tsv"), 
     relpath("annotate/viral/output/eggNOGv2/out.emapper.emapper.annotations"), 
     relpath("annotate/viral/output/MetaCerberus/time.tsv"),
-    relpath("annotate/viral/output/Pharokka/mmseqs_results.tsv"),
+    relpath("annotate/viral/output/Pharokka/pharokka_cds_final_merged_output.tsv"),
     #relpath("annotate/viral/output/VirSorter2/final-viral-score.tsv"), 
     #relpath("annotate/viral/output/VirSorter2/for-dramv/final-viral-combined-for-dramv.fa"),
     #relpath("annotate/viral/output/VirSorter2/for-dramv/viral-affi-contigs-for-dramv.tab"),
@@ -289,7 +289,7 @@ rule Pharokka:
     db=os.path.join(config["pharokka-db"], "all_phrogs.h3m"),
     fna=fastap
   output:
-    relpath("annotate/viral/output/Pharokka/mmseqs_results.tsv")
+    relpath("annotate/viral/output/Pharokka/pharokka_cds_final_merged_output.tsv")
   params:
     parameters=config['pharokka-params'],
     dbdir=config['pharokka-db'],
@@ -315,5 +315,5 @@ rule Pharokka:
         {params.parameters} 2> {log}
 
     mv {params.tmpdir}/* {params.outdir}/
-    #rm -rf {params.tmpdir}
+    rm -rf {params.tmpdir}
     """
