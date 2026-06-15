@@ -29,7 +29,7 @@ eggNOG-db-params: ""
 humann-db: "database/humann"
 checkm2-db: "database/checkm2"
 GTDBTk-db: "database/GTDB-Tk"
-GTDBTk-db-version: "220"
+GTDBTk-db-version: "232"
 dwnld-params: ""
 dwnld-only: False
 pigz-params: ""

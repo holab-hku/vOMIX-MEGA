@@ -326,7 +326,7 @@ gtdbtk_db_version = config["GTDBTk-db-version"]
 gtdbtk_dwnld_lnk =f"{gtdbtk_db_base_url}{gtdbtk_db_version}/{gtdbtk_db_version}.0/auxillary_files/gtdbtk_package/full_package/gtdbtk_r{gtdbtk_db_version}_data.tar.gz"
 
 rule GTDBTk_download:
-  name: "setup-database.smk GTDB-Tk Database 63.3 G"
+  name: "setup-database.smk GTDB-Tk Database 98.3 G"
   output:
     os.path.join(config["GTDBTk-db"], ("gtdbtk_r" + config["GTDBTk-db-version"] + "_data.tar.gz"))
   params:
