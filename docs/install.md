@@ -45,7 +45,7 @@ If you are using conda or mamba, make sure to set channel orders correctly and s
 
 ## Docker & Apptainer
 
-vOMIX-snakemake is built on a snakemake back-end, which facilitates native `Docker` and `Apptainer` employment. The container image generated a container image contains all required environments. This makes our pipeline truly and fully-reproducible, whereas `conda` and `mamba` installations might not work on Windows or Mac-ARM systems. 
+vOMIX-snakemake is built on a snakemake back-end, which facilitates native `Docker` and `Apptainer` employment. The container image generated contains explicitly each conda environment mounted on top of a base operating system. Containers are preferred for the most robus forms of reproducibility, whereas `conda` and `mamba` installations might not work on Windows or Mac-ARM systems. 
 
 ::::{tab-set}
 
@@ -68,7 +68,7 @@ snakemake --software-deployment-method conda apptainer
 All jobs within vOMIX-snakemake have specified conda environments. The containers built via snakemake is then just a light-weight image of a standard linux OS with conda environments being built on top, meaning it still relies on conda environment installation. You must set `--software-deployment-method conda apptainer` or `--sdm conda apptainer`, even if you are running on containers. 
 ```
 
-## ⚙️ Troubleshooting Guide
+## {octicon}`book;0.85em` Troubleshooting Guide
 
 We have specific guidelines for troubleshooting vOMIX-snakemake so we can help you out in your analysis journey as efficiently as possible! If you run into any unexpected errors, warnings, etc. please visit our [Troubleshooting Guide](/troubleshoot.md).
 

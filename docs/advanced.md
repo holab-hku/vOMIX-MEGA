@@ -52,7 +52,8 @@ vomix_update.sh .
 ```
 
 > NOTE: The `vomix_update.sh` command will ONLY update the i) Snakefile ii) config.yml file iii) rules iv) environments v) scripts IF they have changed since your current version. It will not affect any other file in your directory including analysis. 
- 
+
+# Configuration 
 
 ## Sample List CSV
 ```bash
