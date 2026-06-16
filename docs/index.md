@@ -105,7 +105,7 @@ output
 :caption: vomix-snakemake new
 :hidden:
 
-module/preprocess
+modules/preprocess
 ```
 
 ```{toctree}
