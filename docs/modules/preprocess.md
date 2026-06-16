@@ -1,6 +1,6 @@
 # `preprocess`
 
-```{image} _static/figures/preprocess.svg
+```{image} ../_static/figures/preprocess.svg
 :width: 550
 :class: no-scaled-link
 :align: center
