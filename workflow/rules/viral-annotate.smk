@@ -134,6 +134,7 @@ rule PhaVIP:
     mem_mb=lambda wildcards, attempt: attempt * 16 * 10**3
   shell:
     """
+    rm -rf {params.tmpdir}
     mkdir -p {params.tmpdir} {params.outdir}
 
     phabox2 --task phavip \
