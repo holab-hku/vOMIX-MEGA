@@ -88,7 +88,7 @@ eggNOG-params: "-m diamond --hmm_evalue 0.001 --hmm_score 60 --query-cover 20 --
 PhaVIP-params: ""
 mpa-params: "--ignore_eukaryotes"
 mpa-indexv: "mpa_vOct22_CHOCOPhlAnSGB_202212"
-binning-consensus: False
+binning-consensus: True
 strobealign-params: ""
 MetaBAT2-params: "-m 1500"
 MaxBin2-params: "-min_contig_length 1500 -max_iteration 50 -prob_threshold 0.9"
