@@ -101,6 +101,14 @@ output
 ```
 
 ```{toctree}
+:maxdepth: 3
+:caption: vomix-snakemake new
+:hidden:
+
+module/preprocess
+```
+
+```{toctree}
 :maxdepth: 3 
 :caption: Advanced Usage
 :hidden:
