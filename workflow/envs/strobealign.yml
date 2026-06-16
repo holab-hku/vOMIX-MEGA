@@ -4,4 +4,6 @@ channels:
   - bioconda
   - defaults
 dependencies:
-  - strobealign=0.13.0=h43eeafb_1
+  - strobealign=0.13.0
+  - samtools=1.23.1
+

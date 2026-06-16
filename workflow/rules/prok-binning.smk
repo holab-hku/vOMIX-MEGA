@@ -84,7 +84,9 @@ rule strobealign:
   params:
     parameters=config["strobealign-params"],
     tmpdir=os.path.join(tmpd, "strobealign/{sample_id}"),
-  log: os.path.join(logdir, "strobealign_{sample_id}.log")
+  log: 
+    strobealign=os.path.join(logdir, "strobealign_{sample_id}.log"), 
+    samtools=os.path.join(logdir, "strobealign_samtools_{sample_id}.log"),
   benchmark: os.path.join(benchmarks, "strobealign_{sample_id}.log")
   conda: "../envs/strobealign.yml"
   threads: 4
@@ -100,7 +102,7 @@ rule strobealign:
         {input.fasta} \
         {input.R1} \
         {input.R2} \
-        {params.parameters} 2>{log} | samtools sort - -o {params.tmpdir}/tmp.bam 2> {log}
+        {params.parameters} 2> {log.strobealign} | samtools sort - -o {params.tmpdir}/tmp.bam 2> {log.samtools}
     
     mv {params.tmpdir}/tmp.bam {output}
     """
