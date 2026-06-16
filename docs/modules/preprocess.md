@@ -1,4 +1,4 @@
-# Preprocessing `preprocess`
+# `preprocess`
 
 ```{image} _static/figures/preprocess.svg
 :width: 550
