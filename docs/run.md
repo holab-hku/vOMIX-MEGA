@@ -1,4 +1,26 @@
 # Run & Configuration
+
+```{toctree}
+:maxdepth: 1
+:hidden:
+
+modules/preprocess
+modules/assembly
+modules/viral-identify
+modules/viral-taxonomy
+modules/viral-host
+modules/viral-annotate
+modules/viral-community
+modules/viral-benchmark
+modules/viral-end-to-end
+modules/prok-binning
+modules/prok-annotate
+modules/prok-community
+modules/cluster-fast
+modules/checkv-pyhmmer
+modules/setup-database
+```
+
 ## Table of Contents
 * 🛠️ [Preprocessing](#pre-processing)
 * 🛠️ [Assembly & Co-assembly](#assembly-co-assembly) 
