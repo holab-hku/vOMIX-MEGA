@@ -30,7 +30,7 @@ html_theme_options = {
 }
 
 # Add this so MyST automatically generates tracking anchors for markdown headers (up to H3)
-myst_heading_anchors = 3
+myst_heading_anchors = 2
 
 
 # 4. Markdown Settings

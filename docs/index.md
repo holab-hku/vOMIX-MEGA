@@ -80,14 +80,12 @@ Erfan Shekarriz, Elsa VIJENDRAN, Joshua WK Ho  — *bioRxiv* (2026), DOI: XXXXXX
 Have any questions or you've found a bug during your analysis? Please don't hesitate to report it to us by making an issue on our [{octicon}`mark-github;0.95em` GitHub repository](https://github.com/holab-hku/vOMIX-MEGA/issues/new).
 
 
-
 ```{toctree}
 :hidden:
 :caption: Introduction
 
 self
 ```
-
 
 ```{toctree}
 :maxdepth: 3
@@ -96,30 +94,9 @@ self
 
 install
 quickstart
+modules/index
 run
 output
-```
-
-```{toctree}
-:maxdepth: 3
-:caption: vomix-snakemake new
-:hidden:
-
-modules/preprocess
-modules/assembly
-modules/viral-identify
-modules/viral-taxonomy
-modules/viral-host
-modules/viral-annotate
-modules/viral-community
-modules/viral-benchmark
-modules/viral-end-to-end
-modules/prok-binning
-modules/prok-annotate
-modules/prok-community
-modules/cluster-fast
-modules/checkv-pyhmmer
-modules/setup-database
 ```
 
 ```{toctree}
