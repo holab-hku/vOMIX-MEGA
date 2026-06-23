@@ -96,29 +96,6 @@ rule CHERRY:
     rm -rf {params.tmpdir}
     """
 
-rule PhaVIP:
-  name: "viral-host.smk PhaVIP results from CHERRY"
-  localrule: True
-  input:
-    relpath("host/output/CHERRY/final_prediction/cherry_prediction.tsv")
-  output:
-    relpath("annotate/viral/output/PhaVIP/final_prediction/phavip_prediction.tsv")
-  params:
-    indir=relpath("host/output/CHERRY/final_prediction"),
-    outdir=relpath("annotate/viral/output/PhaVIP/final_prediction"),
-  log: os.path.join(logdir, "PhaVIP_copy.log")
-  benchmark: os.path.join(benchmarks, "PhaVIP_copy.log")
-  threads: 1
-  shell:
-    """
-    rm -r {params.outdir}
-    mkdir -p {params.outdir}/phavip_supplementary
-
-    cp {params.indir}/phavip_prediction.tsv {params.outdir}
-    cp {params.indir}/cherry_supplementary/a* {params.outdir}/phavip_supplementary
-    cp {params.indir}/cherry_supplementary/gene_annotation.tsv {params.outdir}/phavip_supplementary
-    """
-
 
 rule PhaTYP:
   name: "viral-host.smk PhaTYP lifestyle prediction"
