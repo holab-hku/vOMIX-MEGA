@@ -18,7 +18,7 @@ def csv_to_schema(input_csv):
             names_list = []
 
             for row in reader:
-                name_val = row.get('Name', '').strip()
+                name_val = row.get('\ufeffName', '').strip()
                 type_val = row.get('Type', '').lower()
                 default_val = row.get('Default', '').strip('"').strip("'")
                 description_val = row.get('Description', '').strip('"').strip("'").replace('"', "'")

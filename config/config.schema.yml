@@ -1,608 +1,575 @@
 $schema: "http://json-schema.org/draft-04/schema#"
 description: Configuration schema
 properties:
+  module:
+    type: string
+    description: "The name of the module of vOMIX-MEGA that you would like to employ."
+    default: "viral-end-to-end"
+    enum: ["preprocess", "assembly", "viral-identify", "viral-refilter", "viral-benchmark", "viral-taxonomy", "viral-host", "viral-community", "viral-annotate", "prok-binning", "prok-community", "prok-annotate", "viral-end-to-end", "checkv-pyhmmer", "cluster-fast", "setup-database", "symlink"]
+
+  workdir:
+    type: string
+    description: "The workding directory to the snakemake back-end workflow. Do NOT change this parameter unless you are an advanced user or are debugging."
+    default: "."
+
+  basedir:
+    type: string
+    description: "The base directory of the Snakefile to the snakemake back-end workflow. Do NOT change this parameter unless you are an advanced user or are debugging."
+    default: ""
+
+  outdir:
+    type: string
+    description: "The path to the director which you would like to deposit the vOMIX-MEGA structured outputs. If a new directory is given it will be created (nested supported). If an existing directory, the results will be over-written or deposited onto the same project. "
+    default: "results/"
+
+  datadir:
+    type: string
+    description: "The path to the raw fastq files deposited either for checking whether files are pre-downloaded, or to download new data onto. "
+    default: "fastq/"
+
+  samplelist:
+    type: string
+    description: "The path to the sample_list.csv file used to configure inputes and file paths. Please visit our Wiki page https://github.com/holab-hku/vOMIX-MEGA/wiki to know more. "
+    default: ""
+
+  fasta:
+    type: string
+    description: "The path to a single fasta file as input in modules where a single fasta file is permitted as a valid input. File path must end with .fasta, .fa, or .fna."
+    default: ""
+
+  fastadir:
+    type: string
+    description: "The path to a directory containing fasta file as input in modules where a fasta directory is permitted as a valid input. Automatically all files ending with .fasta, .fa, and .fna will be selected. "
+    default: ""
+
+  sample-name:
+    type: string
+    description: "If using the --fasta or config['fasta'] input, you can provide a sample name to use for output naming."
+    default: ""
+
+  assembly-ids:
+    type: string
+    description: "If using the --fasta-dir or config['fastadir'] input, you can provide a list of sample names equal to the length of your input files in list format ['sampleA', 'SampleB', 'sampleC',…]. WARNING that this feature has not been comprehensively tested yet, so proceed with caution."
+    default: ""
+
+  latest-run:
+    type: string
+    description: "An internal parameter for assigning the value the time and date of current run for logging instances of running vOMIX-MEGA in the .vomix subdirectory. Please visit our website for documentation https://github.com/holab-hku/vOMIX-MEGA/wiki. "
+    default: ""
+
+  splits:
+    type: integer
+    description: "When applicalbe, split the data into N groups in order to process them in parallel and reduce memory burden e.g. when running geNomad using the --splits function. By default N=0, meaning no splits."
+    default: 0
+
+  keep-intermediates:
+    type: boolean
+    description: "Flag to keep all large intermediate files in the processing steps e.g. the fastp-cleaned raw fastq files before host-decontamination (if setting --decontam-host or config['host-decontam']=True.  "
+    default: False
+
+  setup-database:
+    type: boolean
+    description: "If running a module other than 'setup-database', this flag determines whether you would like to setup new databases. If databases have already been configured and not changed as determined by snakemake, this will result in no re-installations. To force this, use the --forcerun or -F flag."
+    default: True
+
+  max-cores:
+    type: integer
+    description: "The maximum number of cores to split between parallel snakemake tasks. Not to be confused with -j or -n. This feature is still in development. "
+    default: 4
+
+  NCBI-email:
+    type: string
+    description: "The email to use for fetching data from the NCBI database for downloading and verification. "
+    default: "vomixtest@gmail.com"
+
+  NCBI-API-key:
+    type: string
+    description: "The NCBI-API key  for fetching larger amounts of data. To learn more visit https://ncbiinsights.ncbi.nlm.nih.gov/2017/11/02/new-api-keys-for-the-e-utilities . "
+    default: ""
+
+  hostile-index-db:
+    type: string
+    description: "Path to the directory where Hostile database is installed or will be downloaded. By default will be rooted in the Snakemake base directory under workflow/databases."
+    default: "database/hostile"
+
+  PhaBox2-db:
+    type: string
+    description: "Path to the directory where PhaBox2 database is installed or will be downloaded. By default will be rooted in the Snakemake base directory under workflow/databases."
+    default: "database/phabox_db_v2"
+
+  genomad-db:
+    type: string
+    description: "Path to the directory where geNomad database is installed or will be downloaded. By default will be rooted in the Snakemake base directory under workflow/databases."
+    default: "database/genomad"
+
+  virsorter2-db:
+    type: string
+    description: "Path to the directory where VirSorter2 database is installed or will be downloaded. By default will be rooted in the Snakemake base directory under workflow/databases."
+    default: "database/virsorter2"
+
+  vibrant-db:
+    type: string
+    description: "Path to the directory where VIBRANT database is installed or will be downloaded. By default will be rooted in the Snakemake base directory under workflow/databases."
+    default: "database/vibrant"
+
+  checkv-db:
+    type: string
+    description: "Path to the directory where CheckV database is installed or will be downloaded. By default will be rooted in the Snakemake base directory under workflow/databases."
+    default: "database/checkv"
+
+  iphop-db:
+    type: string
+    description: "Path to the directory where iPHoP database is installed or will be downloaded. By default will be rooted in the Snakemake base directory under workflow/databases."
+    default: "database/iphop"
+
+  iphop-db-version:
+    type: string
+    description: "The version of the iPHoP database to use. Make sure base name is compatible with version https://bitbucket.org/srouxjgi/iphop/src/main/#markdown-header-host-databases-and-versions . "
+    default: "iPHoP_db_Aug23_rw"
+
+  iphop-db-basename:
+    type: string
+    description: "The base name for the iPHoP database. Make sure base name is compatible with version https://bitbucket.org/srouxjgi/iphop/src/main/#markdown-header-host-databases-and-versions . "
+    default: "Aug_2023_pub_rw"
+
+  eggNOG-db:
+    type: string
+    description: "Path to the directory where eggNOG database is installed or will be downloaded. By default will be rooted in the Snakemake base directory under workflow/databases."
+    default: "database/eggNOGv2"
+
+  eggNOG-db-params:
+    type: string
+    description: "Parameters for downloading the eggNOG database. Visit https://github.com/eggnogdb/eggnog-mapper for more information."
+    default: ""
+
+  humann-db:
+    type: string
+    description: "Path to the directory where HUMAnN3 database is installed or will be downloaded. By default will be rooted in the Snakemake base directory under workflow/databases."
+    default: "database/humann"
+
+  checkm2-db:
+    type: string
+    description: "Path to the directory where CheckM2 database is installed or will be downloaded. By default will be rooted in the Snakemake base directory under workflow/databases."
+    default: "database/checkm2"
+
+  GTDBTk-db:
+    type: string
+    description: "Path to the directory where GTDBTk database is installed or will be downloaded. By default will be rooted in the Snakemake base directory under workflow/databases."
+    default: "database/GTDB-Tk"
+
+  GTDBTk-db-version:
+    type: string
+    description: "The version of the GTDBTk database to use. Make sure that the database is compatible with the version of GTDB-Tk used https://ecogenomics.github.io/GTDBTk/installing/index.html#gtdb-tk-reference-data. "
+    default: "220"
+
+  dwnld-params:
+    type: string
+    description: "Parameters for downloading raw fastq files from the NCBI database using entrez-fetch."
+    default: ""
+
+  dwnld-only:
+    type: boolean
+    description: "A flag to indicate whether only remote SRA files should be downloaded from the NCBI database without running downstream pre-processing."
+    default: False
+
+  pigz-params:
+    type: string
+    description: "Parameters for pigz zipping of the fastq files downloaded from the SRA."
+    default: ""
+
+  fastp-params:
+    type: string
+    description: "Additional parameters to pass  to fastp preprocessing ."
+    default: ""
+
+  hostile-params:
+    type: string
+    description: "Additional parameters to pass  to Hostile decontamination."
+    default: ""
+
+  hostile-index-name:
+    type: string
+    description: "The name of the pre-made Hostile indices. Please visit https://github.com/bede/hostile for more information and make sure it exists in the current version of Hostile installed in this vOMIX-MEGA module."
+    default: "human-t2t-hla"
+
+  decontam-host:
+    type: boolean
+    description: "A flag to indicate whether host decontamination should be done after cleaning files with fastp. The host index can be passed via the --hostile-index-name command or config['hostile-index-name']"
+    default: True
+
+  hostile-aligner:
+    type: string
+    description: "The short read aligner to use for host decontamination, either 'bowtie2' or 'minimap2'. WARNING that Hostile does not recommend using minimap2 for short reads as of now. "
+    default: "bowtie2"
+
+  hostile-aligner-params:
+    type: string
+    description: "Additional parameters to pass  to Hostile aligner."
+    default: ""
+
   assembler:
     type: string
-    description: "The underlying tool to use for the assembly module. Note: 'spades' support is currently under active development and not yet available."
+    description: "The underlying tool to use for the assembly module. 'spades' is not yet available and is being developed. "
     default: "megahit"
     enum: ["megahit", "spades"]
 
   megahit-min-len:
     type: integer
-    description: "The minimum contig length cutoff for the MEGAHIT assembly."
+    description: "The minimum length for the MEGAHIT assembly contig cutoff. "
     default: 300
 
   megahit-params:
     type: string
-    description: "Additional command-line parameters to pass directly to MEGAHIT."
+    description: "Additional parameters to pass  to MEGAHIT."
     default: "--prune-level 3"
 
   spades-params:
     type: string
-    description: "Additional command-line parameters to pass directly to SPAdes."
+    description: "Additional parameters to pass  to SPAdes."
     default: "--meta"
 
   spades-memory:
     type: integer
-    description: "The maximum memory (in GB) allocated to SPAdes for assembly."
+    description: "The maximum memory allocated to SPAdes for assembly. "
     default: 250
-
-  dwnld-params:
-    type: string
-    description: "Additional parameters for downloading raw FASTQ files from the NCBI database using entrez-fetch."
-    default: ""
-
-  dwnld-only:
-    type: boolean
-    description: "If TRUE,  only remote SRA files will be downloaded from the NCBI database without executing downstream preprocessing steps."
-    default: False
-
-  pigz-params:
-    type: string
-    description: "Additional parameters passed to pigz for parallel gzip compression of FASTQ files downloaded from the SRA."
-    default: ""
-
-  fastp-params:
-    type: string
-    description: "Additional command-line parameters to pass directly to fastp during preprocessing."
-    default: ""
-
-  hostile-params:
-    type: string
-    description: "Additional command-line parameters to pass directly to Hostile during decontamination."
-    default: ""
-
-  hostile-index-name:
-    type: string
-    description: "The name of the pre-built Hostile index to use. Ensure the index exists in the local Hostile installation (see https://github.com/bede/hostile for details)."
-    default: "human-t2t-hla"
-
-  decontam-host:
-    type: boolean
-    description: "If TRUE, host decontamination will be performed using Hostile after initial adapter and quality trimming with fastp. The host index can be specified via --hostile-index-name or the config['hostile-index-name'] key."
-    default: True
-
-  hostile-aligner:
-    type: string
-    description: "The short-read aligner to use for host decontamination ('bowtie2' or 'minimap2'). Note: Hostile does not currently recommend using minimap2 for short reads."
-    default: "bowtie2"
-
-  hostile-aligner-params:
-    type: string
-    description: "Additional command-line parameters to pass to the underlying Hostile aligner."
-    default: ""
-
-  NCBI-email:
-    type: string
-    description: "The email address associated with NCBI E-utilities requests for data download and verification."
-    default: "vomixtest@gmail.com"
-
-  NCBI-API-key:
-    type: string
-    description: "The NCBI API key used to authorize higher request rates when fetching large volumes of data (see https://ncbiinsights.ncbi.nlm.nih.gov/2017/11/02/new-api-keys-for-the-e-utilities)."
-    default: ""
-
-  humann-params:
-    type: string
-    description: "Additional command-line parameters to pass directly to HUMAnN."
-    default: ""
-
-  binning-consensus:
-    type: boolean
-    description: "If TRUE, executes a consensus binning workflow using MetaBAT2, MaxBin2, and CONCOCT, followed by consensus pooling via DAS Tool. If FALSE, a GPU-accelerated VAMB approach will be used instead."
-    default: False
-
-  strobealign-params:
-    type: string
-    description: "Additional command-line parameters to pass directly to strobealign."
-    default: ""
-
-  MetaBAT2-params:
-    type: string
-    description: "Additional command-line parameters to pass directly to MetaBAT2."
-    default: "-m 1500"
-
-  MaxBin2-params:
-    type: string
-    description: "Additional command-line parameters to pass directly to MaxBin2."
-    default: "-min_contig_length 1500 -max_iteration 50 -prob_threshold 0.9"
-
-  CONCOCT-params:
-    type: string
-    description: "Additional command-line parameters to pass directly to CONCOCT."
-    default: ""
-
-  jgi-summarize-params:
-    type: string
-    description: "Additional command-line parameters to pass to the jgi_summarize_bam_contig_depths command."
-    default: "--percentIdentity 97"
-
-  DASTool-params:
-    type: string
-    description: "Additional command-line parameters to pass directly to DAS Tool."
-    default: ""
-
-  checkm2-params:
-    type: string
-    description: "Additional command-line parameters to pass directly to CheckM2."
-    default: ""
-
-  galah-params:
-    type: string
-    description: "Additional command-line parameters to pass directly to galah."
-    default: "--ani 95 --min-aligned-fraction 15 --fragment-length 3000"
-
-  GTDBTk-identify-params:
-    type: string
-    description: "Additional command-line parameters to pass to the 'gtdbtk identify' command."
-    default: ""
-
-  GTDBTk-align-params:
-    type: string
-    description: "Additional command-line parameters to pass to the 'gtdbtk align' command."
-    default: ""
-
-  GTDBTk-classify-params:
-    type: string
-    description: "Additional command-line parameters to pass to the 'gtdbtk classify' command."
-    default: ""
-
-  VAMB-params:
-    type: string
-    description: "Additional command-line parameters to pass directly to VAMB."
-    default: "-m 100"
-
-  mpa-params:
-    type: string
-    description: "Additional command-line parameters to pass directly to MetaPhlAn."
-    default: "--ignore_eukaryotes"
-
-  mpa-indexv:
-    type: string
-    description: "The index version to use for MetaPhlAn. If the specified index is not found locally,  it will be downloaded automatically."
-    default: "mpa_vOct22_CHOCOPhlAnSGB_202212"
-
-  hostile-index-db:
-    type: string
-    description: "The directory path where the Hostile database is installed or will be downloaded. Defaults to 'workflow/databases/' relative to the Snakemake base directory."
-    default: "database/hostile"
-
-  PhaBox2-db:
-    type: string
-    description: "The directory path where the PhaBox2 database is installed or will be downloaded. Defaults to 'workflow/databases/' relative to the Snakemake base directory."
-    default: "database/phabox_db_v2"
-
-  genomad-db:
-    type: string
-    description: "The directory path where the geNomad database is installed or will be downloaded. Defaults to 'workflow/databases/' relative to the Snakemake base directory."
-    default: "database/genomad"
-
-  virsorter2-db:
-    type: string
-    description: "The directory path where the VirSorter2 database is installed or will be downloaded. Defaults to 'workflow/databases/' relative to the Snakemake base directory."
-    default: "database/virsorter2"
-
-  vibrant-db:
-    type: string
-    description: "The directory path where the VIBRANT database is installed or will be downloaded. Defaults to 'workflow/databases/' relative to the Snakemake base directory."
-    default: "database/vibrant"
-
-  checkv-db:
-    type: string
-    description: "The directory path where the CheckV database is installed or will be downloaded. Defaults to 'workflow/databases/' relative to the Snakemake base directory."
-    default: "database/checkv"
-
-  iphop-db:
-    type: string
-    description: "The directory path where the iPHoP database is installed or will be downloaded. Defaults to 'workflow/databases/' relative to the Snakemake base directory."
-    default: "database/iphop"
-
-  iphop-db-basename:
-    type: string
-    description: "The base name of the iPHoP database. Ensure compatibility between the base name and the version as outlined in the documentation (https://bitbucket.org/srouxjgi/iphop/src/main/#markdown-header-host-databases-and-versions)."
-    default: "Aug_2023_pub_rw"
-
-  eggNOG-db:
-    type: string
-    description: "The directory path where the eggNOG database is installed or will be downloaded. Defaults to 'workflow/databases/' relative to the Snakemake base directory."
-    default: "database/eggNOGv2"
-
-  eggNOG-db-params:
-    type: string
-    description: "Command-line options and parameters used when downloading the eggNOG database (see https://github.com/eggnogdb/eggnog-mapper for configuration details)."
-    default: ""
-
-  humann-db:
-    type: string
-    description: "The directory path where the HUMAnN3 database is installed or will be downloaded. Defaults to 'workflow/databases/' relative to the Snakemake base directory."
-    default: "database/humann"
-
-  checkm2-db:
-    type: string
-    description: "The directory path where the CheckM2 database is installed or will be downloaded. Defaults to 'workflow/databases/' relative to the Snakemake base directory."
-    default: "database/checkm2"
-
-  GTDBTk-db:
-    type: string
-    description: "The directory path where the GTDB-Tk database is installed or will be downloaded. Defaults to 'workflow/databases/' relative to the Snakemake base directory."
-    default: "database/GTDB-Tk"
-
-  GTDBTk-db-version:
-    type: string
-    description: "The reference data version of the GTDB-Tk database to use. Ensure the database version matches the installed GTDB-Tk software version (see https://ecogenomics.github.io/GTDBTk/installing/index.html#gtdb-tk-reference-data)."
-    default: "220"
-
-  dram-db:
-    type: string
-    description: "The directory path where the DRAM database is installed or will be downloaded. Defaults to 'workflow/databases/' relative to the Snakemake base directory."
-    default: "database/DRAM"
-
-  dram-setup-params:
-    type: string
-    description: "Additional parameters to pass to the DRAM setup command during database initialization."
-    default: ""
-
-  metacerberus-db:
-    type: string
-    description: "The directory path where the MetaCerberus database is installed or will be downloaded. Defaults to 'workflow/databases/' relative to the Snakemake base directory."
-    default: "database/metacerberus"
-
-  metacerberus-setup-params:
-    type: string
-    description: "Additional parameters to pass to the MetaCerberus 'metacerberus-setup.py' command during database initialization."
-    default: ""
-
-  pharokka-db:
-    type: string
-    description: "The directory path where the Pharokka database is installed or will be downloaded. Defaults to 'workflow/databases/' relative to the Snakemake base directory."
-    default: "database/pharokka"
-
-  phabox2-db-name:
-    type: string
-    description: "The specific package name used to download the database in the format '{phabox-db-baselink}/{phabox-db-name}.zip'."
-    default: "phabox_db_v2"
-
-  phabox2-db-baselink:
-    type: string
-    description: "The base remote URL or release link used to fetch the PhaBox2 database archives."
-    default: "https://github.com/KennthShang/PhaBOX/releases/download/v2"
-
-  iphop-db-version:
-    type: string
-    description: "The version string of the iPHoP database. Ensure compatibility with the software version as described in the iPHoP database repository (https://bitbucket.org/srouxjgi/iphop/src/main/#markdown-header-host-databases-and-versions)."
-    default: "iPHoP_db_Aug23_rw"
-
-  eggNOG-params:
-    type: string
-    description: "Additional command-line parameters to pass directly to the eggNOG-mapper."
-    default: "-m diamond --hmm_evalue 0.001 --hmm_score 60 --query-cover 20 --subject-cover 20 --tax_scope auto --target_orthologs all --go_evidence non-electronic --report_orthologs"
-
-  PhaVIP-params:
-    type: string
-    description: "Additional command-line parameters to pass directly to PhaVIP."
-    default: ""
-
-  virsorter2-annotate-params:
-    type: string
-    description: "Additional parameters to pass to the 'virsorter run' command during the viral annotation phase preceding DRAM-v."
-    default: "--min-length 1500"
-
-  dram-v-annotate-params:
-    type: string
-    description: "Additional command-line parameters to pass to the 'DRAM-v.py annotate' command."
-    default: ""
-
-  dram-v-distill-params:
-    type: string
-    description: "Additional command-line parameters to pass to the 'DRAM-v.py distill' command."
-    default: ""
-
-  metacerberus-params:
-    type: string
-    description: "Additional command-line parameters to pass directly to the MetaCerberus 'metacerberus.py' entrypoint."
-    default: "--hmm ALL"
-
-  pharokka-params:
-    type: string
-    description: "Additional command-line parameters to pass directly to Pharokka."
-    default: "-g prodigal-gv --meta"
-
-  dvf-min-len:
-    type: number
-    description: "The minimum contig length required for DeepVirFinder analysis. All contigs below this threshold will be filtered out."
-    default: 1500
-    minimum: 0
-
-  phamer-min-len:
-    type: number
-    description: "The minimum contig length required for PhaMer analysis. All contigs below this threshold will be filtered out."
-    default: 2000
-    minimum: 0
-
-  dvf-params:
-    type: string
-    description: "Additional command-line parameters to pass directly to DeepVirFinder."
-    default: ""
-
-  phamer-params:
-    type: string
-    description: "Additional command-line parameters to pass directly to PhaMer."
-    default: ""
-
-  virsorter2-params:
-    type: string
-    description: "Additional command-line parameters to pass directly to VirSorter2."
-    default: ""
-
-  vf-params:
-    type: string
-    description: "Additional command-line parameters to pass directly to VirFinder."
-    default: ""
-
-  vibrant-params:
-    type: string
-    description: "Additional command-line parameters to pass directly to VIBRANT."
-    default: ""
-
-  seeker-params:
-    type: string
-    description: "Additional command-line parameters to pass directly to Seeker."
-    default: ""
-
-  ppr-params:
-    type: string
-    description: "Additional command-line parameters to pass directly to PPR-META."
-    default: ""
-
-  dvf-cutoff:
-    type: number
-    description: "The minimum score threshold for DeepVirFinder to classify a contig as viral."
-    default: 0.7
-    minimum: 0
-    maximum: 1
-
-  dvf-pval:
-    type: number
-    description: "The maximum p-value threshold for DeepVirFinder to classify a contig as viral."
-    default: 0.05
-
-  phamer-pred:
-    type: string
-    description: "The focus category for which PhaMer will evaluate and identify target viral sequences."
-    default: "phage"
-    enum: ["phage", "non-phage"]
-
-  phamer-cutoff:
-    type: number
-    description: "The minimum score threshold for PhaMer prediction to classify a contig as viral."
-    default: 0
-
-  vf-cutoff:
-    type: number
-    description: "The minimum score threshold for VirFinder to classify a contig as viral."
-    default: 0
-
-  virsorter2-cutoff:
-    type: number
-    description: "The minimum score threshold for VirSorter2 to classify a contig as viral."
-    default: 0
-
-  seeker-cutoff:
-    type: number
-    description: "The minimum score threshold for Seeker to classify a contig as viral."
-    default: 0
-
-  ppr-cutoff:
-    type: number
-    description: "The minimum score threshold for PPR-META to classify a contig as viral."
-    default: 0
-
-  vibrant-cutoff:
-    type: number
-    description: "The minimum score threshold for VIBRANT to classify a contig as viral."
-    default: 0
-
-  coverm-params:
-    type: string
-    description: "Additional command-line parameters to pass directly to CoverM."
-    default: "--mapper minimap2-sr --min-read-percent-identity 95 --min-read-aligned-percent 75 --trim-min 10 --trim-max 90"
-
-  coverm-methods:
-    type: string
-    description: "The coverage and abundance calculation methods outputted by CoverM. Note: This parameter is primary used for debugging and should not be modified under normal operations."
-    default: "tpm rpkm"
-
-  iphop-host:
-    type: boolean
-    description: "If TRUE,  executes host prediction using iPHoP instead of CHERRY. Warning: iPHoP requires a very large reference database and has substantial memory overhead; CHERRY is recommended for standard runs."
-    default: False
 
   contig-min-len:
     type: integer
-    description: "The global minimum length threshold for evaluating sequences in the viral-identify module. Shorter contigs will be ignored."
+    description: "The minimum length of contig to analyze for viral-identify module. All contigs shorter than this length will be removed from analysis. "
     default: 0
 
   genomad-min-len:
     type: integer
-    description: "The minimum contig length required for geNomad analysis. All contigs below this threshold will be filtered out."
+    description: "The minimum length of contig to analyze by geNomad. All contigs shorter than this length will be removed from analysis. "
     default: 1000
 
   genomad-params:
     type: string
-    description: "Additional command-line parameters to pass to geNomad during the viral identification workflow."
+    description: "Additional parameters to pass  to geNomad for viral-identify."
     default: "--enable-score-calibration --relaxed"
 
   genomad-cutoff:
     type: number
-    description: "The core score cutoff threshold used by geNomad to identify a contig as viral."
+    description: "The minimum cutoff value for geNomad to identify a contig as viral. "
     default: 0.7
 
   genomad-cutoff-s:
     type: number
-    description: "The secondary filtering threshold used by geNomad to identify viral sequences. Setting this value to 0 disables the secondary filter (recommended)."
+    description: "The minimum cutoff value for geNomad to identify a contig as viral in secondary filter. If set to 0, secondary filter will be skipped (recommended)"
     default: 0
 
   checkv-original:
     type: boolean
-    description: "If TRUE,  forces the execution of the standard CheckV tool instead of the faster and more memory-efficient CheckV-PyHMMER implementation (not recommended)."
+    description: "Flag to use the original CheckV in place of memory-efficient and faster CheckV-PyHMMER (not recommended)."
     default: False
 
   checkv-params:
     type: string
-    description: "Additional command-line parameters to pass directly to CheckV."
+    description: "Additional parameters to pass  to CheckV."
     default: ""
 
   clustering-fast:
     type: boolean
-    description: "If TRUE, uses a highly optimized, MEGABlast-based clustering approach to expedite viral Operational Taxonomic Unit (vOTU) generation."
+    description: "Flag to use a faster, MEGABlast-based clustering approach for vOTU generation."
     default: True
 
   cdhit-params:
     type: string
-    description: "Additional command-line parameters to pass directly to CD-HIT."
+    description: "Additional parameters to pass  to CD-HIT."
     default: "-c 0.95 -aS 0.85 -d 400 -M 0 -n 5"
 
   vOTU-ani:
     type: number
-    description: "The average nucleotide identity (ANI) percentage threshold for fast clustering. Set to 95% by default in strict accordance with MIUViG guidelines (see https://doi.org/10.1038/nbt.4306)."
+    description: "The average nucleotide identity clustering threshold for --clustering-fast. Set by default to 95% according to the MIUViG guidelines, readi more at https://doi.org/10.1038/nbt.4306. "
     default: 95
     minimum: 0
     maximum: 100
 
   vOTU-targetcov:
     type: number
-    description: "The minimum target coverage percentage alignment threshold for fast clustering. Set to 85% by default following MIUViG guidelines (see https://doi.org/10.1038/nbt.4306)."
+    description: "The target coverage clustering threshold for --clustering-fast. Set by default to 85% according to the MIUViG guidelines, readi more at https://doi.org/10.1038/nbt.4306. "
     default: 85
     minimum: 0
     maximum: 100
 
   vOTU-querycov:
     type: number
-    description: "The alignment coverage percentage threshold for query sequences when utilizing the fast clustering method."
+    description: "The target query clustering threshold for --clustering-fast. "
     default: 0
     minimum: 0
     maximum: 100
 
+  dvf-min-len:
+    type: number
+    description: "The minimum length of contig to analyze by DeepVirFinder. All contigs shorter than this length will be removed from analysis. "
+    default: 1500
+    minimum: 0
+
+  phamer-min-len:
+    type: number
+    description: "The minimum length of contig to analyze by PhaMer. All contigs shorter than this length will be removed from analysis. "
+    default: 2000
+    minimum: 0
+
+  dvf-params:
+    type: string
+    description: "Additional parameters to pass  to DeepVirFinder."
+    default: ""
+
+  phamer-params:
+    type: string
+    description: "Additional parameters to pass  to PhaMer."
+    default: ""
+
+  virsorter2-params:
+    type: string
+    description: "Additional parameters to pass  to VirSorter2."
+    default: ""
+
+  vf-params:
+    type: string
+    description: "Additional parameters to pass  to VirFinder."
+    default: ""
+
+  vibrant-params:
+    type: string
+    description: "Additional parameters to pass  to VIBRANT."
+    default: ""
+
+  seeker-params:
+    type: string
+    description: "Additional parameters to pass  to Seekr."
+    default: ""
+
+  ppr-params:
+    type: string
+    description: "Additional parameters to pass  to PPR-META."
+    default: ""
+
+  dvf-cutoff:
+    type: number
+    description: "The minimum cutoff value for DeepVirFinder  to identify a contig as viral. "
+    default: 0.7
+    minimum: 0
+    maximum: 1
+
+  dvf-pval:
+    type: number
+    description: "The maximum cutoff value for DeepVirFinder p-value to identify a contig as viral. "
+    default: 0.05
+
+  phamer-pred:
+    type: string
+    description: "The category for which PhaMer will identify a contig  as viral. "
+    default: "phage"
+    enum: ["phage", "non-phage"]
+
+  phamer-cutoff:
+    type: number
+    description: "The minimum cutoff value for PhaMer prediction score to identify a contig as viral. "
+    default: 0
+
+  vf-cutoff:
+    type: number
+    description: "The minimum cutoff value for Virfinder score to identify a contig as viral. "
+    default: 0
+
+  virsorter2-cutoff:
+    type: number
+    description: "The minimum cutoff value for VirSorter2 to identify a contig as viral. "
+    default: 0
+
+  seeker-cutoff:
+    type: number
+    description: "The minimum cutoff value for Seeker to identify a contig as viral. "
+    default: 0
+
+  ppr-cutoff:
+    type: number
+    description: "The minimum cutoff value for PPR-META to identify a contig as viral. "
+    default: 0
+
+  vibrant-cutoff:
+    type: number
+    description: "The minimum cutoff value for VIBRANT to identify a contig as viral. "
+    default: 0
+
   phagcn-min-len:
     type: number
-    description: "The minimum contig length required for PhaGCN taxonomic assignment. Shorter contigs are automatically excluded."
+    description: "The minimum length of contig to analyze by geNomad. All contigs shorter than this length will be removed from analysis. "
     default: 1000
     minimum: 0
 
   phagcn-params:
     type: string
-    description: "Additional command-line parameters to pass directly to PhaGCN."
+    description: "Additional parameters to pass  to PhaGCN."
     default: ""
 
   genomad-params-tax:
     type: string
-    description: "Additional command-line parameters to pass to geNomad within the viral taxonomy module."
+    description: "Additional parameters to pass  to geNomad for the viral-taxonomy module."
     default: "--enable-score-calibration --relaxed"
+
+  coverm-params:
+    type: string
+    description: "Additional parameters to pass  to CoverM."
+    default: "--mapper minimap2-sr --min-read-percent-identity 95 --min-read-aligned-percent 75 --trim-min 10 --trim-max 90"
+
+  coverm-methods:
+    type: string
+    description: "The output methods of CoverM.DO NOT CHANGE this value, only used for debugging pruposes. "
+    default: "tpm rpkm"
+
+  iphop-host:
+    type: boolean
+    description: "Flag to indicate whether iPHoP host prediction should be carried out in place of CHERRY. Warning that iPHoP's database is extremely large and the memory usage is high. We hence recommend CHERRY. "
+    default: False
 
   iphop-cutoff:
     type: number
-    description: "The confidence or score cutoff percentage required by iPHoP to assign a viral sequence to a specific host taxon."
+    description: "The minimum cutoff value for iPHoP to consider a viral sequence as to belonging to a certain host. "
     default: 90
     minimum: 0
     maximum: 100
 
   iphop-params:
     type: string
-    description: "Additional command-line parameters to pass directly to iPHoP."
+    description: "Additional parameters to pass  to iPHoP."
     default: ""
 
   CHERRY-params:
     type: string
-    description: "Additional command-line parameters to pass directly to CHERRY."
+    description: "Additional parameters to pass  to CHERRY."
     default: ""
 
   PhaTYP-params:
     type: string
-    description: "Additional command-line parameters to pass directly to PhaTYP."
+    description: "Additional parameters to pass  to PhaTYP."
     default: ""
 
-  module:
+  eggNOG-params:
     type: string
-    description: "The specific functional component or workflow step of vOMIX-MEGA to execute."
-    default: "end-to-end"
-    enum: ["preprocess", "assembly", "viral-identify", "viral-refilter", "viral-benchmark", "viral-taxonomy", "viral-host", "viral-community", "viral-annotate", "prok-binning", "prok-community", "prok-annotate", "end-to-end", "checkv-pyhmmer", "cluster-fast", "setup-database", "symlink"]
+    description: "Additional parameters to pass  to eggNOG mapper."
+    default: "-m diamond --hmm_evalue 0.001 --hmm_score 60 --query-cover 20 --subject-cover 20 --tax_scope auto --target_orthologs all --go_evidence non-electronic --report_orthologs"
 
-  workdir:
+  PhaVIP-params:
     type: string
-    description: "The root working directory for the Snakemake execution environment. Avoid modifying this parameter unless performing advanced adjustments or debugging workflows."
-    default: "."
-
-  basedir:
-    type: string
-    description: "The directory containing the primary Snakefile configuration. Avoid modifying this parameter unless performing advanced configuration updates or pipeline debugging."
+    description: "Additional parameters to pass  to PhaVIP."
     default: ""
 
-  outdir:
+  mpa-params:
     type: string
-    description: "The path to the output directory where structured vOMIX-MEGA results will be stored. New paths will automatically create parent/nested directories; existing directories will have files appended or overwritten."
-    default: "results/"
+    description: "Additional parameters to pass  to MPA MetaPhlAn."
+    default: "--ignore_eukaryotes"
 
-  datadir:
+  mpa-indexv:
     type: string
-    description: "The directory housing raw FASTQ files. This directory is checked to verify if data has been pre-downloaded or is targeted as the output destination for new sequence fetches."
-    default: "fastq/"
+    description: "Index version to use for MetaPhlAn. If not already present, it will be downloaded."
+    default: "mpa_vOct22_CHOCOPhlAnSGB_202212"
 
-  samplelist:
-    type: string
-    description: "The path to the sample metadata list CSV file ('sample_list.csv') used to initialize samples and map their explicit paths (refer to the project Wiki at https://github.com/holab-hku/vOMIX-MEGA/wiki)."
-    default: ""
-
-  fasta:
-    type: string
-    description: "The path to an individual input FASTA file for modules that accept single-file generation. The target file extension must be '.fasta', '.fa', or '.fna'."
-    default: ""
-
-  fastadir:
-    type: string
-    description: "The path to a directory containing multiple input FASTA files. The pipeline will automatically select all valid filenames ending with '.fasta', '.fa', or '.fna'."
-    default: ""
-
-  sample-name:
-    type: string
-    description: "An explicit string token designating the output sample profile name when using individual file modes via the '--fasta' flag or 'config[\fasta\']'."
-    default: ""
-
-  assembly-ids:
-    type: string
-    description: "A structured array list specifying the sample identifiers mapping sequentially to files located inside your fastadir path (e.g. ['sampleA', 'SampleB']). Note: This feature is under evaluation; use with caution."
-    default: ""
-
-  latest-run:
-    type: string
-    description: "An internal automated timestamp tracking parameter utilized for transaction logging and run history maintenance within the hidden local '.vomix' subfolder."
-    default: ""
-
-  splits:
-    type: integer
-    description: "The number of parallel batches (N) to divide large datasets into when running tools like geNomad to optimize memory distribution. A value of 0 processes the data as a single block."
-    default: 0
-
-  keep-intermediates:
+  binning-consensus:
     type: boolean
-    description: "If TRUE, retains all heavy structural intermediate files created during downstream processes, such as raw fastp outputs prior to host decontamination routines."
+    description: "Flag to indicate whether a consensus binning approach using MetaBAT2, MaxBin2, and CONCOT should be performed. Followed by consesnsus pooling using DASToo. Otheriwse, a GPU-based VAMB approach will be taken."
     default: False
 
-  setup-database:
-    type: boolean
-    description: "Determines if database dependencies should be validated or retrieved when initializing non-setup modules. Snakemake tracks existing builds to prevent redundancy unless overridden via '--forcerun' (-F)."
-    default: True
+  strobealign-params:
+    type: string
+    description: "Additional parameters to pass  to strobe align."
+    default: ""
 
-  max-cores:
-    type: integer
-    description: "The maximum ceiling of processing cores allocated to separate parallel Snakemake rules. Note: This parameter manages pipeline distribution boundaries and operates independently of standard thread flags (-j/-n)."
-    default: 4
+  MetaBAT2-params:
+    type: string
+    description: "Additional parameters to pass  to MetaBAT2."
+    default: "-m 1500"
+
+  MaxBin2-params:
+    type: string
+    description: "Additional parameters to pass  to MaxBin2."
+    default: "-min_contig_length 1500 -max_iteration 50 -prob_threshold 0.9"
+
+  CONCOCT-params:
+    type: string
+    description: "Additional parameters to pass  to CONCOCT."
+    default: ""
+
+  jgi-summarize-params:
+    type: string
+    description: "Additional parameters to pass  to jgi-summraize command."
+    default: "--percentIdentity 97"
+
+  DASTool-params:
+    type: string
+    description: "Additional parameters to pass  to DASTool."
+    default: ""
+
+  checkm2-params:
+    type: string
+    description: "Additional parameters to pass  to CheckM2."
+    default: ""
+
+  galah-params:
+    type: string
+    description: "Additional parameters to pass  to galah."
+    default: "--ani 95 --min-aligned-fraction 15 --fragment-length 3000"
+
+  GTDBTk-identify-params:
+    type: string
+    description: "Additional parameters to pass  to GTDBTk identify command."
+    default: ""
+
+  GTDBTk-align-params:
+    type: string
+    description: "Additional parameters to pass  to GTDBTk align command."
+    default: ""
+
+  GTDBTk-classify-params:
+    type: string
+    description: "Additional parameters to pass  to GTDBTk classify command."
+    default: ""
+
+  VAMB-params:
+    type: string
+    description: "Additional parameters to pass  to VAMB."
+    default: "-m 100"
+
+  humann-params:
+    type: string
+    description: "Additional parameters to pass  to HUMAnN."
+    default: ""
 
 required:
-  - assembler
-  - megahit-min-len
-  - megahit-params
-  - spades-params
-  - spades-memory
+  - module
+  - workdir
+  - basedir
+  - outdir
+  - datadir
+  - samplelist
+  - fasta
+  - fastadir
+  - sample-name
+  - assembly-ids
+  - latest-run
+  - splits
+  - keep-intermediates
+  - setup-database
+  - max-cores
+  - NCBI-email
+  - NCBI-API-key
+  - hostile-index-db
+  - PhaBox2-db
+  - genomad-db
+  - virsorter2-db
+  - vibrant-db
+  - checkv-db
+  - iphop-db
+  - iphop-db-version
+  - iphop-db-basename
+  - eggNOG-db
+  - eggNOG-db-params
+  - humann-db
+  - checkm2-db
+  - GTDBTk-db
+  - GTDBTk-db-version
   - dwnld-params
   - dwnld-only
   - pigz-params
@@ -612,53 +579,23 @@ required:
   - decontam-host
   - hostile-aligner
   - hostile-aligner-params
-  - NCBI-email
-  - NCBI-API-key
-  - humann-params
-  - binning-consensus
-  - strobealign-params
-  - MetaBAT2-params
-  - MaxBin2-params
-  - CONCOCT-params
-  - jgi-summarize-params
-  - DASTool-params
-  - checkm2-params
-  - galah-params
-  - GTDBTk-identify-params
-  - GTDBTk-align-params
-  - GTDBTk-classify-params
-  - VAMB-params
-  - mpa-params
-  - mpa-indexv
-  - hostile-index-db
-  - PhaBox2-db
-  - genomad-db
-  - virsorter2-db
-  - vibrant-db
-  - checkv-db
-  - iphop-db
-  - iphop-db-basename
-  - eggNOG-db
-  - eggNOG-db-params
-  - humann-db
-  - checkm2-db
-  - GTDBTk-db
-  - GTDBTk-db-version
-  - dram-db
-  - dram-setup-params
-  - metacerberus-db
-  - metacerberus-setup-params
-  - pharokka-db
-  - phabox2-db-name
-  - phabox2-db-baselink
-  - iphop-db-version
-  - eggNOG-params
-  - PhaVIP-params
-  - virsorter2-annotate-params
-  - dram-v-annotate-params
-  - dram-v-distill-params
-  - metacerberus-params
-  - pharokka-params
+  - assembler
+  - megahit-min-len
+  - megahit-params
+  - spades-params
+  - spades-memory
+  - contig-min-len
+  - genomad-min-len
+  - genomad-params
+  - genomad-cutoff
+  - genomad-cutoff-s
+  - checkv-original
+  - checkv-params
+  - clustering-fast
+  - cdhit-params
+  - vOTU-ani
+  - vOTU-targetcov
+  - vOTU-querycov
   - dvf-min-len
   - phamer-min-len
   - dvf-params
@@ -677,40 +614,31 @@ required:
   - seeker-cutoff
   - ppr-cutoff
   - vibrant-cutoff
-  - coverm-params
-  - coverm-methods
-  - iphop-host
-  - contig-min-len
-  - genomad-min-len
-  - genomad-params
-  - genomad-cutoff
-  - genomad-cutoff-s
-  - checkv-original
-  - checkv-params
-  - clustering-fast
-  - cdhit-params
-  - vOTU-ani
-  - vOTU-targetcov
-  - vOTU-querycov
   - phagcn-min-len
   - phagcn-params
   - genomad-params-tax
+  - coverm-params
+  - coverm-methods
+  - iphop-host
   - iphop-cutoff
   - iphop-params
   - CHERRY-params
   - PhaTYP-params
-  - module
-  - workdir
-  - basedir
-  - outdir
-  - datadir
-  - samplelist
-  - fasta
-  - fastadir
-  - sample-name
-  - assembly-ids
-  - latest-run
-  - splits
-  - keep-intermediates
-  - setup-database
-  - max-cores
+  - eggNOG-params
+  - PhaVIP-params
+  - mpa-params
+  - mpa-indexv
+  - binning-consensus
+  - strobealign-params
+  - MetaBAT2-params
+  - MaxBin2-params
+  - CONCOCT-params
+  - jgi-summarize-params
+  - DASTool-params
+  - checkm2-params
+  - galah-params
+  - GTDBTk-identify-params
+  - GTDBTk-align-params
+  - GTDBTk-classify-params
+  - VAMB-params
+  - humann-params
