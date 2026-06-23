@@ -1,35 +1,8 @@
-module: "end-to-end"
-workdir: "."
-basedir: ""
-outdir: "results/"
-datadir: "fastq/"
-samplelist: ""
-fasta: ""
-fastadir: ""
-sample-name: ""
-assembly-ids: ""
-latest-run: ""
-splits: 0
-keep-intermediates: False
-setup-database: True
-max-cores: 4
-NCBI-email: "vomixtest@gmail.com"
-NCBI-API-key: ""
-hostile-index-db: "database/hostile"
-PhaBox2-db: "database/phabox_db_v2"
-genomad-db: "database/genomad"
-virsorter2-db: "database/virsorter2"
-vibrant-db: "database/vibrant"
-checkv-db: "database/checkv"
-iphop-db: "database/iphop"
-iphop-db-version: "iPHoP_db_Aug23_rw"
-iphop-db-basename: "Aug_2023_pub_rw"
-eggNOG-db: "database/eggNOGv2"
-eggNOG-db-params: ""
-humann-db: "database/humann"
-checkm2-db: "database/checkm2"
-GTDBTk-db: "database/GTDB-Tk"
-GTDBTk-db-version: "232"
+assembler: "megahit"
+megahit-min-len: 300
+megahit-params: "--prune-level 3"
+spades-params: "--meta"
+spades-memory: 250
 dwnld-params: ""
 dwnld-only: False
 pigz-params: ""
@@ -39,23 +12,53 @@ hostile-index-name: "human-t2t-hla"
 decontam-host: True
 hostile-aligner: "bowtie2"
 hostile-aligner-params: ""
-assembler: "megahit"
-megahit-min-len: 300
-megahit-params: "--prune-level 3"
-spades-params: "--meta"
-spades-memory: 250
-contig-min-len: 0
-genomad-min-len: 1000
-genomad-params: "--enable-score-calibration --relaxed"
-genomad-cutoff: 0.7
-genomad-cutoff-s: 0
-checkv-original: False
-checkv-params: ""
-clustering-fast: True
-cdhit-params: "-c 0.95 -aS 0.85 -d 400 -M 0 -n 5"
-vOTU-ani: 95
-vOTU-targetcov: 85
-vOTU-querycov: 0
+NCBI-email: "vomixtest@gmail.com"
+NCBI-API-key: ""
+humann-params: ""
+binning-consensus: False
+strobealign-params: ""
+MetaBAT2-params: "-m 1500"
+MaxBin2-params: "-min_contig_length 1500 -max_iteration 50 -prob_threshold 0.9"
+CONCOCT-params: ""
+jgi-summarize-params: "--percentIdentity 97"
+DASTool-params: ""
+checkm2-params: ""
+galah-params: "--ani 95 --min-aligned-fraction 15 --fragment-length 3000"
+GTDBTk-identify-params: ""
+GTDBTk-align-params: ""
+GTDBTk-classify-params: ""
+VAMB-params: "-m 100"
+mpa-params: "--ignore_eukaryotes"
+mpa-indexv: "mpa_vOct22_CHOCOPhlAnSGB_202212"
+hostile-index-db: "database/hostile"
+PhaBox2-db: "database/phabox_db_v2"
+genomad-db: "database/genomad"
+virsorter2-db: "database/virsorter2"
+vibrant-db: "database/vibrant"
+checkv-db: "database/checkv"
+iphop-db: "database/iphop"
+iphop-db-basename: "Aug_2023_pub_rw"
+eggNOG-db: "database/eggNOGv2"
+eggNOG-db-params: ""
+humann-db: "database/humann"
+checkm2-db: "database/checkm2"
+GTDBTk-db: "database/GTDB-Tk"
+GTDBTk-db-version: "220"
+dram-db: "database/DRAM"
+dram-setup-params: ""
+metacerberus-db: "database/metacerberus"
+metacerberus-setup-params: ""
+pharokka-db: "database/pharokka"
+phabox2-db-name: "phabox_db_v2"
+phabox2-db-baselink: "https://github.com/KennthShang/PhaBOX/releases/download/v2"
+iphop-db-version: "iPHoP_db_Aug23_rw"
+eggNOG-params: "-m diamond --hmm_evalue 0.001 --hmm_score 60 --query-cover 20 --subject-cover 20 --tax_scope auto --target_orthologs all --go_evidence non-electronic --report_orthologs"
+PhaVIP-params: ""
+virsorter2-annotate-params: "--min-length 1500"
+dram-v-annotate-params: ""
+dram-v-distill-params: ""
+metacerberus-params: "--hmm ALL"
+pharokka-params: "-g prodigal-gv --meta"
 dvf-min-len: 1500
 phamer-min-len: 2000
 dvf-params: ""
@@ -74,45 +77,40 @@ virsorter2-cutoff: 0
 seeker-cutoff: 0
 ppr-cutoff: 0
 vibrant-cutoff: 0
-phagcn-min-len: 1000
-phagcn-params: ""
-genomad-params-tax: "--enable-score-calibration --relaxed"
 coverm-params: "--mapper minimap2-sr --min-read-percent-identity 95 --min-read-aligned-percent 75 --trim-min 10 --trim-max 90"
 coverm-methods: "tpm rpkm"
 iphop-host: False
+contig-min-len: 0
+genomad-min-len: 1000
+genomad-params: "--enable-score-calibration --relaxed"
+genomad-cutoff: 0.7
+genomad-cutoff-s: 0
+checkv-original: False
+checkv-params: ""
+clustering-fast: True
+cdhit-params: "-c 0.95 -aS 0.85 -d 400 -M 0 -n 5"
+vOTU-ani: 95
+vOTU-targetcov: 85
+vOTU-querycov: 0
+phagcn-min-len: 1000
+phagcn-params: ""
+genomad-params-tax: "--enable-score-calibration --relaxed"
 iphop-cutoff: 90
 iphop-params: ""
 CHERRY-params: ""
 PhaTYP-params: ""
-eggNOG-params: "-m diamond --hmm_evalue 0.001 --hmm_score 60 --query-cover 20 --subject-cover 20 --tax_scope auto --target_orthologs all --go_evidence non-electronic --report_orthologs"
-PhaVIP-params: ""
-mpa-params: "--ignore_eukaryotes"
-mpa-indexv: "mpa_vOct22_CHOCOPhlAnSGB_202212"
-binning-consensus: True
-strobealign-params: ""
-MetaBAT2-params: "-m 1500"
-MaxBin2-params: "-min_contig_length 1500 -max_iteration 50 -prob_threshold 0.9"
-CONCOCT-params: ""
-jgi-summarize-params: "--percentIdentity 97"
-DASTool-params: ""
-checkm2-params: ""
-galah-params: "--ani 95 --min-aligned-fraction 15 --fragment-length 3000"
-GTDBTk-identify-params: ""
-GTDBTk-align-params: ""
-GTDBTk-classify-params: ""
-VAMB-params: "-m 100"
-humann-params: "--remove-temp-output"
-eggNOG-params: ""
-eggNOG-db: "database/eggNOGv2"
-virsorter2-annotate-params: "--min-length 1500"
-dram-v-annotate-params: ""
-dram-v-distill-params: ""
-dram-db: "database/DRAM"
-dram-setup-params: ""
-metacerberus-db : "database/metacerberus"
-metacerberus-setup-params: ""
-metacerberus-params: "--hmm ALL"
-pharokka-db: "database/pharokka"
-pharokka-params:  "-g prodigal-gv --meta"
-phabox2-db-name: "phabox_db_v2" # Name to download the database from {phabox-db-baselink}/{phabox-db-name}.zip format 
-phabox2-db-baselink: "https://github.com/KennthShang/PhaBOX/releases/download/v2"
+module: "end-to-end"
+workdir: "."
+basedir: ""
+outdir: "results/"
+datadir: "fastq/"
+samplelist: ""
+fasta: ""
+fastadir: ""
+sample-name: ""
+assembly-ids: ""
+latest-run: ""
+splits: 0
+keep-intermediates: False
+setup-database: True
+max-cores: 4
