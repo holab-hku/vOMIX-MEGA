@@ -1,5 +1,5 @@
 class Module:
-    def __init__(self, module, workdir, outdir, datadir, samplelist, fasta="", fastadir="", sample_name="", assembly_ids="", latest_run="", splits=0, viral_binning=False, keep_intermediates=False, setup_database=True, max_cores=4, NCBI_email="", NCBI_API_key="", custom_config=None):
+    def __init__(self, module, workdir, outdir, datadir, samplelist, fasta="", fastadir="", sample_name="", assembly_ids="", latest_run="", splits=0, viral_binning=False, keep_intermediates=False, setup_database=True, max_cores=4, ncbi_email="", ncbi_api_key="", custom_config=None):
         self.module = module
         self.workdir = workdir
         self.outdir = outdir
@@ -15,6 +15,6 @@ class Module:
         self.keep_intermediates = keep_intermediates
         self.setup_database = setup_database
         self.max_cores = max_cores
-        self.NCBI_email = NCBI_email
-        self.NCBI_API_key = NCBI_API_key
+        self.ncbi_email = ncbi_email
+        self.ncbi_api_key = ncbi_api_key
         self.custom_config = custom_config
