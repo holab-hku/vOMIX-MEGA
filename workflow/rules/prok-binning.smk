@@ -85,8 +85,7 @@ rule strobealign:
     parameters=config["strobealign-params"],
     tmpdir=os.path.join(tmpd, "strobealign/{sample_id}"),
   log: 
-    strobealign=os.path.join(logdir, "strobealign_{sample_id}.log"), 
-    samtools=os.path.join(logdir, "strobealign_samtools_{sample_id}.log"),
+    os.path.join(logdir, "strobealign_{sample_id}.log")
   benchmark: os.path.join(benchmarks, "strobealign_{sample_id}.log")
   conda: "../envs/strobealign.yml"
   threads: 4
@@ -102,14 +101,14 @@ rule strobealign:
         {input.fasta} \
         {input.R1} \
         {input.R2} \
-        {params.parameters} 2> {log.strobealign} | samtools sort - -o {params.tmpdir}/tmp.bam 2> {log.samtools}
+        {params.parameters} 2> {log} | samtools sort - -o {params.tmpdir}/tmp.bam 2>> {log}
     
     mv {params.tmpdir}/tmp.bam {output}
     """
 
 rule indexbam:
   name: "prok-binning.smk index sorted BAM"
-  localrule: True
+  localrule: False
   input:
     relpath("binning/prok/samples/{sample_id}/strobealign/{sample_id}.sorted.bam")
   output:
