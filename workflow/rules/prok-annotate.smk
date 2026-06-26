@@ -2,7 +2,7 @@ logdir=relpath("annotate/prok/logs")
 benchmarks=relpath("annotate/prok/benchmarks")
 tmpd = relpath("annotate/prok/tmp")
 
-email=config["email"]
+email=config["NCBI-email"]
 api_key=config["NCBI-API-key"]
 nowstr=config["latest-run"]
 outdir=config["outdir"]

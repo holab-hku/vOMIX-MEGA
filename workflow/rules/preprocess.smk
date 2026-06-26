@@ -2,7 +2,7 @@ logdir=relpath("preprocess/logs")
 benchmarks=relpath("preprocess/benchmarks")
 tmpd = relpath("preprocess/tmp")
 
-email=config["email"]
+email=config["NCBI-email"]
 api_key=config["NCBI-API-key"]
 nowstr=config["latest-run"]
 outdir=config["outdir"] 
@@ -35,7 +35,7 @@ if config['dwnld-only']:
       touch {output}
       """
 
-elif config['intermediate']:
+elif config['keep-intermediates']:
   rule done:
     name: "preprocessing.py Done. deleting all tmp files"
     localrule: True
@@ -67,7 +67,7 @@ else:
       intermediate=expand(relpath("preprocess/samples/{sample_id}/output/{sample_id}_R{i}_cut.trim.filt.nodecontam.fastq.gz"), sample_id=samples.keys(), i=[1, 2])
     shell:
       """
-      rm {params.intermediate}
+      rm -f {params.intermediate}
       touch {output}
       """
 
@@ -154,19 +154,27 @@ if config["decontam-host"]:
       rm -rf {params.tmpdir}
       """
 
+  if config['hostile-aligner'] == "minimap2":
+    index_path = os.path.join(config['hostile-index-db'], (config['hostile-index-name'] + ".fa.gz"))
+    index_check = os.path.join(config['hostile-index-db'], (config['hostile-index-name'] + ".fa.gz"))
+  elif config['hostile-aligner'] == "bowtie2":
+    index_path = os.path.join(config['hostile-index-db'], config['hostile-index-name'])
+    index_check = expand((os.path.join(config['hostile-index-db'], config['hostile-index-name']) +  ".{i}.bt2"), i = [1, 2, 3, 4])
+
   rule decontam:
     name: "preprocess.py Hostile host decontamination"
     input:
       R1=relpath("preprocess/samples/{sample_id}/output/{sample_id}_R1_cut.trim.filt.nodecontam.fastq.gz"),
-      R2=relpath("preprocess/samples/{sample_id}/output/{sample_id}_R2_cut.trim.filt.nodecontam.fastq.gz")
+      R2=relpath("preprocess/samples/{sample_id}/output/{sample_id}_R2_cut.trim.filt.nodecontam.fastq.gz"), 
+      indexdb=index_check
     output:
       R1=relpath("preprocess/samples/{sample_id}/output/{sample_id}_R1_cut.trim.filt.fastq.gz"), 
       R2=relpath("preprocess/samples/{sample_id}/output/{sample_id}_R2_cut.trim.filt.fastq.gz"),
     params:
       parameters=config["hostile-params"], 
       aligner=config["hostile-aligner"],
-      alignerp=config["aligner-params"],
-      indexpath=config["index-path"], 
+      alignerp=config["hostile-aligner-params"],
+      indexpath=index_path,
       outdir=relpath("preprocess/samples/{sample_id}/output"),
       tmpdir=os.path.join(tmpd, "hostile/{sample_id}")
     log: os.path.join(logdir, "hostile_{sample_id}.log")
@@ -187,7 +195,7 @@ if config["decontam-host"]:
           --aligner-args "{params.alignerp}" \
           --index {params.indexpath} \
           --threads {threads} \
-          --out-dir {params.tmpdir} &> {log}
+          --output {params.tmpdir} &> {log}
           
       mv {params.tmpdir}/{wildcards.sample_id}_R1_cut.trim.filt.nodecontam.clean_1.fastq.gz {output.R1}
       mv {params.tmpdir}/{wildcards.sample_id}_R2_cut.trim.filt.nodecontam.clean_2.fastq.gz {output.R2}

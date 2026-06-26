@@ -11,7 +11,7 @@ os.makedirs(tmpd, exist_ok=True)
 methodslist = config["coverm-methods"].split()
 methods_c = ",".join(methodslist)
 
-email=config["email"]
+email=config["NCBI-email"]
 api_key=config["NCBI-API-key"]
 nowstr=config["latest-run"]
 outdir=config["outdir"]

@@ -45,7 +45,7 @@ rule iphop:
     detailed=relpath("host/output/detailed_output_by_tool.csv")
   params:
     outdir=relpath("host/output/"),
-    dbdir=config['iphop-dbdir'], 
+    dbdir=config['iphop-db'], 
     cutoff=config['iphop-cutoff'],
     parameters=config['iphop-params'], 
     tmpdir=tmpd

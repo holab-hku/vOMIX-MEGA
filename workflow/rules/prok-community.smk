@@ -2,7 +2,7 @@ logdir = relpath("community/metaphlan/logs")
 tmpd = relpath("community/metaphlan/tmp")
 benchmarks = relpath("community/metaphlan/benchmarks")
 
-email=config["email"]
+email=config["NCBI-email"]
 api_key=config["NCBI-API-key"]
 nowstr=config["latest-run"]
 outdir=config["outdir"]

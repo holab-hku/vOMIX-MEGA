@@ -4,7 +4,7 @@ logdir=relpath("identify/viral/logs")
 benchmarks=relpath("identify/viral/benchmarks")
 tmpd=relpath("identify/viral/tmp")
 
-email=config["email"]
+email=config["NCBI-email"]
 api_key=config["NCBI-API-key"]
 nowstr=config["latest-run"]
 outdir=config["outdir"]

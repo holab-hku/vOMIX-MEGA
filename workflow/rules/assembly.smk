@@ -6,7 +6,7 @@ benchmarks = relpath(os.path.join("assembly", assembler, "benchmarks"))
 os.makedirs(logdir, exist_ok=True)
 os.makedirs(benchmarks, exist_ok=True)
 
-email=config["email"]
+email=config["NCBI-email"]
 api_key=config["NCBI-API-key"]
 nowstr=config["latest-run"]
 outdir=config["outdir"]
@@ -55,7 +55,7 @@ rule megahit:
   conda: "../envs/megahit.yml"
   threads: 24
   resources:
-    mem_mb = lambda wildcards, attempt, threads, input: max(attempt * input.size_mb * 5, 8000)
+    mem_mb = lambda wildcards, attempt, threads, input: 8000 * attempt
   shell:
     """
     rm -rf {params.tmpdir}/{wildcards.assembly_id} {params.outdir}/*

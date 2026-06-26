@@ -4,7 +4,7 @@ logdir=relpath("identify/viral/logs")
 benchmarks=relpath("identify/viral/benchmarks")
 tmpd=relpath("identify/viral/tmp")
 
-email=config["email"]
+email=config["NCBI-email"]
 api_key=config["NCBI-API-key"]
 nowstr=config["latest-run"]
 outdir=config["outdir"]
@@ -62,7 +62,7 @@ rule filter_contigs:
   output:
     relpath("identify/viral/samples/{sample_id}/tmp/final.contigs.filtered.fa")
   params:
-    minlen=config['contig-minlen'],
+    minlen=config['contig-min-len'],
     outdir=relpath("identify/viral/samples/{sample_id}/tmp"), 
     tmpdir=os.path.join(tmpd, "contigs/{sample_id}")
   log: os.path.join(logdir, "filtercontig_{sample_id}.log")
@@ -96,7 +96,7 @@ rule genomad_classify:
   log: os.path.join(logdir, "genomad_{sample_id}.log")
   benchmark: os.path.join(benchmarks, "genomad_{sample_id}.log")
   conda: "../envs/genomad.yml"
-  threads: 64
+  threads: 32
   resources:
     mem_mb=lambda wildcards, attempt, input: 24 * 10**3 * attempt
   shell:
@@ -129,7 +129,7 @@ rule genomad_filter:
     hits=relpath("identify/viral/samples/{sample_id}/output/viralhits_list")
   params:
     script="workflow/scripts/genomad_filter.py", 
-    minlen=config['genomad-minlen'],
+    minlen=config['genomad-min-len'],
     cutoff=config['genomad-cutoff'],
     outdir=relpath("identify/viral/samples/{sample_id}/output/"),
     tmpdir=os.path.join(tmpd, "filter/{sample_id}")

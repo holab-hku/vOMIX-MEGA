@@ -13,23 +13,28 @@ from rich.console import Console
 from rich.progress import Progress
 from rich.layout import Layout
 from rich.panel import Panel
+
+from snakemake.utils import validate
+
 console = Console()
 
 configfile: "config/config.yml"
 workdir: config["workdir"]
-config["basedir"] =  workflow.basedir # Only run this IF the database directory is the default
+config["basedir"] =  workflow.basedir
 
 #print(f"The current Snakefile is located at: {workflow.snakefile}")
 #print(f"The base directory of the workflow is: {workflow.basedir}")
 
 # Relatavise all database directories to basedir
+# WARNING: For wrapper script, ONLY perform this IF the database directories are default. 
 
-db_list = ["PhaBox2-db", "genomad-db", "virsorter2-db", "vibrant-db", 
-    "checkv-db", "iphop-db", "eggNOG-db", "humann-db", "checkm2-db", "GTDBTk-db"]
+db_list = [key for key in config if key.endswith("db")]
 
 for db_dir in db_list:
-  config[db_dir] = os.path.join(config["basedir"], "..", config[db_dir])
+  config[db_dir] = os.path.join(config["basedir"], config[db_dir])
 
+# Validate config file using schema
+validate(config, "../config/config.schema.yml")
 
 # Important utility functions
 
@@ -156,7 +161,7 @@ targets = []
 if config["setup-database"] or config["module"] == "setup-database":
   include: "rules/setup-database.smk"
   if config["module"] == "setup-database":
-    targets += [os.path.join(config["basedir"], "workflow/database/.benchmarks/done.log")]
+    targets += [os.path.join(config["basedir"], "database/.benchmarks/done.log")]
 
 
 # fix symlink
@@ -165,19 +170,19 @@ if config["module"] == "symlink":
   targets = [relpath(".vomix/log/symlink_done.log")]
 
 # pre-process
-if config["module"] == "preprocess" or config["module"] == "end-to-end":
+if config["module"] == "preprocess" or config["module"] == "viral-end-to-end":
   include: "rules/preprocess.smk"
   targets += [relpath("preprocess/logs/done.log")]
 
 
 # assembly 
-if config["module"] == "assembly" or config["module"] == "end-to-end":
+if config["module"] == "assembly" or config["module"] == "viral-end-to-end":
   include: "rules/assembly.smk"
   targets += [relpath(os.path.join("assembly", assembler, "logs/done.log"))]
 
 
 # identify (viral)
-if config["module"] == "viral-identify" or config["module"] == "end-to-end":
+if config["module"] == "viral-identify" or config["module"] == "viral-end-to-end":
   include: "rules/viral-identify.smk"
   include: "rules/checkv-pyhmmer.smk"
   include: "rules/clustering.smk"
@@ -209,24 +214,29 @@ if config["module"] == "cluster-fast":
   targets += [relpath("identify/viral/logs/clustering-done.log")]
 
 # viral taxonomy
-if config["module"] == "viral-taxonomy" or config["module"] == "end-to-end":
+if config["module"] == "viral-taxonomy" or config["module"] == "viral-end-to-end":
   include: "rules/viral-taxonomy.smk"
   targets += [relpath("taxonomy/viral/logs/done.log")]
 
 # community (viral)
-if config["module"] == "viral-community" or config["module"] == "end-to-end":
+if config["module"] == "viral-community" or config["module"] == "viral-end-to-end":
   include: "rules/viral-community.smk"
   targets += [relpath("community/viral/logs/done.log")]
 
 # binning (prokaryotic)
-if config["module"] == "prok-binning" or config["module"] == "end-to-end":
+if config["module"] == "prok-binning" or config["module"] == "viral-end-to-end":
   include: "rules/prok-binning.smk"
   targets += [relpath("binning/prok/logs/done.log")]
 
 # vrial host 
-if config["module"] == "viral-host" or config["module"] == "end-to-end":
+if config["module"] == "viral-host" or config["module"] == "viral-end-to-end":
   targets += [relpath("host/logs/done.log")]
   include: "rules/viral-host.smk"
+
+# annotation (viral)
+if config["module"] == "viral-annotate" or config["module"] == "viral-end-to-end":
+  include: "rules/viral-annotate.smk"
+  targets += [relpath("annotate/viral/logs/done.log")]
 
 # community (prokaryotic)
 if config["module"] == "prok-community":
@@ -237,6 +247,7 @@ if config["module"] == "prok-community":
 if config["module"] == "prok-annotate":
   include: "rules/prok-annotate.smk"
   targets += [relpath("annotate/prok/logs/done.log")]
+
 
 ###############
 # MASTER RULE #

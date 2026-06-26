@@ -4,7 +4,7 @@ logdir=relpath("binning/prok/logs")
 benchmarks=relpath("binning/prok/benchmarks")
 tmpd=relpath("binning/prok/tmp")
 
-email=config["email"]
+email=config["NCBI-email"]
 api_key=config["NCBI-API-key"]
 nowstr=config["latest-run"]
 outdir=config["outdir"]
@@ -36,7 +36,7 @@ if config["binning-consensus"]:
       expand(relpath("binning/prok/output/no-drep/unbinned/{assembly_id}_unbinned.fasta"), assembly_id=assemblies.keys()),
       relpath("binning/prok/output/no-drep/checkm2/quality_report.tsv"), 
       relpath("binning/prok/output/clusters.tsv"), 
-      relpath("binning/prok/output/taxonomy/gtdbtk/identify/gtdbtk.log")
+      relpath("binning/prok/output/taxonomy/gtdbtk/classify/gtdbtk.log")
     output:
       os.path.join(logdir, "done.log")
     params:
@@ -84,7 +84,8 @@ rule strobealign:
   params:
     parameters=config["strobealign-params"],
     tmpdir=os.path.join(tmpd, "strobealign/{sample_id}"),
-  log: os.path.join(logdir, "strobealign_{sample_id}.log")
+  log: 
+    os.path.join(logdir, "strobealign_{sample_id}.log")
   benchmark: os.path.join(benchmarks, "strobealign_{sample_id}.log")
   conda: "../envs/strobealign.yml"
   threads: 4
@@ -100,14 +101,14 @@ rule strobealign:
         {input.fasta} \
         {input.R1} \
         {input.R2} \
-        {params.parameters} 2>{log} | samtools sort - -o {params.tmpdir}/tmp.bam 2> {log}
+        {params.parameters} 2> {log} | samtools sort - -o {params.tmpdir}/tmp.bam 2>> {log}
     
     mv {params.tmpdir}/tmp.bam {output}
     """
 
 rule indexbam:
   name: "prok-binning.smk index sorted BAM"
-  localrule: True
+  localrule: False
   input:
     relpath("binning/prok/samples/{sample_id}/strobealign/{sample_id}.sorted.bam")
   output:
@@ -542,11 +543,12 @@ rule GTDBTk_identify:
     tsv=relpath("binning/prok/output/clusters.tsv"), 
     db=os.path.join(config["GTDBTk-db"], ("gtdbtk_r" + config["GTDBTk-db-version"] + "_data.tar.gz"))
   output:
-    relpath("binning/prok/output/taxonomy/gtdbtk/identify/gtdbtk.log")
+    relpath("binning/prok/output/taxonomy/gtdbtk/identify/identify/gtdbtk.translation_table_summary.tsv")
   params:
     parameters=config["GTDBTk-identify-params"], 
     outdir=relpath("binning/prok/output/taxonomy/gtdbtk/identify"), 
     indir=relpath("binning/prok/output/drep"), 
+    dbdir=os.path.join(config["GTDBTk-db"], "release" + config["GTDBTk-db-version"]),
     tmpdir=os.path.join(tmpd, "gtdbtk/identify")
   log: os.path.join(logdir, "gtdbtk_identify.log")
   benchmark: os.path.join(benchmarks, "gtdbtk_identify.log")
@@ -559,7 +561,7 @@ rule GTDBTk_identify:
     rm -rf {params.tmpdir} {params.outdir}
     mkdir -p {params.tmpdir} {params.outdir}
 
-    conda env config vars set GTDBTK_DATA_PATH="{input.db}"
+    conda env config vars set GTDBTK_DATA_PATH="{params.dbdir}"
 
     gtdbtk identify \
         --genome_dir {params.indir} \
@@ -574,28 +576,43 @@ rule GTDBTk_identify:
 rule GTDBTk_align:
   name: "prok-binning.smk GTDB-Tk align"
   input:
-    relpath("binning/prok/output/taxonomy/gtdbtk/identify/gtdbtk.log")
+    relpath("binning/prok/output/taxonomy/gtdbtk/identify/identify/gtdbtk.translation_table_summary.tsv"), 
+    db=os.path.join(config["GTDBTk-db"], ("gtdbtk_r" + config["GTDBTk-db-version"] + "_data.tar.gz"))
   output:
-    relpath("binning/prok/output/taxonomy/gtdbtk/align/gtdbtk.log")
+    relpath("binning/prok/output/taxonomy/gtdbtk/align/align/gtdbtk.bac120.filtered.tsv")
   params:
     parameters=config["GTDBTk-align-params"],
     outdir=relpath("binning/prok/output/taxonomy/gtdbtk/align"),
-    indir=relpath("binning/prok/output/taxonomy/gtdbtk/identify"),
+    identifydir=relpath("binning/prok/output/taxonomy/gtdbtk/identify"),
+    dbdir=os.path.join(config["GTDBTk-db"], "release" + config["GTDBTk-db-version"]),
     tmpdir=os.path.join(tmpd, "gtdbtk/align")
   log: os.path.join(logdir, "gtdbtk_align.log")
   benchmark: os.path.join(benchmarks, "gtdbtk_align.log")
   conda: "../envs/gtdbtk.yml"
-  threads: 64
+  threads: 2
   resources:
-    mem_mb=lambda wildcards, attempt, input: 100 * 10**3 * attempt
+    mem_mb=lambda wildcards, attempt, input: 140 * 10**3 * attempt
   shell:
     """ 
+    rm -rf {params.tmpdir} {params.outdir}
+    mkdir -p {params.tmpdir} {params.outdir}
+
+    conda env config vars set GTDBTK_DATA_PATH="{params.dbdir}"
+
+    gtdbtk align \
+        --identify_dir {params.identifydir} \
+        --out_dir {params.tmpdir} \
+        --cpus {threads} \
+        {params.parameters} 2> {log}
+
+    mv {params.tmpdir}/* {params.outdir}
     """
 
 rule GTDBTk_classify:
   name: "prok-binning.smk GTDB-Tk classify"
   input:
-    relpath("binning/prok/output/taxonomy/gtdbtk/align/gtdbtk.log")
+    relpath("binning/prok/output/taxonomy/gtdbtk/align/align/gtdbtk.bac120.filtered.tsv"), 
+    db=os.path.join(config["GTDBTk-db"], ("gtdbtk_r" + config["GTDBTk-db-version"] + "_data.tar.gz"))
   output:
     relpath("binning/prok/output/taxonomy/gtdbtk/classify/gtdbtk.log"),
   params:
@@ -603,6 +620,7 @@ rule GTDBTk_classify:
     outdir=relpath("binning/prok/output/taxonomy/gtdbtk/classify"),
     genomedir=relpath("binning/prok/output/drep"),
     aligndir=relpath("binning/prok/output/taxonomy/gtdbtk/align"),
+    dbdir=os.path.join(config["GTDBTk-db"], "release" + config["GTDBTk-db-version"]),
     tmpdir=os.path.join(tmpd, "gtdbtk/classify")
   log: os.path.join(logdir, "gtdbtk_classify.log")
   benchmark: os.path.join(benchmarks, "gtdbtk_classify.log")
@@ -612,4 +630,17 @@ rule GTDBTk_classify:
     mem_mb=lambda wildcards, attempt, input: 8 * 10**3 * attempt
   shell:
     """ 
+    rm -rf {params.tmpdir} {params.outdir}
+    mkdir -p {params.tmpdir} {params.outdir}
+
+    conda env config vars set GTDBTK_DATA_PATH="{params.dbdir}"
+
+    gtdbtk classify \
+        --genome_dir {params.genomedir} \
+        --align_dir {params.aligndir} \
+        --out_dir {params.tmpdir} \
+        --cpus {threads} \
+        {params.parameters} 2> {log}
+
+    mv {params.tmpdir}/* {params.outdir}
     """

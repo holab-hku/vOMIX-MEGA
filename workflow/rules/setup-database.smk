@@ -1,8 +1,8 @@
 import os
 
-logdir=os.path.join(config['basedir'], "workflow/database/.logs")
-benchmarks=os.path.join(config['basedir'], "workflow/database/.benchmarks")
-tmpd=os.path.join(config['basedir'], "workflow/database/.tmp")
+logdir=os.path.join(config['basedir'], "database/.logs")
+benchmarks=os.path.join(config['basedir'], "database/.benchmarks")
+tmpd=os.path.join(config['basedir'], "database/.tmp")
 
 os.makedirs(logdir, exist_ok=True)
 os.makedirs(benchmarks, exist_ok=True)
@@ -16,7 +16,7 @@ rule done:
   localrule: True
   input:
     os.path.join(config['genomad-db'], "genomad_db.source"), 
-    expand("workflow/database/checkv/hmm_db/checkv_hmms/{index}.hmm", index=range(1, 81)), 
+    expand(os.path.join(config['checkv-db'], "hmm_db/checkv_hmms/{index}.hmm"), index=range(1, 81)),
     os.path.join(config['PhaBox2-db'], "genus2hostlineage.pkl"), 
     os.path.join(config["GTDBTk-db"], ("gtdbtk_r" + config["GTDBTk-db-version"] + "_data.tar.gz"))
   output:
@@ -27,8 +27,56 @@ rule done:
     """
 
 
+
+if config['hostile-aligner'] == "minimap2":
+  rule hostile_db:
+    name: "setup-database.smk Hostile minimap2 index 12.1 G"
+    output: 
+      os.path.join(config['hostile-index-db'], (config['hostile-index-name'] + ".fa.gz")), 
+      os.path.join(config['hostile-index-db'], (config['hostile-index-name'] + ".mmi"))
+    params:
+      outdir=config['hostile-index-db'], 
+      index=config['hostile-index-name']
+    log: os.path.join(logdir, "hostile_minimap2_db.log")
+    benchmark: os.path.join(logdir, "benchmarks_minimap2_db.log")
+    conda: "../envs/hostile.yml"
+    shell:
+      """
+      rm -rf {output}
+      mkdir -p {params.outdir}
+
+      hostile index delete --all &> {log}
+      hostile index fetch --name {params.index} --minimap2 &>> {log}
+
+      DB_DIR=$(hostile index list -a 2>&1 | grep "Local cache:" | cut -d"'" -f2)
+      mv ${{DB_DIR}}/* {params.outdir}
+      """
+
+elif config['hostile-aligner'] == "bowtie2":
+  rule hostile_db:
+    name: "setup-database.smk Hostile Bowtie2 index 8.0 G"
+    output: 
+      expand((os.path.join(config['hostile-index-db'], config['hostile-index-name']) +  ".{i}.bt2"), i = [1, 2, 3, 4])
+    params:
+      outdir=config['hostile-index-db'],
+      index=config['hostile-index-name']
+    log: os.path.join(logdir, "hostile_bowite_db.log")
+    benchmark: os.path.join(logdir, "benchmarks_bowite_db.log")
+    conda: "../envs/hostile.yml"
+    shell:
+      """
+      rm -rf {output} 
+      mkdir -p {params.outdir}
+      
+      hostile index delete --all &> {log}
+      hostile index fetch --name {params.index} --bowtie2 &>> {log}
+
+      DB_DIR=$(hostile index list -a 2>&1 | grep "Local cache:" | cut -d"'" -f2)
+      mv ${{DB_DIR}}/* {params.outdir} 
+      """
+
 rule genomad_db:
-  name: "setup-database.smk geNomad database (1.3 G)"
+  name: "setup-database.smk geNomad database 1.3 G"
   localrule: True
   output: os.path.join(config['genomad-db'], "genomad_db.source")
   params:
@@ -49,9 +97,9 @@ rule genomad_db:
 
 
 rule checkv_db:
-  name: "setup-database.smk CheckV database (7.3 G)"
+  name: "setup-database.smk CheckV database 7.3 G"
   localrule: True
-  output: expand("workflow/database/checkv/hmm_db/checkv_hmms/{index}.hmm", index=range(1, 81))
+  output: expand(os.path.join(config['checkv-db'], "hmm_db/checkv_hmms/{index}.hmm"), index=range(1, 81))
   params:
     outdir=config['checkv-db'],
     tmpdir=os.path.join(tmpd, "checkv/db")
@@ -70,10 +118,12 @@ rule checkv_db:
 
 
 rule phabox2_db:
-  name: "setup-database.smk PhaBox2 database (1.6 G)"
+  name: "setup-database.smk PhaBox2 database 1.6 G"
   localrule: True
   output: os.path.join(config['PhaBox2-db'], "genus2hostlineage.pkl")
   params:
+    dbname=config['phabox2-db-name'],
+    dblink=config['phabox2-db-baselink'],
     outdir=config['PhaBox2-db'],
     tmpdir=os.path.join(tmpd, "PhaBox2/db")
   log: os.path.join(logdir, "PhaBox2_db.log")
@@ -82,19 +132,20 @@ rule phabox2_db:
   threads: 1
   shell:
     """
-    rm -rf {params.outdir} {params.tmpdir}/phabox_db_v2
+    rm -rf {params.outdir} {params.tmpdir}/*
     mkdir -p {params.tmpdir} {params.outdir}
 
-    wget -O {params.tmpdir}/phabox_db_v2.zip https://github.com/KennthShang/PhaBOX/releases/download/v2/phabox_db_v2.zip &> {log}
-    unzip -o {params.tmpdir}/phabox_db_v2.zip -d {params.tmpdir} > {log}
+    wget -O {params.tmpdir}/{params.dbname}.zip {params.dblink}/{params.dbname}.zip &> {log}
+    unzip -o {params.tmpdir}/{params.dbname}.zip -d {params.tmpdir} > {log}
 
-    mv {params.tmpdir}/phabox_db_v2/* {params.outdir}
+    mv {params.tmpdir}/{params.dbname}/* {params.outdir}
+    rm -rf {params.tmpdir}/*
     """
 
 
 rule virsorter2_db:
-  name: "setup-database.smk VirSorter2 setup database (X.X G)"
-  output: os.path.join(config['virsorter2-db'], "db.tgz")
+  name: "setup-database.smk VirSorter2 setup database 9.4 G"
+  output: os.path.join(config['virsorter2-db'], "Done_all_setup")
   params:
     outdir=config['virsorter2-db'],
     tmpdir=os.path.join(tmpd, "virsorter2/db")
@@ -118,11 +169,11 @@ rule virsorter2_db:
     """
 
 rule vibrant_db:
-  name: "setup-database.smk VirSorter2 setup database (11.1 G)"
+  name: "setup-database.smk VIBRANT setup database 11.3 G"
   output: os.path.join(config['vibrant-db'], "files/VIBRANT_machine_model.sav")
   params:
     outdir=config['vibrant-db'],
-    tpmdir=os.path.join(tmpd, "vibrant/db")
+    tmpdir=os.path.join(tmpd, "vibrant/db")
   log: os.path.join(logdir, "vibrant_database.log")
   benchmark: os.path.join(benchmarks, "vibrant_database.log")
   conda: "../envs/vibrant.yml"
@@ -135,14 +186,14 @@ rule vibrant_db:
     mkdir -p {params.outdir}
 
     download-db.sh {params.tmpdir}
-    python3 {params.tmpdir}/database/VIBRANT_setup.py
+    #python3 {params.tmpdir}/databases/VIBRANT_setup.py
 
-    mv {params.tmpdir}/* {params.output}
+    mv {params.tmpdir}/* {params.outdir}
     """
 
 
 rule chocophlan_db:
-  name: "setup-database.smk HUMAnN3 chocophlan database (16.4 G)"
+  name: "setup-database.smk HUMAnN3 chocophlan database 16.4 G"
   output: os.path.join(config['humann-db'], "chocophlan/alaS.centroids.v201901_v31.ffn.gz")
   params:
     outdir=config['humann-db'],
@@ -165,7 +216,7 @@ rule chocophlan_db:
 
 
 rule uniref_db:
-  name: "setup-database.smk HUMAnN3 uniref database (19.7 G)"
+  name: "setup-database.smk HUMAnN3 uniref database 19.7 G"
   output: os.path.join(config['humann-db'], "uniref/uniref90_201901b_full.dmnd")
   params:
     outdir=config['humann-db'],
@@ -188,7 +239,7 @@ rule uniref_db:
 
 
 rule utilitymap_db:
-  name: "setup-database.smk HUMAnN3 utility mapping database (2.5 G)"
+  name: "setup-database.smk HUMAnN3 utility mapping database 2.5 G"
   output: 
     ecdb=os.path.join(config['humann-db'], "utility_mapping/map_level4ec_uniref90.txt.gz"),
     eggnogdb=os.path.join(config['humann-db'], "utility_mapping/map_eggnog_uniref90.txt.gz"),
@@ -221,7 +272,7 @@ rule utilitymap_db:
 
 
 rule eggnog_download:
-  name: "setup-database.smk eggNOG-mapper v2 Database (43.0 G)"
+  name: "setup-database.smk eggNOG-mapper v2 Database 43.0 G"
   output:
     os.path.join(config['eggNOG-db'], "eggnog.db"),
     os.path.join(config['eggNOG-db'], "eggnog_proteins.dmnd")
@@ -247,7 +298,7 @@ rule eggnog_download:
     """
 
 rule checkm2_download:
-  name: "setup-database.smk CheckM2 Database (2.7 G)"
+  name: "setup-database.smk CheckM2 Database 2.7 G"
   output: 
     os.path.join(config["checkm2-db"], "uniref100.KO.1.dmnd")
   params:
@@ -275,7 +326,7 @@ gtdbtk_db_version = config["GTDBTk-db-version"]
 gtdbtk_dwnld_lnk =f"{gtdbtk_db_base_url}{gtdbtk_db_version}/{gtdbtk_db_version}.0/auxillary_files/gtdbtk_package/full_package/gtdbtk_r{gtdbtk_db_version}_data.tar.gz"
 
 rule GTDBTk_download:
-  name: "setup-database.smk GTDB-Tk Database (63.3 G)"
+  name: "setup-database.smk GTDB-Tk Database 98.3 G"
   output:
     os.path.join(config["GTDBTk-db"], ("gtdbtk_r" + config["GTDBTk-db-version"] + "_data.tar.gz"))
   params:
@@ -305,11 +356,11 @@ rule GTDBTk_download:
 
 
 rule iPHoP_download:
-  name: "setup-database.smk iPHoP Database (318.1 G)"
+  name: "setup-database.smk iPHoP Database 318.1 G"
   output: 
     os.path.join(config["iphop-db"], config["iphop-db-basename"], "md5checkfile.txt")
   params:
-    outdir=os.path.abspath(config["iphop-db"]),
+    outdir=config["iphop-db"],
     dbversion=config["iphop-db-version"],
     tmpdir=os.path.join(tmpd, "iphop-db")
   conda: "../envs/iphop.yml"
@@ -327,6 +378,85 @@ rule iPHoP_download:
         --db_dir {params.tmpdir} \
         --db_version {params.dbversion} \
         --no_prompt
+
+    mv {params.tmpdir}/* {params.outdir}
+    """
+
+
+rule DRAM_download:
+  name: "setup-database.smk DRAM Database 66.4 G"
+  output:
+    loga=os.path.join(config["dram-db"], "database_processing.log"), 
+    json=os.path.join(config["dram-db"], "dram_config.json")
+  params:
+    parameters=config["dram-setup-params"],
+    outdir=config["dram-db"],
+    tmpdir=os.path.join(tmpd, "dram-db")
+  conda: "../envs/dram.yml"
+  log: os.path.join(logdir, "dram_db.log")
+  benchmark: os.path.join(benchmarks, "dram_db.log")
+  threads: 4
+  resources:
+    mem_mb=lambda wildcards, attempt: attempt * 150 * 10**3
+  shell:
+    """
+    rm -rf {params.outdir} {params.tmpdir}
+    mkdir -p {params.tmpdir} {params.outdir}
+
+    DRAM-setup.py prepare_databases \
+        --output_dir {params.tmpdir} \
+        --threads {threads} \
+        --skip_uniref \
+        {params.parameters} 2> {log}
+
+    mv {params.tmpdir}/* {params.outdir}
+    DRAM-setup.py export_config > {output.json}
+    """
+
+rule metacerberus_download:
+  name: "setup-database.smk MetaCerberus Database 4.2 G"
+  output:
+    expand(os.path.join(config["metacerberus-db"], "{db}.{extension}"), db = ["PVOG", "VOG"], extension = ["tsv", "hmm.gz"])
+  params:
+    parameters=config["metacerberus-setup-params"],
+    outdir=config["metacerberus-db"],
+    tmpdir=os.path.join(tmpd, "metacerberus-db")
+  conda: "../envs/metacerberus.yml"
+  log: os.path.join(logdir, "metacerberus_db.log")
+  benchmark: os.path.join(benchmarks, "metacerberus_db.log")
+  threads: 4
+  resources:
+    mem_mb=lambda wildcards, attempt: attempt * 4 * 10**3
+  shell:
+    """
+    rm -rf {params.outdir} {params.tmpdir}
+    mkdir -p {params.tmpdir} {params.outdir}
+
+    metacerberus.py --setup
+    metacerberus.py --download --db-path {params.tmpdir}
+
+    mv {params.tmpdir}/* {params.outdir}
+    """
+
+rule pharokka_download:
+  name: "setup-database.smk Pharokka Database 1.8 G"
+  output:
+    os.path.join(config["pharokka-db"], "all_phrogs.h3m")
+  params:
+    outdir=config["pharokka-db"],
+    tmpdir=os.path.join(tmpd, "pharokka-db")
+  conda: "../envs/pharokka.yml"
+  log: os.path.join(logdir, "pharokka_db.log")
+  benchmark: os.path.join(benchmarks, "pharokka_db.log")
+  threads: 4
+  resources:
+    mem_mb=lambda wildcards, attempt: attempt * 4 * 10**3
+  shell:
+    """
+    rm -rf {params.outdir} {params.tmpdir}
+    mkdir -p {params.tmpdir} {params.outdir}
+
+    install_databases.py -o {params.tmpdir}
 
     mv {params.tmpdir}/* {params.outdir}
     """
