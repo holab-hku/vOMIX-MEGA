@@ -281,6 +281,12 @@ class ViralAnnotateModule(Module):
         self.pharokka_params = pharokka_params
         self.phabox2_db_name = phabox2_db_name
         self.phabox2_db_baselink = phabox2_db_baselink
+        self.dram_setup_params = dram_setup_params
+        self.metacerberus_db = metacerberus_db
+        self.metacerberus_setup_params = metacerberus_setup_params
+        self.metacerberus_params = metacerberus_params
+        self.pharokka_db = pharokka_db
+        self.pharokka_params = pharokka_params
 
 
 class ProkaryoticCommunityModule(Module):
@@ -317,6 +323,7 @@ class ProkaryoticBinningModule(Module):
         GTDBTk_classify_params=None,
         VAMB_params=None,
     ):
+        self.hasOptions = hasOptions
         self.checkm2_db = checkm2_db
         self.GTDBTk_db = GTDBTk_db
         self.GTDBTk_db_version = GTDBTk_db_version

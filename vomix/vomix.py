@@ -526,7 +526,6 @@ def run_assembly(
     assembly_ids,
     latest_run,
     splits,
-    viral_binning,
     keep_intermediates,
     setup_database,
     max_cores,
@@ -571,7 +570,6 @@ def run_assembly(
         assembly_ids=assembly_ids,
         latest_run=latest_run,
         splits=splits,
-        viral_binning=viral_binning,
         keep_intermediates=keep_intermediates,
         setup_database=setup_database,
         max_cores=max_cores,
@@ -726,7 +724,6 @@ def run_viral_identify(
     assembly_ids,
     latest_run,
     splits,
-    viral_binning,
     keep_intermediates,
     setup_database,
     max_cores,
@@ -778,7 +775,6 @@ def run_viral_identify(
         assembly_ids=assembly_ids,
         latest_run=latest_run,
         splits=splits,
-        viral_binning=viral_binning,
         keep_intermediates=keep_intermediates,
         setup_database=setup_database,
         max_cores=max_cores,
@@ -1093,7 +1089,6 @@ def run_viral_benchmark(
     assembly_ids,
     latest_run,
     splits,
-    viral_binning,
     keep_intermediates,
     setup_database,
     max_cores,
@@ -1155,7 +1150,6 @@ def run_viral_benchmark(
         assembly_ids=assembly_ids,
         latest_run=latest_run,
         splits=splits,
-        viral_binning=viral_binning,
         keep_intermediates=keep_intermediates,
         setup_database=setup_database,
         max_cores=max_cores,
@@ -1323,7 +1317,6 @@ def run_viral_taxonomy(
     assembly_ids,
     latest_run,
     splits,
-    viral_binning,
     keep_intermediates,
     setup_database,
     max_cores,
@@ -1368,7 +1361,6 @@ def run_viral_taxonomy(
         assembly_ids=assembly_ids,
         latest_run=latest_run,
         splits=splits,
-        viral_binning=viral_binning,
         keep_intermediates=keep_intermediates,
         setup_database=setup_database,
         max_cores=max_cores,
@@ -1510,7 +1502,6 @@ def run_viral_host(
     assembly_ids,
     latest_run,
     splits,
-    viral_binning,
     keep_intermediates,
     setup_database,
     max_cores,
@@ -1559,7 +1550,6 @@ def run_viral_host(
         assembly_ids=assembly_ids,
         latest_run=latest_run,
         splits=splits,
-        viral_binning=viral_binning,
         keep_intermediates=keep_intermediates,
         setup_database=setup_database,
         max_cores=max_cores,
@@ -1653,7 +1643,6 @@ def run_viral_community(
     assembly_ids,
     latest_run,
     splits,
-    viral_binning,
     keep_intermediates,
     setup_database,
     max_cores,
@@ -1693,7 +1682,6 @@ def run_viral_community(
         assembly_ids=assembly_ids,
         latest_run=latest_run,
         splits=splits,
-        viral_binning=viral_binning,
         keep_intermediates=keep_intermediates,
         setup_database=setup_database,
         max_cores=max_cores,
@@ -1751,6 +1739,36 @@ def run_viral_community(
     default=None,
     help='Minimum contig length to filter BEFORE viral identification || default: "" [STR]',
 )
+@click.option(
+    "--metacerberus-db", 
+    required=False, 
+    default=None, 
+    help='The directory path where the MetaCerberus database is installed or will be downloaded. Defaults to the Snakemake base directory under workflow/databases. (default: "database/metacerberus")'
+)
+@click.option(
+    "metacerberus-setup-params", 
+    required=False, 
+    default=None,
+    help='Operational configurations supplied to initialize build or index the MetaCerberus database environment. (default: "")'
+)
+@click.option(
+    "--metacerberus-params",
+    required=False, 
+    defaul=None, 
+    help='Parameters for running the MetaCerberus database. (default: "--hmm ALL")'
+)
+@click.option(
+    "pharokka-db", 
+    required=False,
+    default=None, 
+    help='The directory path where the pharokka database is installed or will be downloaded. Defaults to the Snakemake base directory under workflow/databases. (default: "database/pharokka")'
+)
+@click.option(
+    "pharokka-params", 
+    required=False,
+    default=None, 
+    help='Additional execution parameters passed directly to the pharokka bacteriophage annotation framework. (default: "-g prodigal-gv --meta")'
+)
 @snakemake_options
 def run_viral_annotate(
     workdir,
@@ -1764,7 +1782,6 @@ def run_viral_annotate(
     assembly_ids,
     latest_run,
     splits,
-    viral_binning,
     keep_intermediates,
     setup_database,
     max_cores,
@@ -1772,6 +1789,11 @@ def run_viral_annotate(
     ncbi_api_key,
     eggnog_params,
     phavip_params,
+    metacerberus_db,
+    metacerberus_setup_params,
+    metacerberus_params,
+    pharokka_db,
+    pharokka_params,
     dry_run,
     forceall,
     configfile,
@@ -1804,7 +1826,6 @@ def run_viral_annotate(
         assembly_ids=assembly_ids,
         latest_run=latest_run,
         splits=splits,
-        viral_binning=viral_binning,
         keep_intermediates=keep_intermediates,
         setup_database=setup_database,
         max_cores=max_cores,
@@ -1818,6 +1839,21 @@ def run_viral_annotate(
         module_obj.hasOptions = True
     if phavip_params:
         module_obj.PhaVIP_params = phavip_params
+        module_obj.hasOptions = True
+    if metacerberus_db:
+        module_obj.metacerberus_db = metacerberus_db
+        module_obj.hasOptions = True
+    if metacerberus_setup_params:
+        module_obj.metacerberus_setup_params = metacerberus_setup_params
+        module_obj.hasOptions = True
+    if metacerberus_params:
+        module_obj.metacerberus_params = metacerberus_params
+        module_obj.hasOptions = True
+    if pharokka_db:
+        module_obj.pharokka_db = pharokka_db
+        module_obj.hasOptions = True
+    if pharokka_params:
+        module_obj.pharokka_params = pharokka_params
         module_obj.hasOptions = True
     snakemake_obj = SnakemakeFlags(
         dry_run,
@@ -1874,7 +1910,6 @@ def run_prok_community(
     assembly_ids,
     latest_run,
     splits,
-    viral_binning,
     keep_intermediates,
     setup_database,
     max_cores,
@@ -1914,7 +1949,6 @@ def run_prok_community(
         assembly_ids=assembly_ids,
         latest_run=latest_run,
         splits=splits,
-        viral_binning=viral_binning,
         keep_intermediates=keep_intermediates,
         setup_database=setup_database,
         max_cores=max_cores,
@@ -2070,7 +2104,6 @@ def run_prok_binning(
     assembly_ids,
     latest_run,
     splits,
-    viral_binning,
     keep_intermediates,
     setup_database,
     max_cores,
@@ -2124,7 +2157,6 @@ def run_prok_binning(
         assembly_ids=assembly_ids,
         latest_run=latest_run,
         splits=splits,
-        viral_binning=viral_binning,
         keep_intermediates=keep_intermediates,
         setup_database=setup_database,
         max_cores=max_cores,
@@ -2225,7 +2257,6 @@ def run_prok_annotate(
     assembly_ids,
     latest_run,
     splits,
-    viral_binning,
     keep_intermediates,
     setup_database,
     max_cores,
@@ -2265,7 +2296,6 @@ def run_prok_annotate(
         assembly_ids=assembly_ids,
         latest_run=latest_run,
         splits=splits,
-        viral_binning=viral_binning,
         keep_intermediates=keep_intermediates,
         setup_database=setup_database,
         max_cores=max_cores,
@@ -2318,7 +2348,6 @@ def run_viral_end_to_end(
     assembly_ids,
     latest_run,
     splits,
-    viral_binning,
     keep_intermediates,
     setup_database,
     max_cores,
@@ -2358,7 +2387,6 @@ def run_viral_end_to_end(
         assembly_ids=assembly_ids,
         latest_run=latest_run,
         splits=splits,
-        viral_binning=viral_binning,
         keep_intermediates=keep_intermediates,
         setup_database=setup_database,
         max_cores=max_cores,
@@ -2439,7 +2467,6 @@ def run_cluster_fast(
     assembly_ids,
     latest_run,
     splits,
-    viral_binning,
     keep_intermediates,
     setup_database,
     max_cores,
@@ -2482,7 +2509,6 @@ def run_cluster_fast(
         assembly_ids=assembly_ids,
         latest_run=latest_run,
         splits=splits,
-        viral_binning=viral_binning,
         keep_intermediates=keep_intermediates,
         setup_database=setup_database,
         max_cores=max_cores,
@@ -2567,7 +2593,6 @@ def run_checkv_pyhmmer(
     assembly_ids,
     latest_run,
     splits,
-    viral_binning,
     keep_intermediates,
     setup_database,
     max_cores,
@@ -2608,7 +2633,6 @@ def run_checkv_pyhmmer(
         assembly_ids=assembly_ids,
         latest_run=latest_run,
         splits=splits,
-        viral_binning=viral_binning,
         keep_intermediates=keep_intermediates,
         setup_database=setup_database,
         max_cores=max_cores,
@@ -2664,10 +2688,34 @@ def run_checkv_pyhmmer(
     help='Path to PhaBox2 database for download || default: "workflow/database/phabox_db_v2" [STR]',
 )
 @click.option(
+    "--phabox2-db-name",
+    required=False,
+    default=None,
+    help='The designated database name or identifier file package required for the PhaBox2 classification tool execution. (default: "phabox_db_v2")',
+)
+@click.option(
+    "--phabox2-db-baselink",
+    required=False,
+    default=None,
+    help='The primary remote server base link URL used to fetch and download resource updates for the PhaBox2 database. (default: "https://github.com/KennthShang/PhaBOX/releases/download/v2")',
+)
+@click.option(
     "--genomad-db",
     required=False,
     default=None,
     help='Path to geNomad database for download || default: "workflow/database/genomad" [STR]',
+)
+@click.option(
+    "--virsorter2-db",
+    required=False,
+    default=None,
+    help='The directory path where the VirSorter2 database is installed or will be downloaded. Defaults to the Snakemake base directory under workflow/databases. (default: "database/virsorter2")',
+)
+@click.option(
+    "--vibrant-db",
+    required=False,
+    default=None,
+    help='The directory path where the VIBRANT database is installed or will be downloaded. Defaults to the Snakemake base directory under workflow/databases. (default: "database/virsorter2")',
 )
 @click.option(
     "--checkv-db",
@@ -2688,16 +2736,40 @@ def run_checkv_pyhmmer(
     help='Parameters for downloading eggNOG v2 database || default: "" [STR]',
 )
 @click.option(
-    "--virsorter2-db",
+    "checkm2-db",
     required=False,
     default=None,
-    help='Path to VirSorter2 database for download || default: "workflow/database/virsorter2" [STR]',
+    help="The directory path where the CheckM2 database is installed or will be downloaded. Defaults to the Snakemake base directory under workflow/databases.",
+)
+@click.option(
+    "GTDBTk-db",
+    required=False,
+    default=None,
+    help='The directory path where the GTDB-Tk database is installed or will be downloaded. Defaults to the Snakemake base directory under workflow/databases. (default: "database/GTDB-Tk")',
+)
+@click.option(
+    "GTDBTk-db-version",
+    required=False,
+    default=232,
+    help="The reference version of the GTDB-Tk database. Ensure that the database version corresponds with the local GTDB-Tk installation environment as detailed at https://ecogenomics.github.io/GTDBTk/installing/index.html#gtdb-tk-reference-data. (default: 232)",
 )
 @click.option(
     "--iphop-db",
     required=False,
     default=None,
     help='Path to iPHoP database for download || default: "workflow/database/iphop/Aug_2023_pub_rw" [STR]',
+)
+@click.option(
+    "--iphop-db-version",
+    required=False,
+    default=None,
+    help='The version identifier for the iPHoP database. Verify database compatibility mapping at https://bitbucket.org/srouxjgi/iphop/src/main/#markdown-header-host-databases-and-versions. (default: "iPHoP_db_Aug23_rw")',
+)
+@click.option(
+    "--iphop-db-basename",
+    required=False,
+    default=None,
+    help='The primary base name of the iPHoP database. Verify compatibility criteria at https://bitbucket.org/srouxjgi/iphop/src/main/#markdown-header-host-databases-and-versions. (default: "Aug_2023_pub_rw")',
 )
 @click.option(
     "--humann-db",
@@ -2718,7 +2790,6 @@ def run_setup_database(
     assembly_ids,
     latest_run,
     splits,
-    viral_binning,
     keep_intermediates,
     setup_database,
     max_cores,
@@ -2765,7 +2836,6 @@ def run_setup_database(
         assembly_ids=assembly_ids,
         latest_run=latest_run,
         splits=splits,
-        viral_binning=viral_binning,
         keep_intermediates=keep_intermediates,
         setup_database=setup_database,
         max_cores=max_cores,
