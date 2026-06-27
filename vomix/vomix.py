@@ -1796,13 +1796,13 @@ def run_viral_community(
     help='Parameters for running the MetaCerberus database. (default: "--hmm ALL")',
 )
 @click.option(
-    "pharokka-db",
+    "--pharokka-db",
     required=False,
     default=None,
     help='The directory path where the pharokka database is installed or will be downloaded. Defaults to the Snakemake base directory under workflow/databases. (default: "database/pharokka")',
 )
 @click.option(
-    "pharokka-params",
+    "--pharokka-params",
     required=False,
     default=None,
     help='Additional execution parameters passed directly to the pharokka bacteriophage annotation framework. (default: "-g prodigal-gv --meta")',
@@ -2276,6 +2276,7 @@ def run_prok_binning(
 
 # Prok Annotate Module
 
+
 @cli.command(
     "prok-annotate",
     context_settings={"ignore_unknown_options": True},
@@ -2283,11 +2284,11 @@ def run_prok_binning(
 )
 @common_options
 @click.option(
-    "--humann-params", 
-    required=False, 
-    default=None, 
-    help='Additional software parameters directed to the HUMAnN functional annotation pipeline. (default: "--remove-temp-output")'
-    )
+    "--humann-params",
+    required=False,
+    default=None,
+    help='Additional software parameters directed to the HUMAnN functional annotation pipeline. (default: "--remove-temp-output")',
+)
 @snakemake_options
 def run_prok_annotate(
     workdir,
@@ -2724,10 +2725,10 @@ def run_checkv_pyhmmer(
 )
 @common_options
 @click.option(
-    "--hostile-index-db", 
-    required=False, 
+    "--hostile-index-db",
+    required=False,
     default=None,
-    help='The directory path where the Hostile database is installed or will be downloaded. Defaults to the Snakemake base directory under workflow/databases. (default: "database/hostile")'
+    help='The directory path where the Hostile database is installed or will be downloaded. Defaults to the Snakemake base directory under workflow/databases. (default: "database/hostile")',
 )
 @click.option(
     "--PhaBox2-db",
