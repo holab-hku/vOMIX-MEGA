@@ -642,7 +642,7 @@ def run_assembly(
     )
 
     vomix_actions_instance = vomix_actions()
-    vomix_actions_instance.run_module("assembler", module_obj, snakemake_obj)
+    vomix_actions_instance.run_module("assembly", module_obj, snakemake_obj)
     logging.info(END_MODULE_RUN_LOG)
 
 
