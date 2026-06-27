@@ -263,9 +263,28 @@ def snakemake_options(function):
     return function
 
 
-def setOptions(module_obj, workdir, outdir, datadir, samplelist, fasta, fastadir, sample_name, assembly_ids, latest_run, splits, viral_binning, keep_intermediates, setup_database, max_cores, email, ncbi_api_key, custom_config):
+def setOptions(
+    module_obj,
+    workdir,
+    outdir,
+    datadir,
+    samplelist,
+    fasta,
+    fastadir,
+    sample_name,
+    assembly_ids,
+    latest_run,
+    splits,
+    viral_binning,
+    keep_intermediates,
+    setup_database,
+    max_cores,
+    ncbi_email,
+    ncbi_api_key,
+    custom_config,
+):
     module_obj.workdir = workdir
-    module_obj.outdir = outdir 
+    module_obj.outdir = outdir
     module_obj.datadir = datadir
     module_obj.samplelist = samplelist
     module_obj.fasta = fasta
@@ -278,11 +297,12 @@ def setOptions(module_obj, workdir, outdir, datadir, samplelist, fasta, fastadir
     module_obj.keep_intermediates = keep_intermediates
     module_obj.setup_database = setup_database
     module_obj.max_cores = max_cores
-    module_obj.email = email
-    module_obj.NCBI_API_key = ncbi_api_key
+    module_obj.ncbi_email = ncbi_email
+    module_obj.ncbi_api_key = ncbi_api_key
     module_obj.custom_config = custom_config
 
     return module_obj
+
 
 # vOMIX-MEGA command line interface
 
@@ -2828,6 +2848,8 @@ def run_setup_database(
     ncbi_email,
     ncbi_api_key,
     phabox2_db,
+    phabox2_db_name,
+    phabox2_db_baselink,
     genomad_db,
     checkv_db,
     eggnog_db,
@@ -2881,6 +2903,12 @@ def run_setup_database(
 
     if phabox2_db:
         module_obj.PhaBox2_db = phabox2_db
+        module_obj.hasOptions = True
+    if phabox2_db_name:
+        module_obj.phabox2_db_name = phabox2_db_name
+        module_obj.hasOptions = True
+    if phabox2_db_baselink:
+        module_obj.phabox2_db_baselink = phabox2_db_baselink
         module_obj.hasOptions = True
     if genomad_db:
         module_obj.genomad_db = genomad_db
