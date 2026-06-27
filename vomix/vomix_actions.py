@@ -12,8 +12,8 @@ from os.path import abspath
 import inspect, os.path
 import re
 
-
 logging.basicConfig(level=logging.INFO)
+
 
 class vomix_actions:
     def __init__(self):
@@ -26,41 +26,56 @@ class vomix_actions:
 
     def __str__(self):
         return f"{self.name} v{self.version}: {self.description}"
-    
+
     def get_snakefile(filename):
         filename = inspect.getframeinfo(inspect.currentframe()).filename
-        sf     = str.replace(os.path.dirname(os.path.abspath(filename)), "/.venv/lib/python3.9/site-packages/vomix", "vomix/workflow/Snakefile")
+        sf = str.replace(
+            os.path.dirname(os.path.abspath(filename)),
+            "/.venv/lib/python3.9/site-packages/vomix",
+            "vomix/workflow/Snakefile",
+        )
 
         if not os.path.exists(sf):
             sys.exit("Unable to locate the Snakemake file; tried %s" % sf)
         return sf
-    
+
     def env_setup_script() -> str:
 
         script_path = os.path.realpath("vomix/env_setup.sh")
         logging.info(f"Running script: {script_path}")
 
-        cmd = ['bash', script_path]
+        cmd = ["bash", script_path]
         try:
-            result = subprocess.run(cmd, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+            result = subprocess.run(
+                cmd,
+                check=True,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                text=True,
+            )
             return result.stdout
         except subprocess.CalledProcessError as e:
             return f"Error: {e.stderr}"
-    
 
     def createScript(self, module, module_obj, snakemake_obj):
         cwd = os.path.abspath(os.getcwd())
 
         script = ""
 
-        script += "snakemake --config module=\"" + module + "\" "
+        script += 'snakemake --config module="' + module + '" '
 
         for attr, value in module_obj.__dict__.items():
             attr = str.replace(attr, "_", "-")
-            if str(value) == 'True' or str(value) == 'False':
-                script += f'{attr}={value} '
-            elif value is not None and attr != 'custom_config' and attr != 'name':
-                if attr == 'samplelist' or attr == 'datadir' or attr == 'outdir' or attr == 'fasta' or attr == 'fastadir':
+            if str(value) == "True" or str(value) == "False":
+                script += f"{attr}={value} "
+            elif value is not None and attr != "custom_config" and attr != "name":
+                if (
+                    attr == "samplelist"
+                    or attr == "datadir"
+                    or attr == "outdir"
+                    or attr == "fasta"
+                    or attr == "fastadir"
+                ):
                     attr = str.replace(attr, "_", "-")
                     script += f'{attr}="{cwd}/{value}" '
                 else:
@@ -68,14 +83,14 @@ class vomix_actions:
                     script += f'{attr}="{value}" '
 
         for attr, value in snakemake_obj.__dict__.items():
-            if value is not None and attr != 'snakemake_args':
+            if value is not None and attr != "snakemake_args":
                 attr = str.replace(attr, "_", "-")
-                if str(value) == 'True':
-                    script += f'--{attr} '
-                elif str(value) != 'False':
-                    script += f'--{attr} {value} '
-            if attr == 'snakemake_args' and value is not None and value != '':
-                script += f'{value} '
+                if str(value) == "True":
+                    script += f"--{attr} "
+                elif str(value) != "False":
+                    script += f"--{attr} {value} "
+            if attr == "snakemake_args" and value is not None and value != "":
+                script += f"{value} "
 
         script += "--sdm conda --use-conda"
 
@@ -83,17 +98,23 @@ class vomix_actions:
 
     def createFoldersAndUpdateConfig(self, module_obj):
         currentVomixDir = os.path.dirname(os.path.abspath(__file__))
-        count = sum(1 for _ in re.finditer(r'\b%s\b' % re.escape("/vomix"), currentVomixDir))
+        count = sum(
+            1 for _ in re.finditer(r"\b%s\b" % re.escape("/vomix"), currentVomixDir)
+        )
         configPath = "/config/config.yml"
         fullConfigPath = ""
 
         if count == 1:
             fullConfigPath = str.replace(currentVomixDir, "/vomix", configPath)
         elif count > 1:
-            fullConfigPath = configPath.join(currentVomixDir.rsplit("/vomix", count - 1))
+            fullConfigPath = configPath.join(
+                currentVomixDir.rsplit("/vomix", count - 1)
+            )
         else:
-            raise FileNotFoundError("Could not determine the path to the template config file.")
-        
+            raise FileNotFoundError(
+                "Could not determine the path to the template config file."
+            )
+
         logging.info(f"Using template config: {fullConfigPath}")
 
         # get workdir
@@ -105,25 +126,27 @@ class vomix_actions:
                     list_doc = yaml.safe_load(f)
                     workdir = list_doc["workdir"]
             else:
-                # get workdir from template config.yml 
+                # get workdir from template config.yml
                 with open(fullConfigPath) as f:
                     list_doc = yaml.safe_load(f)
                     workdir = list_doc["workdir"]
-        
+
         logging.info(f"Using workdir: {workdir}")
 
-        # Create outdir + datadir folders 
+        # Create outdir + datadir folders
         outdir = workdir + module_obj.outdir
-        if module_obj.datadir is not None: 
+        if module_obj.datadir is not None:
             datadir = workdir + module_obj.datadir
             datadir_folder = datadir
             os.makedirs(datadir_folder, exist_ok=True)
-        if module_obj.fastadir is not None: 
+        if module_obj.fastadir is not None:
             fastadir = workdir + module_obj.fastadir
             fastadir_folder = fastadir
             os.makedirs(fastadir_folder, exist_ok=True)
 
-        if not (os.path.exists(outdir) and os.path.exists(os.path.join(outdir, ".vomix"))):
+        if not (
+            os.path.exists(outdir) and os.path.exists(os.path.join(outdir, ".vomix"))
+        ):
             os.makedirs(os.path.join(outdir, ".vomix"), exist_ok=True)
 
         now = datetime.datetime.now()
@@ -136,13 +159,18 @@ class vomix_actions:
         #     os.makedirs(datadir_folder, exist_ok=True)
         # if fastadir_folder is not None and fastadir_folder != "":
         #     os.makedirs(fastadir_folder, exist_ok=True)
-            
+
         # if custom config is specified
         if module_obj.custom_config is not None:
             logging.info(f"Using custom config: {module_obj.custom_config}")
-            logging.info(f"REMINDER - Any command line flags spefied will override those options in your custom config.")
+            logging.info(
+                f"REMINDER - Any command line flags spefied will override those options in your custom config."
+            )
             shutil.copy(os.path.realpath(module_obj.custom_config), outdir_folder)
-            os.rename(outdir_folder + "/" + module_obj.custom_config, outdir_folder + "/config.yml")
+            os.rename(
+                outdir_folder + "/" + module_obj.custom_config,
+                outdir_folder + "/config.yml",
+            )
         else:
             # Create a new config file from the config template
 
@@ -158,7 +186,7 @@ class vomix_actions:
             #     raise FileNotFoundError("Could not determine the path to the template config file.")
 
             # logging.info(f"Using template config: {path}")
-    
+
             shutil.copy(fullConfigPath, outdir_folder)
 
         # edit new config with user options + latest_run
@@ -172,7 +200,7 @@ class vomix_actions:
                     module = str.replace(module, "_", "-")
                     list_doc[module] = value
                     logging.debug(f"Setting config option: {module} = {value}")
-               
+
         with open(outdir_folder + "/config.yml", "w") as f:
             yaml.dump(list_doc, f)
 
@@ -182,39 +210,49 @@ class vomix_actions:
 
         outdir_folder = self.createFoldersAndUpdateConfig(module_obj)
 
-        # create the script to run the module 
-        script_path = os.path.realpath(outdir_folder + "/snakemake" +".sh")
+        # create the script to run the module
+        script_path = os.path.realpath(outdir_folder + "/snakemake" + ".sh")
         script = self.createScript(module, module_obj, snakemake_obj)
-        
+
         # save the script
         with open(script_path, "w") as f:
             f.write(script)
 
         logging.info(f"Running script: {script_path}")
-        cmd = ['bash', script_path]
+        cmd = ["bash", script_path]
 
         currentVomixDir = os.path.dirname(os.path.abspath(__file__))
-        count = sum(1 for _ in re.finditer(r'\b%s\b' % re.escape("/vomix"), currentVomixDir))
+        count = sum(
+            1 for _ in re.finditer(r"\b%s\b" % re.escape("/vomix"), currentVomixDir)
+        )
         upPath = "/"
 
         if count == 1:
             currentWorkingPath = str.replace(currentVomixDir, "/vomix", upPath)
         elif count > 1:
-            currentWorkingPath = upPath.join(currentVomixDir.rsplit("/vomix", count - 1))
+            currentWorkingPath = upPath.join(
+                currentVomixDir.rsplit("/vomix", count - 1)
+            )
         else:
-            raise FileNotFoundError("Could not determine the path to the current working directory.")
+            raise FileNotFoundError(
+                "Could not determine the path to the current working directory."
+            )
 
         logging.info(f"currentWorkingPath: {currentWorkingPath}")
 
         try:
-            with Popen(cmd, stdout=PIPE, bufsize=1, universal_newlines=True, cwd=currentWorkingPath) as p:
+            with Popen(
+                cmd,
+                stdout=PIPE,
+                bufsize=1,
+                universal_newlines=True,
+                cwd=currentWorkingPath,
+            ) as p:
                 for line in p.stdout:
-                    print(line, end='') 
+                    print(line, end="")
 
             if p.returncode != 0:
                 raise CalledProcessError(p.returncode, p.args)
 
-
         except subprocess.CalledProcessError as e:
             return f"Error: {e.stderr}"
-        

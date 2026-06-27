@@ -37,7 +37,6 @@ modules_list = [
     "prok-annotate",
     "prok-binning",
     "prok-community",
-    "prok-binning",
     "refilter-genomad",
     "setup-database",
     "symlink",
@@ -886,12 +885,379 @@ def run_viral_identify(
     help='The directory path where the geNomad database is installed or will be downloaded. Defaults to the Snakemake base directory under workflow/databases. (default: "database/genomad")',
 )
 @click.option(
-    "--genomad-db",
+    "--virsorter2-db",
     required=False,
     default=None,
-    help='The directory path where the geNomad database is installed or will be downloaded. Defaults to the Snakemake base directory under workflow/databases. (default: "database/genomad")',
+    help='The directory path where the VirSorter2 database is installed or will be downloaded. Defaults to the Snakemake base directory under workflow/databases. (default: "database/virsorter2")',
+)
+@click.option(
+    "--vibrant-db",
+    required=False,
+    default=None,
+    help='The directory path where the VIBRANT database is installed or will be downloaded. Defaults to the Snakemake base directory under workflow/databases. (default: "database/virsorter2")',
+)
+@click.option(
+    "--contig-min-len",
+    required=False,
+    default=0,
+    help="The absolute minimum length constraint for contig inclusion within the viral-identify module; shorter sequences are purged from analysis. (default: 0)",
+)
+@click.option(
+    "--genomad-min-len",
+    required=False,
+    default=1000,
+    help="The minimum contig length evaluated by geNomad; sequences falling below this parameter are excluded from classification steps. (default: 10000)",
+)
+@click.option(
+    "--genomad-params",
+    required=False,
+    default=None,
+    help='Additional runtime command line arguments supplied to geNomad execution within the viral-identify framework. (default: "--enable-score-calibration --relaxed")',
+)
+@click.option(
+    "--genomad-cutoff",
+    required=False,
+    default=0.7,
+    help="The minimal numeric confidence threshold required by geNomad to classify a contig sequence as viral. (default: 0.7)",
+)
+@click.option(
+    "--genomad-cutoff-s",
+    required=False,
+    default=0,
+    help="The minimum confidence threshold applied during geNomad secondary filtering. Setting this to 0 bypasses the secondary filter pipeline entirely. (default: 0)",
+)
+@click.option(
+    "--dvf-min-len",
+    required=False,
+    default=1500,
+    help="The lower bound contig length cut-off implemented during DeepVirFinder evaluation; shorter contigs are ignored. (default: 1500)",
+)
+@click.option(
+    "--phamer-min-len",
+    required=False,
+    default=2000,
+    help="The lower bound contig length cut-off implemented during PhaMer evaluation; shorter sequences are omitted. (default: 2000)",
+)
+@click.option(
+    "--dvf-params",
+    required=False,
+    default=None,
+    help='Additional system parameters passed directly to the DeepVirFinder tool environment. (default: "")',
+)
+@click.option(
+    "--phamer-params",
+    required=False,
+    default=None,
+    help='Additional system parameters passed directly to the PhaMer tool environment. (default: "")',
+)
+@click.option(
+    "--virsorter2-params",
+    required=False,
+    default=None,
+    help='Additional system parameters passed directly to the VirSorter2 tool environment. (default: "")',
+)
+@click.option(
+    "--vf-params",
+    required=False,
+    default=None,
+    help='Additional system parameters passed directly to the VirFinder tool environment. (default: "")',
+)
+@click.option(
+    "--seeker-params",
+    required=False,
+    default=None,
+    help='Additional system parameters passed directly to the Seeker tool environment. (default: "")',
+)
+@click.option(
+    "--PPR-params",
+    required=False,
+    default=None,
+    help='Additional system parameters passed directly to the PPR-META tool environment. (default: "")',
+)
+@click.option(
+    "--dvf-cutoff",
+    required=False,
+    default=0.7,
+    help="The minimal confidence score metric required by DeepVirFinder to classify a sequence as viral. (default: 0.7)",
+)
+@click.option(
+    "--dvf-pval",
+    required=False,
+    default=0.05,
+    help="The maximum critical p-value threshold permitted by DeepVirFinder to confirm a sequence classification as viral. (default: 0.05)",
+)
+@click.option(
+    "--phamer-pred",
+    required=False,
+    default=None,
+    help='The taxonomic classification category targeted by PhaMer prediction routines. (default: "phage")',
+)
+@click.option(
+    "--phamer-cutoff",
+    required=False,
+    default=0,
+    help="The minimal confidence threshold value required for a positive viral determination within the PhaMer algorithm. (default: 0)",
+)
+@click.option(
+    "--vf-cutoff",
+    required=False,
+    default=0,
+    help="The minimal confidence threshold value required for a positive viral determination within the VirFinder algorithm. (default: 0)",
+)
+@click.option(
+    "--virsorter2-cutoff",
+    required=False,
+    default=0,
+    help="The minimal confidence threshold value required for a positive viral determination within the VirFinder algorithm. (default: 0)",
+)
+@click.option(
+    "--seeker-cutoff",
+    required=False,
+    default=0,
+    help="The minimal confidence threshold value required for a positive viral determination within the Seeker algorithm. (default: 0)",
+)
+@click.option(
+    "--ppr-cutoff",
+    required=False,
+    default=0,
+    help="The minimal confidence threshold value required for a positive viral determination within the PPR-META algorithm. (default: 0)",
+)
+@click.option(
+    "--vibrant-cutoff",
+    required=False,
+    default=0,
+    help="The minimal confidence threshold value required for a positive viral determination within the VIBRANT algorithm. (default: 0)",
+)
+@click.option(
+    "--checkv-original",
+    is_flag=True,
+    flag_value=True,
+    required=False,
+    default=False,
+    help="Flag allowing execution of standard CheckV instead of the lower memory high-efficiency CheckV-PyHMMER implementation. (default: False)",
+)
+@click.option(
+    "--checkv-params",
+    required=False,
+    default=None,
+    help='Additional operational arguments supplied directly to the CheckV pipeline execution. (default: "")',
+)
+@click.option(
+    "--checkv-database",
+    required=False,
+    default=None,
+    help='The directory path where the CheckV database is installed or will be downloaded. (default: "database/checkv")',
+)
+@click.option(
+    "--clustering-fast",
+    is_flag=True,
+    flag_value=True,
+    required=False,
+    default=True,
+    help="Flag triggering an accelerated MEGABlast-based clustering protocol optimized for viral operational taxonomic unit (vOTU) compilation. (default: True)",
+)
+@click.option(
+    "--cdhit-params",
+    required=False,
+    default=None,
+    help='Additional operational runtime values supplied directly to the CD-HIT clustering utility. (default: "-c 0.95 -aS 0.85 -d 400 -M 0 -n 5")',
+)
+@click.option(
+    "--vOTU-ani",
+    required=False,
+    default=None,
+    help="The average nucleotide identity (ANI) clustering percentage threshold used during fast clustering workflows (default 95% per MIUViG guidelines: https://doi.org/10.1038/nbt.4306). (default: 95)",
+)
+@click.option(
+    "--vOTU-targetcov",
+    required=False,
+    default=None,
+    help="The minimum target coverage alignment coverage percentage used during fast clustering workflows (default 85% per MIUViG guidelines: https://doi.org/10.1038/nbt.4306). (default: 85)",
+)
+@click.option(
+    "--vOTU-querycov",
+    required=False,
+    default=None,
+    help="The target query alignment coverage percentage criteria implemented within the fast clustering protocol. (default: 0)",
 )
 @snakemake_options
+def run_viral_benchmark(
+    workdir,
+    outdir,
+    datadir,
+    samplelist,
+    custom_config,
+    fasta,
+    fastadir,
+    sample_name,
+    assembly_ids,
+    latest_run,
+    splits,
+    viral_binning,
+    keep_intermediates,
+    setup_database,
+    max_cores,
+    ncbi_email,
+    ncbi_api_key,
+    phabox2_db,
+    phabox2_db_name,
+    phabox2_db_baselink,
+    genomad_db,
+    virsorter2_db,
+    vibrant_db,
+    contig_min_len,
+    genomad_min_len,
+    genomad_params,
+    genomad_cutoff,
+    genomad_cutoff_s,
+    dvf_min_len,
+    phamer_min_len,
+    dvf_params,
+    phamer_params,
+    virsorter2_params,
+    vf_params,
+    seeker_params,
+    PPR_params,
+    dvf_cutoff,
+    dvf_pval,
+    phamer_pred,
+    phamer_cutoff,
+    vf_cutoff,
+    dry_run,
+    forceall,
+    configfile,
+    unlock,
+    cores,
+    jobs,
+    latency_wait,
+    rerun_incomplete,
+    rerun_triggers,
+    sdm,
+    executor,
+    quiet,
+    snakemake_args,
+):
+    logging.info("Running module: viral-benchmark")
+    logging.info(f"outdir: {outdir}, datadir: {datadir}, samplelist: {samplelist}")
+
+    module_obj = ViralBenchmarkModule()
+    module_obj.name = "viral-benchmark"
+    # Set the attributes of the module object
+    module_obj = setOptions(
+        module_obj=module_obj,
+        workdir=workdir,
+        outdir=outdir,
+        datadir=datadir,
+        samplelist=samplelist,
+        fasta=fasta,
+        fastadir=fastadir,
+        sample_name=sample_name,
+        assembly_ids=assembly_ids,
+        latest_run=latest_run,
+        splits=splits,
+        viral_binning=viral_binning,
+        keep_intermediates=keep_intermediates,
+        setup_database=setup_database,
+        max_cores=max_cores,
+        ncbi_email=ncbi_email,
+        ncbi_api_key=ncbi_api_key,
+        custom_config=custom_config,
+    )
+
+    if contig_min_len:
+        module_obj.contig_min_len = contig_min_len
+        module_obj.hasOptions = True
+
+    if phabox2_db:
+        module_obj.PhaBox2_db = phabox2_db
+        module_obj.hasOptions = True
+    if phabox2_db_name:
+        module_obj.phabox2_db_name = phabox2_db_name
+        module_obj.hasOptions = True
+    if phabox2_db_baselink:
+        module_obj.phabox2_db_baselink = phabox2_db_baselink
+        module_obj.hasOptions = True
+    if genomad_db:
+        module_obj.genomad_db = genomad_db
+        module_obj.hasOptions = True
+    if virsorter2_db:
+        module_obj.virsorter2_db = virsorter2_db
+        module_obj.hasOptions = True
+    if vibrant_db:
+        module_obj.vibrant_db = vibrant_db
+        module_obj.hasOptions = True
+    if genomad_min_len:
+        module_obj.genomad_min_len = genomad_min_len
+        module_obj.hasOptions = True
+    if genomad_params:
+        module_obj.genomad_params = genomad_params
+        module_obj.hasOptions = True
+    if genomad_cutoff:
+        module_obj.genomad_cutoff = genomad_cutoff
+        module_obj.hasOptions = True
+    if genomad_cutoff_s:
+        module_obj.genomad_cutoff_s = genomad_cutoff_s
+        module_obj.hasOptions = True
+    if dvf_min_len:
+        module_obj.dvf_min_len = dvf_min_len
+        module_obj.hasOptions = True
+    if phamer_min_len:
+        module_obj.phamer_min_len = phamer_min_len
+        module_obj.hasOptions = True
+    if dvf_params:
+        module_obj.dvf_params = dvf_params
+        module_obj.hasOptions = True
+    if phamer_params:
+        module_obj.phamer_params = phamer_params
+        module_obj.hasOptions = True
+    if virsorter2_params:
+        module_obj.virsorter2_params = virsorter2_params
+        module_obj.hasOptions = True
+    if vf_params:
+        module_obj.vf_params = vf_params
+        module_obj.hasOptions = True
+    if seeker_params:
+        module_obj.seeker_params = seeker_params
+        module_obj.hasOptions = True
+    if PPR_params:
+        module_obj.PPR_params = PPR_params
+        module_obj.hasOptions = True
+    if dvf_cutoff:
+        module_obj.dvf_cutoff = dvf_cutoff
+        module_obj.hasOptions = True
+    if dvf_pval:
+        module_obj.dvf_pval = dvf_pval
+        module_obj.hasOptions = True
+    if phamer_pred:
+        module_obj.phamer_pred = phamer_pred
+        module_obj.hasOptions = True
+    if phamer_cutoff:
+        module_obj.phamer_cutoff = phamer_cutoff
+        module_obj.hasOptions = True
+    if vf_cutoff:
+        module_obj.vf_cutoff = vf_cutoff
+        module_obj.hasOptions = True
+
+    snakemake_obj = SnakemakeFlags(
+        dry_run,
+        forceall,
+        configfile,
+        unlock,
+        cores,
+        jobs,
+        latency_wait,
+        rerun_incomplete,
+        rerun_triggers,
+        sdm,
+        executor,
+        quiet,
+        snakemake_args,
+    )
+
+    vomix_actions_instance = vomix_actions()
+    vomix_actions_instance.run_module("viral-benchmark", module_obj, snakemake_obj)
+    logging.info("End module run")
+
 
 # Viral Taxonomy Module
 
@@ -1587,6 +1953,256 @@ def run_prok_community(
 # Prok Binning Module
 
 
+@cli.command(
+    "prok-binning",
+    context_settings={"ignore_unknown_options": True},
+    short_help="Run the Prokaryotic Binning module",
+)
+@common_options
+@click.option(
+    "checkm2-db",
+    required=False,
+    default=None,
+    help="The directory path where the CheckM2 database is installed or will be downloaded. Defaults to the Snakemake base directory under workflow/databases.",
+)
+@click.option(
+    "GTDBTk-db",
+    required=False,
+    default=None,
+    help='The directory path where the GTDB-Tk database is installed or will be downloaded. Defaults to the Snakemake base directory under workflow/databases. (default: "database/GTDB-Tk")',
+)
+@click.option(
+    "GTDBTk-db-version",
+    required=False,
+    default=232,
+    help="The reference version of the GTDB-Tk database. Ensure that the database version corresponds with the local GTDB-Tk installation environment as detailed at https://ecogenomics.github.io/GTDBTk/installing/index.html#gtdb-tk-reference-data. (default: 232)",
+)
+@click.option(
+    "GTDBTk-identify-params",
+    required=False,
+    default=None,
+    help='Additional parameter variables supplied directly to the GTDB-Tk identify command execution. (default: "")',
+)
+@click.option(
+    "GTDBTk-align-params",
+    required=False,
+    default=None,
+    help='Additional parameter variables supplied directly to the GTDB-Tk align command execution. (default: "")',
+)
+@click.option(
+    "GTDBTk-classify-params",
+    required=False,
+    default=None,
+    help='Additional parameter variables supplied directly to the GTDB-Tk classify command execution. (default: "")',
+)
+@click.option(
+    "VAMB-params",
+    required=False,
+    default=None,
+    help='Additional parameter variables supplied directly to the VAMB command execution. (default: "")',
+)
+@click.option(
+    "binning-consensus",
+    is_flag=True,
+    flag_value=True,
+    required=False,
+    default=True,
+    help="Flag enabling a consensus-based metagenomic binning protocol combining MetaBAT2, MaxBin2, and CONCOCT via DASTool. Disabling this runs GPU-accelerated VAMB clustering instead. (default: True)",
+)
+@click.option(
+    "strobealign-params",
+    required=False,
+    default=None,
+    help='Additional alignment flags or scoring rules passed to the strobealign tool backend. (default: "")',
+)
+@click.option(
+    "MetaBAT2-params",
+    required=False,
+    default=None,
+    help='Additional parameters for the MetaBAT2 tool. (default: "-m 1500")',
+)
+@click.option(
+    "MaxBin2-params",
+    required=False,
+    default=None,
+    help='Additional parameters for the MaxBin2 tool. (default: "-min_contig_length 1500 -max_iteration 50 -prob_threshold 0.9")',
+)
+@click.option(
+    "CONCOCT-params",
+    required=False,
+    default=None,
+    help='Additional parameters for the CONCOCT tool. (default: "")',
+)
+@click.option(
+    "jgi-summarize-params",
+    required=False,
+    default=None,
+    help='Additional runtime parameters supplied to the jgi_summarize_bam_contig_depth depth processing command. (default: "--percentIdentity 97")',
+)
+@click.option(
+    "DASTool-params",
+    required=False,
+    default=None,
+    help='Additional parameters for the DASTool tool. (default: "")',
+)
+@click.option(
+    "checkm2-params",
+    required=False,
+    default=None,
+    help='Additional parameter fields provided directly to the CheckM2 bin validation pipeline. (default: "")',
+)
+@click.option(
+    "galah-params",
+    required=False,
+    default=None,
+    help='Additional parameters for the Galah tool. (default: "--ani 95 --min-aligned-fraction 15 --fragment-length 3000")',
+)
+@snakemake_options
+def run_prok_binning(
+    workdir,
+    outdir,
+    datadir,
+    samplelist,
+    custom_config,
+    fasta,
+    fastadir,
+    sample_name,
+    assembly_ids,
+    latest_run,
+    splits,
+    viral_binning,
+    keep_intermediates,
+    setup_database,
+    max_cores,
+    ncbi_email,
+    ncbi_api_key,
+    checkm2_db,
+    GTDBTk_db,
+    GTDBTk_db_version,
+    GTDBTk_identify_params,
+    GTDBTk_align_params,
+    GTDBTk_classify_params,
+    VAMB_params,
+    binning_consensus,
+    strobealign_params,
+    MetaBAT2_params,
+    MaxBin2_params,
+    CONCOCT_params,
+    jgi_summarize_params,
+    DASTool_params,
+    checkm2_params,
+    galah_params,
+    dry_run,
+    forceall,
+    configfile,
+    unlock,
+    cores,
+    jobs,
+    latency_wait,
+    rerun_incomplete,
+    rerun_triggers,
+    sdm,
+    executor,
+    quiet,
+    snakemake_args,
+):
+    logging.info("Running module: prok-binning")
+    logging.info(f"outdir: {outdir}, datadir: {datadir}, samplelist: {samplelist}")
+
+    module_obj = ProkaryoticBinningModule()
+    module_obj.name = "prok-binning"
+    # Set the attributes of the module object
+    module_obj = setOptions(
+        module_obj=module_obj,
+        workdir=workdir,
+        outdir=outdir,
+        datadir=datadir,
+        samplelist=samplelist,
+        fasta=fasta,
+        fastadir=fastadir,
+        sample_name=sample_name,
+        assembly_ids=assembly_ids,
+        latest_run=latest_run,
+        splits=splits,
+        viral_binning=viral_binning,
+        keep_intermediates=keep_intermediates,
+        setup_database=setup_database,
+        max_cores=max_cores,
+        ncbi_email=ncbi_email,
+        ncbi_api_key=ncbi_api_key,
+        custom_config=custom_config,
+    )
+
+    if checkm2_db:
+        module_obj.checkm2_db = checkm2_db
+        module_obj.hasOptions = True
+    if GTDBTk_db:
+        module_obj.GTDBTk_db = GTDBTk_db
+        module_obj.hasOptions = True
+    if GTDBTk_db_version:
+        module_obj.GTDBTk_db_version = GTDBTk_db_version
+        module_obj.hasOptions = True
+    if GTDBTk_identify_params:
+        module_obj.GTDBTk_identify_params = GTDBTk_identify_params
+        module_obj.hasOptions = True
+    if GTDBTk_align_params:
+        module_obj.GTDBTk_align_params = GTDBTk_align_params
+        module_obj.hasOptions = True
+    if GTDBTk_classify_params:
+        module_obj.GTDBTk_classify_params = GTDBTk_classify_params
+        module_obj.hasOptions = True
+    if VAMB_params:
+        module_obj.VAMB_params = VAMB_params
+        module_obj.hasOptions = True
+    if binning_consensus is not None:
+        module_obj.binning_consensus = binning_consensus
+        module_obj.hasOptions = True
+    if strobealign_params:
+        module_obj.strobealign_params = strobealign_params
+        module_obj.hasOptions = True
+    if MetaBAT2_params:
+        module_obj.MetaBAT2_params = MetaBAT2_params
+        module_obj.hasOptions = True
+    if MaxBin2_params:
+        module_obj.MaxBin2_params = MaxBin2_params
+        module_obj.hasOptions = True
+    if CONCOCT_params:
+        module_obj.CONCOCT_params = CONCOCT_params
+        module_obj.hasOptions = True
+    if jgi_summarize_params:
+        module_obj.jgi_summarize_params = jgi_summarize_params
+        module_obj.hasOptions = True
+    if DASTool_params:
+        module_obj.DASTool_params = DASTool_params
+        module_obj.hasOptions = True
+    if checkm2_params:
+        module_obj.checkm2_params = checkm2_params
+        module_obj.hasOptions = True
+    if galah_params:
+        module_obj.galah_params = galah_params
+        module_obj.hasOptions = True
+
+    snakemake_obj = SnakemakeFlags(
+        dry_run,
+        forceall,
+        configfile,
+        unlock,
+        cores,
+        jobs,
+        latency_wait,
+        rerun_incomplete,
+        rerun_triggers,
+        sdm,
+        executor,
+        quiet,
+        snakemake_args,
+    )
+
+    vomix_actions_instance = vomix_actions()
+    vomix_actions_instance.run_module("prok-binning", module_obj, snakemake_obj)
+    logging.info("End module run")
+
+
 # Prok Annotate Module
 
 
@@ -1691,7 +2307,7 @@ def run_prok_annotate(
 )
 @common_options
 @snakemake_options
-def run_end_to_end(
+def run_viral_end_to_end(
     workdir,
     outdir,
     datadir,
@@ -1728,6 +2344,7 @@ def run_end_to_end(
 
     module_obj = ViralEndToEndModule()
     module_obj.name = "viral-end-to-end"
+
     # Set the attributes of the module object
     module_obj = setOptions(
         module_obj=module_obj,
