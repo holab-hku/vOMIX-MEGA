@@ -51,6 +51,8 @@ modules_list = [
     "viral-benchmark",
 ]
 
+END_MODULE_RUN_LOG = "End module run"
+
 
 def use_last_options_check(ctx, value):
     i = 2
@@ -471,7 +473,7 @@ def run_preprocess(
 
     vomix_actions_instance = vomix_actions()
     vomix_actions_instance.run_module("preprocess", module_obj, snakemake_obj)
-    logging.info("End module run")
+    logging.info(END_MODULE_RUN_LOG)
 
 
 # Assembly Module
@@ -611,7 +613,7 @@ def run_assembly(
 
     vomix_actions_instance = vomix_actions()
     vomix_actions_instance.run_module("assembler", module_obj, snakemake_obj)
-    logging.info("End module run")
+    logging.info(END_MODULE_RUN_LOG)
 
 
 # Viral Identify Module
@@ -844,7 +846,7 @@ def run_viral_identify(
 
     vomix_actions_instance = vomix_actions()
     vomix_actions_instance.run_module("viral-identify", module_obj, snakemake_obj)
-    logging.info("End module run")
+    logging.info(END_MODULE_RUN_LOG)
 
 
 # Viral Benchmark Module
@@ -1250,7 +1252,7 @@ def run_viral_benchmark(
 
     vomix_actions_instance = vomix_actions()
     vomix_actions_instance.run_module("viral-benchmark", module_obj, snakemake_obj)
-    logging.info("End module run")
+    logging.info(END_MODULE_RUN_LOG)
 
 
 # Viral Taxonomy Module
@@ -1409,7 +1411,7 @@ def run_viral_taxonomy(
 
     vomix_actions_instance = vomix_actions()
     vomix_actions_instance.run_module("viral-taxonomy", module_obj, snakemake_obj)
-    logging.info("End module run")
+    logging.info(END_MODULE_RUN_LOG)
 
 
 # Viral Host Module
@@ -1606,7 +1608,7 @@ def run_viral_host(
 
     vomix_actions_instance = vomix_actions()
     vomix_actions_instance.run_module("viral-host", module_obj, snakemake_obj)
-    logging.info("End module run")
+    logging.info(END_MODULE_RUN_LOG)
 
 
 # Viral Community Module
@@ -1715,7 +1717,7 @@ def run_viral_community(
 
     vomix_actions_instance = vomix_actions()
     vomix_actions_instance.run_module("viral-community", module_obj, snakemake_obj)
-    logging.info("End module run")
+    logging.info(END_MODULE_RUN_LOG)
 
 
 # Viral Annotate Module
@@ -1746,7 +1748,7 @@ def run_viral_community(
     help='The directory path where the MetaCerberus database is installed or will be downloaded. Defaults to the Snakemake base directory under workflow/databases. (default: "database/metacerberus")',
 )
 @click.option(
-    "metacerberus-setup-params",
+    "--metacerberus-setup-params",
     required=False,
     default=None,
     help='Operational configurations supplied to initialize build or index the MetaCerberus database environment. (default: "")',
@@ -1754,7 +1756,7 @@ def run_viral_community(
 @click.option(
     "--metacerberus-params",
     required=False,
-    defaul=None,
+    default=None,
     help='Parameters for running the MetaCerberus database. (default: "--hmm ALL")',
 )
 @click.option(
@@ -1873,7 +1875,7 @@ def run_viral_annotate(
 
     vomix_actions_instance = vomix_actions()
     vomix_actions_instance.run_module("viral-annotate", module_obj, snakemake_obj)
-    logging.info("End module run")
+    logging.info(END_MODULE_RUN_LOG)
 
 
 # Prok Community Module
@@ -1981,7 +1983,7 @@ def run_prok_community(
 
     vomix_actions_instance = vomix_actions()
     vomix_actions_instance.run_module("prok-community", module_obj, snakemake_obj)
-    logging.info("End module run")
+    logging.info(END_MODULE_RUN_LOG)
 
 
 # Prok Binning Module
@@ -2232,7 +2234,7 @@ def run_prok_binning(
 
     vomix_actions_instance = vomix_actions()
     vomix_actions_instance.run_module("prok-binning", module_obj, snakemake_obj)
-    logging.info("End module run")
+    logging.info(END_MODULE_RUN_LOG)
 
 
 # Prok Annotate Module
@@ -2324,7 +2326,7 @@ def run_prok_annotate(
 
     vomix_actions_instance = vomix_actions()
     vomix_actions_instance.run_module("prok-annotate", module_obj, snakemake_obj)
-    logging.info("End module run")
+    logging.info(END_MODULE_RUN_LOG)
 
 
 # Viral End to End Module
@@ -2412,7 +2414,7 @@ def run_viral_end_to_end(
 
     vomix_actions_instance = vomix_actions()
     vomix_actions_instance.run_module("viral-end-to-end", module_obj, snakemake_obj)
-    logging.info("End module run")
+    logging.info(END_MODULE_RUN_LOG)
 
 
 # Cluster Fast Module
@@ -2550,10 +2552,11 @@ def run_cluster_fast(
 
     vomix_actions_instance = vomix_actions()
     vomix_actions_instance.run_module("cluster-fast", module_obj, snakemake_obj)
-    logging.info("End module run")
+    logging.info(END_MODULE_RUN_LOG)
 
 
 # CheckV-PyHMMER Module
+
 
 @cli.command(
     "checkv-pyhmmer",
@@ -2667,7 +2670,7 @@ def run_checkv_pyhmmer(
 
     vomix_actions_instance = vomix_actions()
     vomix_actions_instance.run_module("checkv-pyhmmer", module_obj, snakemake_obj)
-    logging.info("End module run")
+    logging.info(END_MODULE_RUN_LOG)
 
 
 # Setup-Database Module
@@ -2919,4 +2922,4 @@ def run_setup_database(
 
     vomix_actions_instance = vomix_actions()
     vomix_actions_instance.run_module("setup-database", module_obj, snakemake_obj)
-    logging.info("End module run")
+    logging.info(END_MODULE_RUN_LOG)
