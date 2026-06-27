@@ -1,6 +1,6 @@
-# vOMIX-MEGA 
+# vOMIX-MEGA snakemake back-end  
 
-vOMIX-MEGA is a reproducible, scalable, and fast viral metagenomic pipeline with rigorously benchmarked backing on its results. It is built on a snakemake backend, can be containerized, and is ready for cloud deployment.
+This repository operates the back-end of the vOMIX-MEGA: A reproducible, scalable, and fast viral metagenomic pipeline with rigorously benchmarked backing on its results. If you would like to use the snakemake back-end of our software without a wrapper script, you can use this repository. Otherwise, you may visit https://github.com/erfanshekarriz/vOMIX-MEGA !
 
 
 # Quick Start 
@@ -28,28 +28,22 @@ snakemake -v
 
 ```bash
 # Clone from GitHub
-git clone https://github.com/holab-hku/vOMIX-MEGA
-cd vOMIX-MEGA
+git clone https://github.com/holab-hku/vomix-snakemake
+cd vomix-snakemake
 
 # Ensure conda env is activated
 conda info --envs | grep '^vomix' # you do not want to pip install into your main environment
-
-# Install vOMIX-MEGA using pip 
-pip install .
-
-# Verify installation 
-vomix -h 
 ```
 
 **1.3 Test Viral Contig Identification using Sample Data**
 ```bash
-vomix viral-identify --outdir test_res --fasta sample/contigs/contigs_simulated_viral_nonviral.fasta --splits 8 -j 4 --latency-wait 20
+snakemake --config module="viral-identify" outdir="test_res" fasta="sample/contigs/contigs_simulated_viral_nonviral.fasta" splits=8 -j 4 --latency-wait 20
 ```
 
 
 # Wiki
 
-For the full documentation on inputs, outputs, configurations, and modules of vOMIX-MEGA, please visit our Wiki page on github at https://github.com/holab-hku/vOMIX-MEGA/wiki ! 
+For the full documentation on inputs, outputs, configurations, and modules of vomix-snakemake, please visit our Wiki page on github at https://github.com/holab-hku/vomix-snakemake/wiki ! 
 
 
 
