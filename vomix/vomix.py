@@ -263,14 +263,26 @@ def snakemake_options(function):
     return function
 
 
-def set_options(module_obj, **options):
-    for attr_name, value in options.items():
-        setattr(module_obj, attr_name, value)
+def setOptions(module_obj, workdir, outdir, datadir, samplelist, fasta, fastadir, sample_name, assembly_ids, latest_run, splits, viral_binning, keep_intermediates, setup_database, max_cores, email, ncbi_api_key, custom_config):
+    module_obj.workdir = workdir
+    module_obj.outdir = outdir 
+    module_obj.datadir = datadir
+    module_obj.samplelist = samplelist
+    module_obj.fasta = fasta
+    module_obj.fastadir = fastadir
+    module_obj.sample_name = sample_name
+    module_obj.assembly_ids = assembly_ids
+    module_obj.latest_run = latest_run
+    module_obj.splits = splits
+    module_obj.viral_binning = viral_binning
+    module_obj.keep_intermediates = keep_intermediates
+    module_obj.setup_database = setup_database
+    module_obj.max_cores = max_cores
+    module_obj.email = email
+    module_obj.NCBI_API_key = ncbi_api_key
+    module_obj.custom_config = custom_config
 
     return module_obj
-
-
-setOptions = set_options
 
 # vOMIX-MEGA command line interface
 

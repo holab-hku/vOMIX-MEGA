@@ -36,11 +36,11 @@ class AssemblyCoAssemblyModule(Module):
 
     def __init__(
         self,
-        assembler=False,
         hasOptions=False,
         megahit_min_len=300,
         megahit_params=None,
         spades_params=None,
+        assembler=None,
         spades_memory=250,
     ):
         self.assembler = assembler
