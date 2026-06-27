@@ -74,7 +74,7 @@ def common_options(function):
     )(function)
     function = click.option(
         "--outdir",
-        default="result/",
+        default=None,
         required=False,
         help="The directory path where structured output results from vOMIX-MEGA will be deposited. New directories will be automatically created (including nested structures). Existing directories will be overwritten or appended",
     )(function)
@@ -122,27 +122,27 @@ def common_options(function):
     )(function)
     function = click.option(
         "--splits",
-        default=0,
+        default=None,
         required=False,
         help="The number of parallel groups to partition data into during processing to reduce memory overhead (e.g. when running geNomad). A value of 0 disables partitioning.",
     )(function)
     function = click.option(
         "--keep-intermediates",
         is_flag=True,
-        default=False,
+        default=None,
         required=False,
         help="Specifies whether to retain substantial intermediate processing files such as fastp-cleaned raw FASTQ files prior to host decontamination.",
     )(function)
     function = click.option(
         "--setup-database",
         is_flag=True,
-        default=False,
+        default=None,
         required=False,
         help="Determines whether to initialize or update databases when executing modules other than vomix setup-database. Existing databases will not be re-installed unless forced using Snakemake parameters like --forcerun or -F.",
     )(function)
     function = click.option(
         "--max-cores",
-        default=4,
+        default=None,
         required=False,
         help="The maximum number of CPU cores allocated dynamically across parallel Snakemake tasks. This feature is distinct from execution parameters like -j or -n and is currently in development.",
     )(function)
@@ -174,7 +174,7 @@ def snakemake_options(function):
         "--dryrun",
         "-n",
         required=False,
-        default=False,
+        default=None,
         flag_value=True,
         help="Do not execute anything, and display what would be done. If you have a very large workflow, use --dry-run --quiet to just print a summary of the DAG of jobs. Snakemake local function, please run snakemake -h for more information.",
     )(function)
@@ -182,7 +182,7 @@ def snakemake_options(function):
         "--forceall",
         "-F",
         required=False,
-        default=False,
+        default=None,
         flag_value=True,
         help="Force the execution of the selected (or the first) rule and all rules it is dependent on regardless of already created output. Snakemake local function, please run snakemake -h for more information.",
     )(function)
@@ -195,27 +195,27 @@ def snakemake_options(function):
     function = click.option(
         "--unlock",
         required=False,
-        default=False,
+        default=None,
         flag_value=True,
         help="Remove a lock on the working directory. Snakemake local function, please run snakemake -h for more information.",
     )(function)
     function = click.option(
         "--cores",
         "-c",
-        default=1,
+        default=None,
         required=False,
         help='Use at most N CPU cores/jobs in parallel. If N is omitted or "all", the limit is set to the number of available CPU cores. In case of cluster/cloud execution, this argument sets the maximum number of cores requested from the cluster or cloud scheduler. (See https://snakemake.readthedocs.io/en/stable/snakefiles/rules.html#resources-remote-execution for more info.) This number is available to rules via workflow.cores. Snakemake local function, please run snakemake -h for more information.',
     )(function)
     function = click.option(
         "--jobs",
         "-j",
-        default=4,
+        default=None,
         required=False,
         help='Use at most N CPU cluster/cloud jobs in parallel. For local execution this is an alias for --cores (it is though recommended to use --cores in that case). Note: Set to "unlimited" to allow any number of parallel jobs. Snakemake local function, please run snakemake -h for more information.',
     )(function)
     function = click.option(
         "--latency-wait",
-        default=20,
+        default=None,
         required=False,
         help="Wait given seconds if an output file of a job is not present after the job finished. This helps if your filesystem suffers from latency. Snakemake local function, please run snakemake -h for more information.",
     )(function)
@@ -223,7 +223,7 @@ def snakemake_options(function):
         "--rerun-incomplete",
         "-ri",
         required=False,
-        default=False,
+        default=None,
         flag_value=True,
         help="Re-run all jobs the output of which is recognized as incomplete. Snakemake local function, please run snakemake -h for more information.",
     )(function)
@@ -249,7 +249,7 @@ def snakemake_options(function):
     function = click.option(
         "--quiet",
         required=False,
-        default=False,
+        default=None,
         flag_value=True,
         help='Do not output certain information. If used without arguments, do not output any progress or rule information. Defining "all" results in no information being printed at all. Snakemake local function, please run snakemake -h for more information.',
     )(function)
@@ -323,7 +323,7 @@ def cli():
 @common_options
 @click.option(
     "--dwnld-only",
-    default=False,
+    default=None,
     required=False,
     help="Flag specifying whether to restrict execution exclusively to remote SRA file downloads from NCBI without proceeding to pre-processing steps. (default: False)",
 )
@@ -331,7 +331,7 @@ def cli():
     "--decontam-host",
     is_flag=True,
     flag_value=True,
-    default=False,
+    default=None,
     required=False,
     help="Flag specifying whether to perform host decontamination post fastp quality trimming. Host indexes are provided via the --hostile-index-name CLI flag. (default: False)",
 )
@@ -483,6 +483,9 @@ def run_preprocess(
     if hostile_index_name:
         module_obj.hostile_index_name = hostile_index_name
         module_obj.hasOptions = True
+    if hostile_index_db:
+        module_obj.hostile_index_db = hostile_index_db
+        module_obj.hasOptions = True
 
     # snakemake options
     snakemake_obj = SnakemakeFlags(
@@ -524,7 +527,7 @@ def run_preprocess(
 @click.option(
     "--megahit-min-len",
     required=False,
-    default=300,
+    default=None,
     help="The minimum contig length threshold used during the MEGAHIT assembly filter steps. (default: 300)",
 )
 @click.option(
@@ -542,7 +545,7 @@ def run_preprocess(
 @click.option(
     "--spades-memory",
     required=False,
-    default=250,
+    default=None,
     help="The upper threshold of RAM memory (in gigabytes) allocated for SPAdes assembly execution. (default: 250)",
 )
 @snakemake_options
@@ -658,7 +661,7 @@ def run_assembly(
 @click.option(
     "--contig-min-len",
     required=False,
-    default=0,
+    default=None,
     help="The absolute minimum length constraint for contig inclusion within the viral-identify module; shorter sequences are purged from analysis. (default: 0)",
 )
 @click.option(
@@ -696,7 +699,7 @@ def run_assembly(
     is_flag=True,
     flag_value=True,
     required=False,
-    default=False,
+    default=None,
     help="Flag allowing execution of standard CheckV instead of the lower memory high-efficiency CheckV-PyHMMER implementation. (default: False)",
 )
 @click.option(
@@ -716,7 +719,7 @@ def run_assembly(
     is_flag=True,
     flag_value=True,
     required=False,
-    default=True,
+    default=None,
     help="Flag triggering an accelerated MEGABlast-based clustering protocol optimized for viral operational taxonomic unit (vOTU) compilation. (default: True)",
 )
 @click.option(
@@ -927,13 +930,13 @@ def run_viral_identify(
 @click.option(
     "--contig-min-len",
     required=False,
-    default=0,
+    default=None,
     help="The absolute minimum length constraint for contig inclusion within the viral-identify module; shorter sequences are purged from analysis. (default: 0)",
 )
 @click.option(
     "--genomad-min-len",
     required=False,
-    default=1000,
+    default=None,
     help="The minimum contig length evaluated by geNomad; sequences falling below this parameter are excluded from classification steps. (default: 10000)",
 )
 @click.option(
@@ -945,25 +948,25 @@ def run_viral_identify(
 @click.option(
     "--genomad-cutoff",
     required=False,
-    default=0.7,
+    default=None,
     help="The minimal numeric confidence threshold required by geNomad to classify a contig sequence as viral. (default: 0.7)",
 )
 @click.option(
     "--genomad-cutoff-s",
     required=False,
-    default=0,
+    default=None,
     help="The minimum confidence threshold applied during geNomad secondary filtering. Setting this to 0 bypasses the secondary filter pipeline entirely. (default: 0)",
 )
 @click.option(
     "--dvf-min-len",
     required=False,
-    default=1500,
+    default=None,
     help="The lower bound contig length cut-off implemented during DeepVirFinder evaluation; shorter contigs are ignored. (default: 1500)",
 )
 @click.option(
     "--phamer-min-len",
     required=False,
-    default=2000,
+    default=None,
     help="The lower bound contig length cut-off implemented during PhaMer evaluation; shorter sequences are omitted. (default: 2000)",
 )
 @click.option(
@@ -1005,13 +1008,13 @@ def run_viral_identify(
 @click.option(
     "--dvf-cutoff",
     required=False,
-    default=0.7,
+    default=None,
     help="The minimal confidence score metric required by DeepVirFinder to classify a sequence as viral. (default: 0.7)",
 )
 @click.option(
     "--dvf-pval",
     required=False,
-    default=0.05,
+    default=None,
     help="The maximum critical p-value threshold permitted by DeepVirFinder to confirm a sequence classification as viral. (default: 0.05)",
 )
 @click.option(
@@ -1023,37 +1026,37 @@ def run_viral_identify(
 @click.option(
     "--phamer-cutoff",
     required=False,
-    default=0,
+    default=None,
     help="The minimal confidence threshold value required for a positive viral determination within the PhaMer algorithm. (default: 0)",
 )
 @click.option(
     "--vf-cutoff",
     required=False,
-    default=0,
+    default=None,
     help="The minimal confidence threshold value required for a positive viral determination within the VirFinder algorithm. (default: 0)",
 )
 @click.option(
     "--virsorter2-cutoff",
     required=False,
-    default=0,
+    default=None,
     help="The minimal confidence threshold value required for a positive viral determination within the VirFinder algorithm. (default: 0)",
 )
 @click.option(
     "--seeker-cutoff",
     required=False,
-    default=0,
+    default=None,
     help="The minimal confidence threshold value required for a positive viral determination within the Seeker algorithm. (default: 0)",
 )
 @click.option(
     "--ppr-cutoff",
     required=False,
-    default=0,
+    default=None,
     help="The minimal confidence threshold value required for a positive viral determination within the PPR-META algorithm. (default: 0)",
 )
 @click.option(
     "--vibrant-cutoff",
     required=False,
-    default=0,
+    default=None,
     help="The minimal confidence threshold value required for a positive viral determination within the VIBRANT algorithm. (default: 0)",
 )
 @click.option(
@@ -1061,7 +1064,7 @@ def run_viral_identify(
     is_flag=True,
     flag_value=True,
     required=False,
-    default=False,
+    default=None,
     help="Flag allowing execution of standard CheckV instead of the lower memory high-efficiency CheckV-PyHMMER implementation. (default: False)",
 )
 @click.option(
@@ -1081,7 +1084,7 @@ def run_viral_identify(
     is_flag=True,
     flag_value=True,
     required=False,
-    default=True,
+    default=None,
     help="Flag triggering an accelerated MEGABlast-based clustering protocol optimized for viral operational taxonomic unit (vOTU) compilation. (default: True)",
 )
 @click.option(
@@ -1246,7 +1249,7 @@ def run_viral_benchmark(
         module_obj.seeker_params = seeker_params
         module_obj.hasOptions = True
     if PPR_params:
-        module_obj.PPR_params = PPR_params
+        module_obj.ppr_params = PPR_params
         module_obj.hasOptions = True
     if dvf_cutoff:
         module_obj.dvf_cutoff = dvf_cutoff
@@ -1488,7 +1491,7 @@ def run_viral_taxonomy(
     is_flag=True,
     flag_value=True,
     required=False,
-    default=False,
+    default=None,
     help="Flag indicating whether to perform iPHoP-based viral host prediction instead of CHERRY. Note that iPHoP requires a significantly larger database and high memory allocation. (default: False)",
 )
 @click.option(
@@ -1618,6 +1621,9 @@ def run_viral_host(
         module_obj.hasOptions = True
     if iphop_db_basename:
         module_obj.iphop_db_basename = iphop_db_basename
+        module_obj.hasOptions = Tru
+    if iphop_params:
+        module_obj.iphop_params = iphop_params
         module_obj.hasOptions = True
 
     snakemake_obj = SnakemakeFlags(
@@ -2040,7 +2046,8 @@ def run_prok_community(
 @click.option(
     "--GTDBTk-db-version",
     required=False,
-    default=232,
+    default=None,
+    type=str,
     help="The reference version of the GTDB-Tk database. Ensure that the database version corresponds with the local GTDB-Tk installation environment as detailed at https://ecogenomics.github.io/GTDBTk/installing/index.html#gtdb-tk-reference-data. (default: 232)",
 )
 @click.option(
@@ -2072,7 +2079,7 @@ def run_prok_community(
     is_flag=True,
     flag_value=True,
     required=False,
-    default=True,
+    default=None,
     help="Flag enabling a consensus-based metagenomic binning protocol combining MetaBAT2, MaxBin2, and CONCOCT via DASTool. Disabling this runs GPU-accelerated VAMB clustering instead. (default: True)",
 )
 @click.option(
@@ -2277,7 +2284,7 @@ def run_prok_binning(
 )
 @common_options
 @snakemake_options
-@click.option("--humann-params", required=False, default=None, help="[STR]")
+@click.option("--humann-params", required=False, default=None,
 def run_prok_annotate(
     workdir,
     outdir,
@@ -2712,7 +2719,7 @@ def run_checkv_pyhmmer(
     short_help="Run the Setup Database module",
 )
 @common_options
-@click.option("--hostile-index-db", required=False, default=None, help="")
+@click.option("--hostile-index-db", required=False, default=None,
 @click.option(
     "--PhaBox2-db",
     required=False,
@@ -2782,7 +2789,8 @@ def run_checkv_pyhmmer(
 @click.option(
     "--GTDBTk-db-version",
     required=False,
-    default=232,
+    default=None,
+    type=str,
     help="The reference version of the GTDB-Tk database. Ensure that the database version corresponds with the local GTDB-Tk installation environment as detailed at https://ecogenomics.github.io/GTDBTk/installing/index.html#gtdb-tk-reference-data. (default: 232)",
 )
 @click.option(
