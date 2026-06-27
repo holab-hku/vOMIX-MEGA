@@ -1740,34 +1740,34 @@ def run_viral_community(
     help='Minimum contig length to filter BEFORE viral identification || default: "" [STR]',
 )
 @click.option(
-    "--metacerberus-db", 
-    required=False, 
-    default=None, 
-    help='The directory path where the MetaCerberus database is installed or will be downloaded. Defaults to the Snakemake base directory under workflow/databases. (default: "database/metacerberus")'
+    "--metacerberus-db",
+    required=False,
+    default=None,
+    help='The directory path where the MetaCerberus database is installed or will be downloaded. Defaults to the Snakemake base directory under workflow/databases. (default: "database/metacerberus")',
 )
 @click.option(
-    "metacerberus-setup-params", 
-    required=False, 
+    "metacerberus-setup-params",
+    required=False,
     default=None,
-    help='Operational configurations supplied to initialize build or index the MetaCerberus database environment. (default: "")'
+    help='Operational configurations supplied to initialize build or index the MetaCerberus database environment. (default: "")',
 )
 @click.option(
     "--metacerberus-params",
-    required=False, 
-    defaul=None, 
-    help='Parameters for running the MetaCerberus database. (default: "--hmm ALL")'
+    required=False,
+    defaul=None,
+    help='Parameters for running the MetaCerberus database. (default: "--hmm ALL")',
 )
 @click.option(
-    "pharokka-db", 
+    "pharokka-db",
     required=False,
-    default=None, 
-    help='The directory path where the pharokka database is installed or will be downloaded. Defaults to the Snakemake base directory under workflow/databases. (default: "database/pharokka")'
+    default=None,
+    help='The directory path where the pharokka database is installed or will be downloaded. Defaults to the Snakemake base directory under workflow/databases. (default: "database/pharokka")',
 )
 @click.option(
-    "pharokka-params", 
+    "pharokka-params",
     required=False,
-    default=None, 
-    help='Additional execution parameters passed directly to the pharokka bacteriophage annotation framework. (default: "-g prodigal-gv --meta")'
+    default=None,
+    help='Additional execution parameters passed directly to the pharokka bacteriophage annotation framework. (default: "-g prodigal-gv --meta")',
 )
 @snakemake_options
 def run_viral_annotate(
@@ -2555,7 +2555,6 @@ def run_cluster_fast(
 
 # CheckV-PyHMMER Module
 
-
 @cli.command(
     "checkv-pyhmmer",
     context_settings={"ignore_unknown_options": True},
@@ -2777,6 +2776,24 @@ def run_checkv_pyhmmer(
     default=None,
     help='Path to HUMAnN3 databases for download || default: "workflow/database/humann" [STR]',
 )
+@click.option(
+    "--metacerberus-db",
+    required=False,
+    default=None,
+    help='The directory path where the MetaCerberus database is installed or will be downloaded. Defaults to the Snakemake base directory under workflow/databases. (default: "database/metacerberus")',
+)
+@click.option(
+    "metacerberus-setup-params",
+    required=False,
+    default=None,
+    help='Operational configurations supplied to initialize build or index the MetaCerberus database environment. (default: "")',
+)
+@click.option(
+    "pharokka-db",
+    required=False,
+    default=None,
+    help='The directory path where the pharokka database is installed or will be downloaded. Defaults to the Snakemake base directory under workflow/databases. (default: "database/pharokka")',
+)
 @snakemake_options
 def run_setup_database(
     workdir,
@@ -2803,6 +2820,9 @@ def run_setup_database(
     virsorter2_db,
     iphop_db,
     humann_db,
+    metacerberus_db,
+    metacerberus_setup_params,
+    pharokka_db,
     dry_run,
     forceall,
     configfile,
@@ -2870,6 +2890,15 @@ def run_setup_database(
         module_obj.hasOptions = True
     if hostile_index_db:
         module_obj.hostile_index_db = hostile_index_db
+        module_obj.hasOptions = True
+    if metacerberus_db:
+        module_obj.metacerberus_db = metacerberus_db
+        module_obj.hasOptions = True
+    if metacerberus_setup_params:
+        module_obj.metacerberus_setup_params = metacerberus_setup_params
+        module_obj.hasOptions = True
+    if pharokka_db:
+        module_obj.pharokka_db = pharokka_db
         module_obj.hasOptions = True
 
     snakemake_obj = SnakemakeFlags(
