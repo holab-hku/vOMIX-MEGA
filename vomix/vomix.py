@@ -2738,7 +2738,7 @@ def run_checkv_pyhmmer(
     help='Parameters for downloading eggNOG v2 database || default: "" [STR]',
 )
 @click.option(
-    "checkm2-db",
+    "--checkm2-db",
     required=False,
     default=None,
     help="The directory path where the CheckM2 database is installed or will be downloaded. Defaults to the Snakemake base directory under workflow/databases.",
