@@ -1996,49 +1996,49 @@ def run_prok_community(
 )
 @common_options
 @click.option(
-    "checkm2-db",
+    "--checkm2-db",
     required=False,
     default=None,
     help="The directory path where the CheckM2 database is installed or will be downloaded. Defaults to the Snakemake base directory under workflow/databases.",
 )
 @click.option(
-    "GTDBTk-db",
+    "--GTDBTk-db",
     required=False,
     default=None,
     help='The directory path where the GTDB-Tk database is installed or will be downloaded. Defaults to the Snakemake base directory under workflow/databases. (default: "database/GTDB-Tk")',
 )
 @click.option(
-    "GTDBTk-db-version",
+    "--GTDBTk-db-version",
     required=False,
     default=232,
     help="The reference version of the GTDB-Tk database. Ensure that the database version corresponds with the local GTDB-Tk installation environment as detailed at https://ecogenomics.github.io/GTDBTk/installing/index.html#gtdb-tk-reference-data. (default: 232)",
 )
 @click.option(
-    "GTDBTk-identify-params",
+    "--GTDBTk-identify-params",
     required=False,
     default=None,
     help='Additional parameter variables supplied directly to the GTDB-Tk identify command execution. (default: "")',
 )
 @click.option(
-    "GTDBTk-align-params",
+    "--GTDBTk-align-params",
     required=False,
     default=None,
     help='Additional parameter variables supplied directly to the GTDB-Tk align command execution. (default: "")',
 )
 @click.option(
-    "GTDBTk-classify-params",
+    "--GTDBTk-classify-params",
     required=False,
     default=None,
     help='Additional parameter variables supplied directly to the GTDB-Tk classify command execution. (default: "")',
 )
 @click.option(
-    "VAMB-params",
+    "--VAMB-params",
     required=False,
     default=None,
     help='Additional parameter variables supplied directly to the VAMB command execution. (default: "")',
 )
 @click.option(
-    "binning-consensus",
+    "--binning-consensus",
     is_flag=True,
     flag_value=True,
     required=False,
@@ -2046,49 +2046,49 @@ def run_prok_community(
     help="Flag enabling a consensus-based metagenomic binning protocol combining MetaBAT2, MaxBin2, and CONCOCT via DASTool. Disabling this runs GPU-accelerated VAMB clustering instead. (default: True)",
 )
 @click.option(
-    "strobealign-params",
+    "--strobealign-params",
     required=False,
     default=None,
     help='Additional alignment flags or scoring rules passed to the strobealign tool backend. (default: "")',
 )
 @click.option(
-    "MetaBAT2-params",
+    "--MetaBAT2-params",
     required=False,
     default=None,
     help='Additional parameters for the MetaBAT2 tool. (default: "-m 1500")',
 )
 @click.option(
-    "MaxBin2-params",
+    "--MaxBin2-params",
     required=False,
     default=None,
     help='Additional parameters for the MaxBin2 tool. (default: "-min_contig_length 1500 -max_iteration 50 -prob_threshold 0.9")',
 )
 @click.option(
-    "CONCOCT-params",
+    "--CONCOCT-params",
     required=False,
     default=None,
     help='Additional parameters for the CONCOCT tool. (default: "")',
 )
 @click.option(
-    "jgi-summarize-params",
+    "--jgi-summarize-params",
     required=False,
     default=None,
     help='Additional runtime parameters supplied to the jgi_summarize_bam_contig_depth depth processing command. (default: "--percentIdentity 97")',
 )
 @click.option(
-    "DASTool-params",
+    "--DASTool-params",
     required=False,
     default=None,
     help='Additional parameters for the DASTool tool. (default: "")',
 )
 @click.option(
-    "checkm2-params",
+    "--checkm2-params",
     required=False,
     default=None,
     help='Additional parameter fields provided directly to the CheckM2 bin validation pipeline. (default: "")',
 )
 @click.option(
-    "galah-params",
+    "--galah-params",
     required=False,
     default=None,
     help='Additional parameters for the Galah tool. (default: "--ani 95 --min-aligned-fraction 15 --fragment-length 3000")',
@@ -2744,13 +2744,13 @@ def run_checkv_pyhmmer(
     help="The directory path where the CheckM2 database is installed or will be downloaded. Defaults to the Snakemake base directory under workflow/databases.",
 )
 @click.option(
-    "GTDBTk-db",
+    "--GTDBTk-db",
     required=False,
     default=None,
     help='The directory path where the GTDB-Tk database is installed or will be downloaded. Defaults to the Snakemake base directory under workflow/databases. (default: "database/GTDB-Tk")',
 )
 @click.option(
-    "GTDBTk-db-version",
+    "--GTDBTk-db-version",
     required=False,
     default=232,
     help="The reference version of the GTDB-Tk database. Ensure that the database version corresponds with the local GTDB-Tk installation environment as detailed at https://ecogenomics.github.io/GTDBTk/installing/index.html#gtdb-tk-reference-data. (default: 232)",
@@ -2786,13 +2786,13 @@ def run_checkv_pyhmmer(
     help='The directory path where the MetaCerberus database is installed or will be downloaded. Defaults to the Snakemake base directory under workflow/databases. (default: "database/metacerberus")',
 )
 @click.option(
-    "metacerberus-setup-params",
+    "--metacerberus-setup-params",
     required=False,
     default=None,
     help='Operational configurations supplied to initialize build or index the MetaCerberus database environment. (default: "")',
 )
 @click.option(
-    "pharokka-db",
+    "--pharokka-db",
     required=False,
     default=None,
     help='The directory path where the pharokka database is installed or will be downloaded. Defaults to the Snakemake base directory under workflow/databases. (default: "database/pharokka")',
