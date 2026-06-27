@@ -2276,15 +2276,19 @@ def run_prok_binning(
 
 # Prok Annotate Module
 
-
 @cli.command(
     "prok-annotate",
     context_settings={"ignore_unknown_options": True},
     short_help="Run the Prokaryotic Annotate module",
 )
 @common_options
+@click.option(
+    "--humann-params", 
+    required=False, 
+    default=None, 
+    help='Additional software parameters directed to the HUMAnN functional annotation pipeline. (default: "--remove-temp-output")'
+    )
 @snakemake_options
-@click.option("--humann-params", required=False, default=None,
 def run_prok_annotate(
     workdir,
     outdir,
@@ -2719,7 +2723,12 @@ def run_checkv_pyhmmer(
     short_help="Run the Setup Database module",
 )
 @common_options
-@click.option("--hostile-index-db", required=False, default=None,
+@click.option(
+    "--hostile-index-db", 
+    required=False, 
+    default=None,
+    help='The directory path where the Hostile database is installed or will be downloaded. Defaults to the Snakemake base directory under workflow/databases. (default: "database/hostile")'
+)
 @click.option(
     "--PhaBox2-db",
     required=False,
