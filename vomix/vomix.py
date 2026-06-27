@@ -275,7 +275,6 @@ def setOptions(
     assembly_ids,
     latest_run,
     splits,
-    viral_binning,
     keep_intermediates,
     setup_database,
     max_cores,
@@ -293,7 +292,6 @@ def setOptions(
     module_obj.assembly_ids = assembly_ids
     module_obj.latest_run = latest_run
     module_obj.splits = splits
-    module_obj.viral_binning = viral_binning
     module_obj.keep_intermediates = keep_intermediates
     module_obj.setup_database = setup_database
     module_obj.max_cores = max_cores
