@@ -2851,11 +2851,17 @@ def run_setup_database(
     phabox2_db_name,
     phabox2_db_baselink,
     genomad_db,
+    virsorter2_db,
+    vibrant_db,
     checkv_db,
     eggnog_db,
     eggnog_db_params,
-    virsorter2_db,
+    checkm2_db,
+    GTDBTk_db,
+    GTDBTk_db_version,
     iphop_db,
+    iphop_db_version,
+    iphop_db_basename,
     humann_db,
     metacerberus_db,
     metacerberus_setup_params,
@@ -2942,6 +2948,27 @@ def run_setup_database(
         module_obj.hasOptions = True
     if pharokka_db:
         module_obj.pharokka_db = pharokka_db
+        module_obj.hasOptions = True
+    if checkm2_db:
+        module_obj.checkm2_db = checkm2_db
+        module_obj.hasOptions = True
+    if GTDBTk_db:
+        module_obj.GTDBTk_db = GTDBTk_db
+        module_obj.hasOptions = True
+    if GTDBTk_db_version:
+        module_obj.GTDBTk_db_version = GTDBTk_db_version
+        module_obj.hasOptions = True
+    if iphop_db_version:
+        module_obj.iphop_db_version = iphop_db_version
+        module_obj.hasOptions = True
+    if iphop_db_basename:
+        module_obj.iphop_db_basename = iphop_db_basename
+        module_obj.hasOptions = True
+    if vibrant_db:
+        module_obj.vibrant_db = vibrant_db
+        module_obj.hasOptions = True
+    if GTDBTk_db_version:
+        module_obj.GTDBTk_db_version = GTDBTk_db_version
         module_obj.hasOptions = True
 
     snakemake_obj = SnakemakeFlags(
