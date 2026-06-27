@@ -2857,8 +2857,8 @@ def run_setup_database(
     eggnog_db,
     eggnog_db_params,
     checkm2_db,
-    GTDBTk_db,
-    GTDBTk_db_version,
+    gtdbtk_db,
+    gtdbtk_db_version,
     iphop_db,
     iphop_db_version,
     iphop_db_basename,
@@ -2952,11 +2952,11 @@ def run_setup_database(
     if checkm2_db:
         module_obj.checkm2_db = checkm2_db
         module_obj.hasOptions = True
-    if GTDBTk_db:
-        module_obj.GTDBTk_db = GTDBTk_db
+    if gtdbtk_db:
+        module_obj.GTDBTk_db = gtdbtk_db
         module_obj.hasOptions = True
-    if GTDBTk_db_version:
-        module_obj.GTDBTk_db_version = GTDBTk_db_version
+    if gtdbtk_db_version:
+        module_obj.GTDBTk_db_version = gtdbtk_db_version
         module_obj.hasOptions = True
     if iphop_db_version:
         module_obj.iphop_db_version = iphop_db_version
@@ -2966,9 +2966,6 @@ def run_setup_database(
         module_obj.hasOptions = True
     if vibrant_db:
         module_obj.vibrant_db = vibrant_db
-        module_obj.hasOptions = True
-    if GTDBTk_db_version:
-        module_obj.GTDBTk_db_version = GTDBTk_db_version
         module_obj.hasOptions = True
 
     snakemake_obj = SnakemakeFlags(
