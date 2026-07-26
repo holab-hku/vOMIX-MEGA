@@ -137,15 +137,19 @@ _smk_opts = [
     "--rerun-incomplete",
     "-ri",
     "--rerun-triggers",
+    "--software-deployment-method",
+    "--deployment-method",
+    "--deployment",
     "--sdm",
     "--executor",
-    "--cluster-generic-submit-cmd", 
-    "--printshellcmds", 
+    "-e",
+    "--cluster-generic-submit-cmd",
+    "--printshellcmds",
+    "-p",
     "--quiet",
     "--snakemake-args",
     "--dryrun",
     "-n",
-    "-p"
 ]
 
 click.rich_click.OPTION_GROUPS = {}
@@ -190,6 +194,8 @@ def setOptions(module_obj, kwargs):
 
 def create_snakemake_flags(kwargs):
     """Generates the SnakemakeFlags object automatically from kwargs."""
+    # Careful that click automatically returns the longest argument as the default name
+    # hence you need to do software_deployment_method rather than sdm
     return SnakemakeFlags(
         kwargs.get("dry_run"),
         kwargs.get("forceall"),
@@ -200,7 +206,7 @@ def create_snakemake_flags(kwargs):
         kwargs.get("latency_wait"),
         kwargs.get("rerun_incomplete"),
         kwargs.get("rerun_triggers"),
-        kwargs.get("sdm"),
+        kwargs.get("software_deployment_method"),
         kwargs.get("executor"),
         kwargs.get("cluster_generic_submit_cmd"),
         kwargs.get("printshellcmds"),
@@ -380,12 +386,17 @@ def snakemake_options(function):
     )(function)
     function = click.option(
         "--rerun-triggers",
+        multiple=True,
         required=False,
         default=None,
         help="Define what triggers the rerunning of a job. [default: mtime]",
     )(function)
     function = click.option(
+        "--software-deployment-method",
+        "--deployment-method",
+        "--deployment",
         "--sdm",
+        multiple=True,
         required=False,
         default=None,
         help="Specify software environment deployment method. [default: conda]",

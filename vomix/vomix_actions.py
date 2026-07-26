@@ -100,15 +100,18 @@ class vomix_actions:
 
         for attr, value in snakemake_obj.__dict__.items():
             if value is not None and attr != "snakemake_args":
+                if isinstance(value, (list, tuple)) and len(value) == 0:
+                    continue
                 attr = str.replace(attr, "_", "-")
-                if str(value) == "True":
+                if isinstance(value, (list, tuple)):
+                    val_str = " ".join(str(v) for v in value)
+                    script += f"--{attr} {val_str} "
+                elif str(value) == "True":
                     script += f"--{attr} "
                 elif str(value) != "False":
                     script += f"--{attr} {value} "
             if attr == "snakemake_args" and value is not None and value != "":
                 script += f"{value} "
-
-        script += "--sdm conda --use-conda"
 
         return script
 
