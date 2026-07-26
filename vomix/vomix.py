@@ -454,7 +454,7 @@ def cli():
     help="Restrict execution exclusively to remote SRA file downloads. [default: False]",
 )
 @click.option(
-    "--decontam-host",
+    "--decontam-host/--no-decontam-host",
     is_flag=True,
     flag_value=True,
     default=None,
@@ -651,7 +651,7 @@ def run_assembly(**kwargs):
     help="The minimum confidence threshold applied during geNomad secondary filtering. [default: 0]",
 )
 @click.option(
-    "--checkv-original",
+    "--checkv-original/--checkv-pyhmmer",
     is_flag=True,
     flag_value=True,
     required=False,
@@ -677,7 +677,9 @@ def run_assembly(**kwargs):
     help="The directory path where the CheckV database is installed. [default: None]",
 )
 @click.option(
-    "--clustering-fast",
+    "--clustering-fast/--clustering-cdhit",
+    is_flag=True,
+    flag_value=True,
     required=False,
     default=None,
     help="Flag triggering an accelerated MEGABlast-based clustering protocol. [default: True]",
@@ -930,7 +932,7 @@ def run_viral_identify(**kwargs):
     help="The minimal confidence threshold value required for a positive viral determination within VIBRANT. [default: 0]",
 )
 @click.option(
-    "--checkv-original",
+    "--checkv-original/--checkv-pyhmmer",
     is_flag=True,
     flag_value=True,
     required=False,
@@ -956,7 +958,9 @@ def run_viral_identify(**kwargs):
     help="The directory path where the CheckV database is installed. [default: None]",
 )
 @click.option(
-    "--clustering-fast",
+    "--clustering-fast/--clustering-cdhit",
+    is_flag=True,
+    flag_value=True,
     required=False,
     default=None,
     help="Flag triggering an accelerated MEGABlast-based clustering protocol. [default: True]",
@@ -1148,7 +1152,7 @@ def run_viral_taxonomy(**kwargs):
     help="Additional custom parameters passed directly to the PhaTYP lifestyle prediction module. [default: None]",
 )
 @click.option(
-    "--iphop-host",
+    "--iphop-host/--cherry-host",
     is_flag=True,
     flag_value=True,
     required=False,
@@ -1432,7 +1436,7 @@ def run_prok_community(**kwargs):
     help="Additional parameter variables supplied directly to the VAMB command execution. [default: None]",
 )
 @click.option(
-    "--binning-consensus",
+    "--binning-consensus/--binning-gpu",
     is_flag=True,
     flag_value=True,
     required=False,
@@ -1565,7 +1569,7 @@ def run_prok_annotate(**kwargs):
     help="Restrict execution exclusively to remote SRA file downloads. [default: False]",
 )
 @click.option(
-    "--decontam-host",
+    "--decontam-host/--no-decontam-host",
     is_flag=True,
     flag_value=True,
     default=None,
@@ -1699,7 +1703,7 @@ def run_prok_annotate(**kwargs):
     help="The minimum confidence threshold applied during geNomad secondary filtering. [default: 0]",
 )
 @click.option(
-    "--checkv-original",
+    "--checkv-original/--checkv-pyhmmer",
     is_flag=True,
     flag_value=True,
     required=False,
@@ -1725,7 +1729,9 @@ def run_prok_annotate(**kwargs):
     help="The directory path where the CheckV database is installed. [default: None]",
 )
 @click.option(
-    "--clustering-fast",
+    "--clustering-fast/--clustering-cdhit",
+    is_flag=True,
+    flag_value=True,
     required=False,
     default=None,
     help="Flag triggering an accelerated MEGABlast-based clustering protocol. [default: True]",
@@ -1809,7 +1815,7 @@ def run_prok_annotate(**kwargs):
     help="Additional custom parameters passed directly to the PhaTYP lifestyle prediction module. [default: None]",
 )
 @click.option(
-    "--iphop-host",
+    "--iphop-host/--cherry-host",
     is_flag=True,
     flag_value=True,
     required=False,
@@ -2009,7 +2015,9 @@ def run_viral_end_to_end(**kwargs):
 )
 @common_options
 @click.option(
-    "--clustering-fast",
+    "--clustering-fast/--clustering-cdhit",
+    is_flag=True,
+    flag_value=True,
     required=False,
     default=None,
     help="Flag to run fast clustering using CheckV's MEGABLAST approach. [default: True]",
@@ -2077,7 +2085,7 @@ def run_cluster_fast(**kwargs):
 )
 @common_options
 @click.option(
-    "--checkv-original",
+    "--checkv-original/--checkv-pyhmmer",
     is_flag=True,
     flag_value=True,
     required=False,
