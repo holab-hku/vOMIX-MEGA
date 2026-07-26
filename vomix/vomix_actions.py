@@ -239,6 +239,7 @@ class vomix_actions:
         log.info("Delegating execution to Snakemake backend...\n")
 
         try:
+            # Create a pseudo-terminal pair to preserve Snakemake's color output
             master_fd, slave_fd = pty.openpty()
 
             with Popen(
@@ -251,22 +252,23 @@ class vomix_actions:
                 # Close the slave fd in the parent process so EOF reads correctly
                 os.close(slave_fd)
 
-                # Read output from the master fd and print it live
-                with os.fdopen(master_fd) as master:
-                    while True:
-                        output = master.read(1024)
-                        if not output:
-                            break
-                        print(output, end="", flush=True)
+                # Read line by line and guarantee a trailing newline
+                with os.fdopen(
+                    master_fd, "r", encoding="utf-8", errors="replace"
+                ) as master:
+                    last_line = ""
+                    for line in master:
+                        print(line, end="", flush=True)
+                        last_line = line
 
-            # Ensure a clean separation after subprocess finishes
-            print("\n", flush=True)
+                    # If the stream ended without a newline, force one so the next log starts clean
+                    if last_line and not last_line.endswith("\n"):
+                        print()
 
             if p.returncode != 0:
                 raise CalledProcessError(p.returncode, p.args)
 
         except (OSError, subprocess.CalledProcessError) as e:
-            # pty can raise OSError (like Input/output error) when the process finishes reading
             if isinstance(e, subprocess.CalledProcessError):
                 log.error(f"Process failed with error code [red]{e.returncode}[/red]")
                 return f"Error: {e.stderr}"
