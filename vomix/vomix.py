@@ -126,24 +126,26 @@ _common_opts = [
 _smk_opts = [
     "--dry-run",
     "--forceall",
+    "-F",
     "--configfile",
     "--unlock",
     "--cores",
+    "-c",
     "--jobs",
+    "-j",
     "--latency-wait",
     "--rerun-incomplete",
+    "-ri",
     "--rerun-triggers",
     "--sdm",
     "--executor",
-    "--cluster-generic-submit-cmd" "--printshellcmds" "--quiet",
+    "--cluster-generic-submit-cmd", 
+    "--printshellcmds", 
+    "--quiet",
     "--snakemake-args",
     "--dryrun",
     "-n",
-    "-F",
-    "-c",
-    "-j",
-    "-ri",
-    "-e",
+    "-p"
 ]
 
 click.rich_click.OPTION_GROUPS = {}
@@ -177,7 +179,6 @@ def setOptions(module_obj, kwargs):
     module_obj.sample_name = kwargs.get("sample_name")
     module_obj.assembly_ids = kwargs.get("assembly_ids")
     module_obj.latest_run = kwargs.get("latest_run")
-    module_obj.splits = kwargs.get("splits")
     module_obj.keep_intermediates = kwargs.get("keep_intermediates")
     module_obj.setup_database = kwargs.get("setup_database")
     module_obj.max_cores = kwargs.get("max_cores")
@@ -272,12 +273,6 @@ def common_options(function):
         default=None,
         required=False,
         help="Internal logging parameter designating the timestamp. [default: None]",
-    )(function)
-    function = click.option(
-        "--splits",
-        default=None,
-        required=False,
-        help="Number of parallel groups to partition data into. [default: None]",
     )(function)
     function = click.option(
         "--keep-intermediates",
