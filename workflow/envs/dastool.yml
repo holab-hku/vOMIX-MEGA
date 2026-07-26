@@ -4,4 +4,4 @@ channels:
   - bioconda
   - defaults
 dependencies:
-  - das_tool=1.1.7=r43hdfd78af_0
+  - das_tool=1.1.7

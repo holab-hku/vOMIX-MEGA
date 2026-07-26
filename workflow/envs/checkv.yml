@@ -4,7 +4,7 @@ channels:
   - bioconda
   - defaults
 dependencies:
-  - checkv=1.0.1=pyhdfd78af_0
+  - checkv=1.0.1
   - blast=2.15.0
   - diamond=2.1.8
   - hmmer=3.4

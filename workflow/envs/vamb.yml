@@ -4,4 +4,4 @@ channels:
   - conda-forge
   - defaults
 dependencies:
-  - vamb=3.0.2=py37h8902056_2
+  - vamb=3.0.2

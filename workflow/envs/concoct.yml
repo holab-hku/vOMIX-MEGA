@@ -4,5 +4,5 @@ channels:
   - bioconda
   - defaults
 dependencies:
-  - concoct=1.1.0=py312h245ed52_6
-  - python=3.12.6=hc5c86c4_1_cpython
+  - concoct=1.1.0
+  - python=3.12.6

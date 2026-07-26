@@ -72,7 +72,7 @@ rule megahit:
 
     mv {params.tmpdir}/{wildcards.assembly_id}/final.contigs.fa {output.fasta}
     mv {params.tmpdir}/{wildcards.assembly_id}/* {params.outdir}
-    """
+  """
 
 
 rule spades:

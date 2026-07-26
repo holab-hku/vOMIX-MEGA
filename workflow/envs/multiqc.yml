@@ -4,4 +4,4 @@ channels:
   - bioconda
   - defaults
 dependencies:
-  - multiqc=1.17=pyhdfd78af_1
+  - multiqc=1.17

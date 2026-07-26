@@ -4,4 +4,4 @@ channels:
   - conda-forge
   - defaults
 dependencies:
-  - prodigal-gv=2.11.0=he4a0461_2
+  - prodigal-gv=2.11.0

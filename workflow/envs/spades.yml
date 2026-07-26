@@ -4,4 +4,4 @@ channels:
   - conda-forge
   - defaults
 dependencies:
-  - spades=4.0.0=h6dccd9a_3
+  - spades=4.0.0

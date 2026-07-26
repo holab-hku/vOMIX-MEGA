@@ -1,0 +1,15 @@
+name: vomix
+channels:
+  - conda-forge
+  - bioconda # Added for Snakemake and its plugins
+  - defaults # Bioconda sometimes relies on default channels
+platforms:
+  - linux-64 # Standard Linux
+  - linux-aarch64 # ARM64 Linux (AWS Graviton)
+  - osx-64 # Intel Macs
+  - osx-arm64 # Apple Silicon Macs (M1/M2/M3/M4)
+dependencies:
+  - python=3.12
+  - snakemake=9.23.1
+  - biopython=1.84
+  - snakemake-executor-plugin-cluster-generic=1.0.9

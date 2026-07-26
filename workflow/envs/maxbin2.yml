@@ -4,4 +4,4 @@ channels:
   - bioconda
   - defaults
 dependencies:
-  - maxbin2=2.2.7=hdbdd923_5
+  - maxbin2=2.2.7

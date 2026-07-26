@@ -4,4 +4,4 @@ channels:
   - conda-forge
   - defaults
 dependencies:
-  - pyhmmer=0.10.4=py310h4b81fae_0
+  - pyhmmer=0.10.4

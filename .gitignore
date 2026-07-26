@@ -4,12 +4,13 @@
 # but not these files
 !.readthedocs.yaml
 !.gitignore
+!environment.yml
+!conda-lock.yml
 !pyproject.toml
 !mkdocs.yml
 !README.md
 !LICENSE.md
 !CHANGELOG.md
-!Dockerfile
 !sample/sample_list.csv
 
 # but not these subdirectories 
@@ -20,7 +21,16 @@
 !docs/**
 !resources/
 !workflow/
+!workflow/rules/
 !workflow/software/
+!workflow/envs
+!workflow/envs/**
+!workflow/docker
+!workflow/docker/**
+!workflow/apptainer
+!workflow/apptainer/**
+!workflow/scripts
+!workflow/scripts/**
 !workflow/software/DeepVirFinder
 !vomix/
 !sample/contigs
@@ -28,3 +38,5 @@
 # except these subdirectories
 workflow/database
 workflow/params
+workflow/scripts/__pycache__/sample_list_parse.cpython-312.pyc
+docs/_build

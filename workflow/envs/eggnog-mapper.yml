@@ -4,4 +4,4 @@ channels:
   - conda-forge
   - defaults
 dependencies:
-  - eggnog-mapper=2.0.1=py_1
+  - eggnog-mapper=2.0.1

@@ -4,4 +4,4 @@ channels:
   - bioconda
   - defaults
 dependencies:
-  - virsorter=2.2.4=pyhdfd78af_1
+  - virsorter=2.2.4
