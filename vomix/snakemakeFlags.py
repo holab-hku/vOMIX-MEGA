@@ -13,6 +13,7 @@ class SnakemakeFlags:
         sdm,
         executor,
         cluster_generic_submit_cmd,
+        printshellcmds,
         quiet,
         snakemake_args,
     ):
@@ -28,5 +29,6 @@ class SnakemakeFlags:
         self.sdm = sdm
         self.executor = executor
         self.executor = cluster_generic_submit_cmd
+        self.printshellcmds = printshellcmds
         self.quiet = quiet
         self.snakemake_args = snakemake_args

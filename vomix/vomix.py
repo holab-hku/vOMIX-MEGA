@@ -135,7 +135,7 @@ _smk_opts = [
     "--rerun-triggers",
     "--sdm",
     "--executor",
-    "--quiet",
+    "--cluster-generic-submit-cmd" "--printshellcmds" "--quiet",
     "--snakemake-args",
     "--dryrun",
     "-n",
@@ -202,6 +202,7 @@ def create_snakemake_flags(kwargs):
         kwargs.get("sdm"),
         kwargs.get("executor"),
         kwargs.get("cluster_generic_submit_cmd"),
+        kwargs.get("printshellcmds"),
         kwargs.get("quiet"),
         kwargs.get("snakemake_args"),
     )
@@ -393,6 +394,19 @@ def snakemake_options(function):
     function = click.option(
         "--executor",
         "-e",
+        required=False,
+        default=None,
+        help="Specify a custom executor, available via an executor plugin. [default: None]",
+    )(function)
+    function = click.option(
+        "--cluster-generic-submit-cmd",
+        required=False,
+        default=None,
+        help="Command for submitting jobs.",
+    )(function)
+    function = click.option(
+        "--printshellcmds",
+        "-p",
         required=False,
         default=None,
         help="Specify a custom executor, available via an executor plugin. [default: None]",
