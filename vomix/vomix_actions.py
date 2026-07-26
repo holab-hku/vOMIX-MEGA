@@ -109,7 +109,10 @@ class vomix_actions:
                 elif str(value) == "True":
                     script += f"--{attr} "
                 elif str(value) != "False":
-                    script += f"--{attr} {value} "
+                    if " " in str(value):
+                        script += f'--{attr} "{value}" '
+                    else:
+                        script += f"--{attr} {value} "
             if attr == "snakemake_args" and value is not None and value != "":
                 script += f"{value} "
 

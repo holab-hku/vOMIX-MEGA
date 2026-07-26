@@ -424,7 +424,7 @@ def snakemake_options(function):
         "--snakemake-args",
         required=False,
         default=None,
-        help="Additional arguments to pass to the native snakemake command. [default: None]",
+        help='Additional arguments to pass to the native snakemake command. Must be surround by double quotes `"`. [default: None]',
     )(function)
     return function
 
