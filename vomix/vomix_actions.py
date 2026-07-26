@@ -259,6 +259,9 @@ class vomix_actions:
                             break
                         print(output, end="", flush=True)
 
+            # Ensure a clean separation after subprocess finishes
+            print()
+
             if p.returncode != 0:
                 raise CalledProcessError(p.returncode, p.args)
 
