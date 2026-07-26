@@ -160,13 +160,10 @@ for cmd in modules_list + ["cluster-fast", "viral-end-to-end"]:
 
 def log_system_info(module_name):
     """Logs system and execution environment info for robust provenance."""
-    log.info(
-        "vOMIX-MEGA initialized. Strict parameter tracking enabled for Nature Methods reproducibility guidelines."
-    )
+    log.info("vOMIX-MEGA initialized.")
     log.info(f"Starting Module: {module_name}")
     log.info(f"System: {platform.system()} {platform.release()} ({platform.machine()})")
     log.info(f"Python: {platform.python_version()}")
-    log.info(f"Working Directory: {os.path.abspath(os.getcwd())}")
 
 
 def setOptions(module_obj, kwargs):
@@ -204,6 +201,7 @@ def create_snakemake_flags(kwargs):
         kwargs.get("rerun_triggers"),
         kwargs.get("sdm"),
         kwargs.get("executor"),
+        kwargs.get("cluster_generic_submit_cmd"),
         kwargs.get("quiet"),
         kwargs.get("snakemake_args"),
     )
@@ -517,7 +515,6 @@ def run_preprocess(**kwargs):
         },
     )
 
-    log.info("Delegating execution to Snakemake backend...")
     vomix_actions().run_module("preprocess", module_obj, create_snakemake_flags(kwargs))
     log.info(END_MODULE_RUN_LOG)
 
@@ -577,7 +574,6 @@ def run_assembly(**kwargs):
         },
     )
 
-    log.info("Delegating execution to Snakemake backend...")
     vomix_actions().run_module("assembly", module_obj, create_snakemake_flags(kwargs))
     log.info(END_MODULE_RUN_LOG)
 
@@ -723,7 +719,7 @@ def run_viral_identify(**kwargs):
             "checkv_params": "checkv_params",
             "checkv_database": "checkv_database",
             "clustering_fast": "clustering_fast",
-            "cluster_iter": "cluster_iter"
+            "cluster_iter": "cluster_iter",
             "cdhit_params": "cdhit_params",
             "vOTU_ani": "votu_ani",
             "vOTU_targetcov": "votu_targetcov",
@@ -731,7 +727,6 @@ def run_viral_identify(**kwargs):
         },
     )
 
-    log.info("Delegating execution to Snakemake backend...")
     vomix_actions().run_module(
         "viral-identify", module_obj, create_snakemake_flags(kwargs)
     )
@@ -1021,7 +1016,6 @@ def run_viral_benchmark(**kwargs):
         },
     )
 
-    log.info("Delegating execution to Snakemake backend...")
     vomix_actions().run_module(
         "viral-benchmark", module_obj, create_snakemake_flags(kwargs)
     )
@@ -1097,7 +1091,6 @@ def run_viral_taxonomy(**kwargs):
         },
     )
 
-    log.info("Delegating execution to Snakemake backend...")
     vomix_actions().run_module(
         "viral-taxonomy", module_obj, create_snakemake_flags(kwargs)
     )
@@ -1194,7 +1187,7 @@ def run_viral_host(**kwargs):
             "phabox2_db_baselink": "phabox2_db_baselink",
             "CHERRY_params": "cherry_params",
             "PhaTYP_params": "phatyp_params",
-            "iphop_host": "iphop_host", 
+            "iphop_host": "iphop_host",
             "iphop_cutoff": "iphop_cutoff",
             "iphop_db": "iphop_db",
             "iphop_db_version": "iphop_db_version",
@@ -1203,7 +1196,6 @@ def run_viral_host(**kwargs):
         },
     )
 
-    log.info("Delegating execution to Snakemake backend...")
     vomix_actions().run_module("viral-host", module_obj, create_snakemake_flags(kwargs))
     log.info(END_MODULE_RUN_LOG)
 
@@ -1236,13 +1228,9 @@ def run_viral_community(**kwargs):
     apply_module_options(
         module_obj,
         kwargs,
-        {
-            "coverm_params": "coverm_params", 
-            "coverm_methods": "coverm_methods"
-         },
+        {"coverm_params": "coverm_params", "coverm_methods": "coverm_methods"},
     )
 
-    log.info("Delegating execution to Snakemake backend...")
     vomix_actions().run_module(
         "viral-community", module_obj, create_snakemake_flags(kwargs)
     )
@@ -1339,7 +1327,6 @@ def run_viral_annotate(**kwargs):
         },
     )
 
-    log.info("Delegating execution to Snakemake backend...")
     vomix_actions().run_module(
         "viral-annotate", module_obj, create_snakemake_flags(kwargs)
     )
@@ -1375,7 +1362,6 @@ def run_prok_community(**kwargs):
         module_obj, kwargs, {"mpa_params": "mpa_params", "mpa_indexv": "mpa_indexv"}
     )
 
-    log.info("Delegating execution to Snakemake backend...")
     vomix_actions().run_module(
         "prok-community", module_obj, create_snakemake_flags(kwargs)
     )
@@ -1517,7 +1503,6 @@ def run_prok_binning(**kwargs):
         },
     )
 
-    log.info("Delegating execution to Snakemake backend...")
     vomix_actions().run_module(
         "prok-binning", module_obj, create_snakemake_flags(kwargs)
     )
@@ -1547,7 +1532,6 @@ def run_prok_annotate(**kwargs):
         module_obj.humann_params = kwargs.get("humann_params")
         log.info(f"  ↳ Set parameter humann_params = {module_obj.humann_params}")
 
-    log.info("Delegating execution to Snakemake backend...")
     vomix_actions().run_module(
         "prok-annotate", module_obj, create_snakemake_flags(kwargs)
     )
@@ -1972,7 +1956,7 @@ def run_viral_end_to_end(**kwargs):
             "checkv_params": "checkv_params",
             "checkv_database": "checkv_database",
             "clustering_fast": "clustering_fast",
-            "cluster_iter": "cluster_iter"
+            "cluster_iter": "cluster_iter",
             "cdhit_params": "cdhit_params",
             "vOTU_ani": "votu_ani",
             "vOTU_targetcov": "votu_targetcov",
@@ -1989,18 +1973,17 @@ def run_viral_end_to_end(**kwargs):
             "pharokka_params": "pharokka_params",
             "CHERRY_params": "cherry_params",
             "PhaTYP_params": "phatyp_params",
-            "iphop_host": "iphop_host", 
+            "iphop_host": "iphop_host",
             "iphop_cutoff": "iphop_cutoff",
             "iphop_db": "iphop_db",
             "iphop_db_version": "iphop_db_version",
             "iphop_db_basename": "iphop_db_basename",
             "iphop_params": "iphop_params",
-            "coverm_params": "coverm_params", 
-            "coverm_methods": "coverm_methods"
+            "coverm_params": "coverm_params",
+            "coverm_methods": "coverm_methods",
         },
     )
 
-    log.info("Delegating execution to Snakemake backend...")
     vomix_actions().run_module(
         "viral-end-to-end", module_obj, create_snakemake_flags(kwargs)
     )
@@ -2061,7 +2044,7 @@ def run_cluster_fast(**kwargs):
         kwargs,
         {
             "clustering_fast": "clustering_fast",
-            "cluster_iter": "cluster_iter"
+            "cluster_iter": "cluster_iter",
             "cdhit_params": "cdhit_params",
             "vOTU_ani": "votu_ani",
             "vOTU_targetcov": "votu_targetcov",
@@ -2069,7 +2052,6 @@ def run_cluster_fast(**kwargs):
         },
     )
 
-    log.info("Delegating execution to Snakemake backend...")
     vomix_actions().run_module(
         "cluster-fast", module_obj, create_snakemake_flags(kwargs)
     )
@@ -2124,7 +2106,6 @@ def run_checkv_pyhmmer(**kwargs):
         },
     )
 
-    log.info("Delegating execution to Snakemake backend...")
     vomix_actions().run_module(
         "checkv-pyhmmer", module_obj, create_snakemake_flags(kwargs)
     )
@@ -2292,7 +2273,6 @@ def run_setup_database(**kwargs):
         },
     )
 
-    log.info("Delegating execution to Snakemake backend...")
     vomix_actions().run_module(
         "setup-database", module_obj, create_snakemake_flags(kwargs)
     )

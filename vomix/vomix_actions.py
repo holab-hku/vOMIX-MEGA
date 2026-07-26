@@ -11,8 +11,21 @@ from inspect import getsourcefile
 from os.path import abspath
 import inspect, os.path
 import re
+from rich.logging import RichHandler
+from rich.console import Console
 
-logging.basicConfig(level=logging.INFO)
+# ---------------------------------------------------------
+# Rich Logging Configuration (Matching vomix.py)
+# ---------------------------------------------------------
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(message)s",
+    datefmt="[%X]",
+    handlers=[RichHandler(rich_tracebacks=True, markup=True, show_path=False)],
+)
+
+log = logging.getLogger("rich")
+console = Console()
 
 
 class vomix_actions:
@@ -36,13 +49,15 @@ class vomix_actions:
         )
 
         if not os.path.exists(sf):
-            sys.exit("Unable to locate the Snakemake file; tried %s" % sf)
+            log.error(
+                f"Unable to locate the Snakemake file; tried [bold red]{sf}[/bold red]"
+            )
+            sys.exit(1)
         return sf
 
     def env_setup_script() -> str:
-
         script_path = os.path.realpath("vomix/env_setup.sh")
-        logging.info(f"Running script: {script_path}")
+        log.info(f"Running script: [cyan]{script_path}[/cyan]")
 
         cmd = ["bash", script_path]
         try:
@@ -55,20 +70,20 @@ class vomix_actions:
             )
             return result.stdout
         except subprocess.CalledProcessError as e:
+            log.error(f"Error executing setup script: [red]{e.stderr}[/red]")
             return f"Error: {e.stderr}"
 
     def createScript(self, module, module_obj, snakemake_obj):
         cwd = os.path.abspath(os.getcwd())
 
         script = ""
-
         script += 'snakemake --config module="' + module + '" '
 
         for attr, value in module_obj.__dict__.items():
             attr = str.replace(attr, "_", "-")
             if str(value) == "True" or str(value) == "False":
                 script += f"{attr}={value} "
-            elif value is not None and attr != "custom_config" and attr != "name":
+            elif value is not None and attr != "custom-config" and attr != "name":
                 if (
                     attr == "samplelist"
                     or attr == "datadir"
@@ -111,11 +126,12 @@ class vomix_actions:
                 currentVomixDir.rsplit("/vomix", count - 1)
             )
         else:
+            log.error("Could not determine the path to the template config file.")
             raise FileNotFoundError(
                 "Could not determine the path to the template config file."
             )
 
-        logging.info(f"Using template config: {fullConfigPath}")
+        log.info(f"Using Template config: [cyan]{fullConfigPath}[/cyan]")
 
         # get workdir
         workdir = module_obj.workdir
@@ -131,7 +147,7 @@ class vomix_actions:
                     list_doc = yaml.safe_load(f)
                     workdir = list_doc["workdir"]
 
-        logging.info(f"Using workdir: {workdir}")
+        log.info(f"Working Directory: [green]{workdir}[/green]")
 
         # Create outdir + datadir folders
         outdir = workdir + module_obj.outdir
@@ -155,16 +171,11 @@ class vomix_actions:
 
         os.makedirs(outdir_folder, exist_ok=True)
 
-        # if datadir_folder is not None and datadir_folder != "":
-        #     os.makedirs(datadir_folder, exist_ok=True)
-        # if fastadir_folder is not None and fastadir_folder != "":
-        #     os.makedirs(fastadir_folder, exist_ok=True)
-
         # if custom config is specified
         if module_obj.custom_config is not None:
-            logging.info(f"Using custom config: {module_obj.custom_config}")
-            logging.info(
-                f"REMINDER - Any command line flags spefied will override those options in your custom config."
+            log.info(f"Using custom config: [cyan]{module_obj.custom_config}[/cyan]")
+            log.warning(
+                "[yellow]REMINDER - Any command line flags specified will override those options in your custom config.[/yellow]"
             )
             shutil.copy(os.path.realpath(module_obj.custom_config), outdir_folder)
             os.rename(
@@ -172,21 +183,6 @@ class vomix_actions:
                 outdir_folder + "/config.yml",
             )
         else:
-            # Create a new config file from the config template
-
-            # currentVomixDir = os.path.dirname(os.path.abspath(__file__))
-            # count = sum(1 for _ in re.finditer(r'\b%s\b' % re.escape("/vomix"), currentVomixDir))
-            # configPath = "/config/config.yml"
-
-            # if count == 1:
-            #     path = str.replace(currentVomixDir, "/vomix", configPath)
-            # elif count > 1:
-            #     path = configPath.join(currentVomixDir.rsplit("/vomix", count - 1))
-            # else:
-            #     raise FileNotFoundError("Could not determine the path to the template config file.")
-
-            # logging.info(f"Using template config: {path}")
-
             shutil.copy(fullConfigPath, outdir_folder)
 
         # edit new config with user options + latest_run
@@ -199,7 +195,7 @@ class vomix_actions:
                 if value is not None:
                     module = str.replace(module, "_", "-")
                     list_doc[module] = value
-                    logging.debug(f"Setting config option: {module} = {value}")
+                    log.debug(f"Setting config option: {module} = {value}")
 
         with open(outdir_folder + "/config.yml", "w") as f:
             yaml.dump(list_doc, f)
@@ -207,7 +203,6 @@ class vomix_actions:
         return outdir_folder
 
     def run_module(self, module, module_obj, snakemake_obj):
-
         outdir_folder = self.createFoldersAndUpdateConfig(module_obj)
 
         # create the script to run the module
@@ -218,7 +213,7 @@ class vomix_actions:
         with open(script_path, "w") as f:
             f.write(script)
 
-        logging.info(f"Running script: {script_path}")
+        log.info(f"Running Script: [cyan]{script_path}[/cyan]")
         cmd = ["bash", script_path]
 
         currentVomixDir = os.path.dirname(os.path.abspath(__file__))
@@ -234,12 +229,13 @@ class vomix_actions:
                 currentVomixDir.rsplit("/vomix", count - 1)
             )
         else:
+            log.error("Could not determine the path to the current working directory.")
             raise FileNotFoundError(
                 "Could not determine the path to the current working directory."
             )
 
-        logging.info(f"currentWorkingPath: {currentWorkingPath}")
-
+        log.info(f"Working Path: [green]{currentWorkingPath}[/green]")
+        log.info("Delegating execution to Snakemake backend...\n")
         try:
             with Popen(
                 cmd,
@@ -255,4 +251,5 @@ class vomix_actions:
                 raise CalledProcessError(p.returncode, p.args)
 
         except subprocess.CalledProcessError as e:
+            log.error(f"Process failed with error code [red]{e.returncode}[/red]")
             return f"Error: {e.stderr}"
