@@ -505,7 +505,7 @@ def run_preprocess(**kwargs):
         kwargs,
         {
             "dwnld_only": "dwnld_only",
-            "decontam-host": "decontam-host",
+            "decontam_host": "decontam_host",
             "dwnld_params": "dwnld_params",
             "pigz_params": "pigz_params",
             "fastp_params": "fastp_params",
@@ -1932,7 +1932,7 @@ def run_viral_end_to_end(**kwargs):
         kwargs,
         {
             "dwnld_only": "dwnld_only",
-            "decontam-host": "decontam-host",
+            "decontam_host": "decontam_host",
             "dwnld_params": "dwnld_params",
             "pigz_params": "pigz_params",
             "fastp_params": "fastp_params",
