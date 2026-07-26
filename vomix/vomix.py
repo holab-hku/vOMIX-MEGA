@@ -65,7 +65,7 @@ modules_list = [
     "viral-taxonomy",
 ]
 
-END_MODULE_RUN_LOG = "Module (or dry-run) execution completed successfully."
+END_MODULE_RUN_LOG = "\nModule (or dry-run) execution completed successfully."
 
 # ---------------------------------------------------------
 # CLI Help Formatting Configurations (Rich Click)
