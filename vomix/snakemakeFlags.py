@@ -28,7 +28,7 @@ class SnakemakeFlags:
         self.rerun_triggers = rerun_triggers
         self.sdm = sdm
         self.executor = executor
-        self.executor = cluster_generic_submit_cmd
+        self.cluster_generic_submit_cmd = cluster_generic_submit_cmd
         self.printshellcmds = printshellcmds
         self.quiet = quiet
         self.snakemake_args = snakemake_args
