@@ -11,8 +11,6 @@ class Module:
         sample_name="",
         assembly_ids="",
         latest_run="",
-        splits=0,
-        viral_binning=False,
         keep_intermediates=False,
         setup_database=True,
         max_cores=4,
@@ -30,7 +28,6 @@ class Module:
         self.sample_name = sample_name
         self.assembly_ids = assembly_ids
         self.latest_run = latest_run
-        self.splits = splits
         self.keep_intermediates = keep_intermediates
         self.setup_database = setup_database
         self.max_cores = max_cores
