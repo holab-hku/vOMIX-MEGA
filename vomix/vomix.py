@@ -431,6 +431,8 @@ def cli():
 @common_options
 @click.option(
     "--dwnld-only",
+    is_flag=True,
+    flag_value=True,
     default=None,
     required=False,
     help="Restrict execution exclusively to remote SRA file downloads. [default: False]",
