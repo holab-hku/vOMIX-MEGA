@@ -178,7 +178,7 @@ class ProkaryoticBinningModule(BaseModule):
         "checkm2_db": None,
         "GTDBTk_db": None,
         "GTDBTk_db_version": None,
-        "binning_consensus": True,
+        "binning_consensus": None,
         "strobealign_params": None,
         "MetaBAT2_params": None,
         "MaxBin2_params": None,
@@ -230,7 +230,7 @@ class ViralEndToEndModule(BaseModule):
         "checkv_splits": None,
         "checkv_params": None,
         "checkv_database": None,
-        "clustering_fast": True,
+        "clustering_fast": None,
         "cluster_iter": None,
         "cdhit_params": None,
         "vOTU_ani": None,
@@ -249,7 +249,7 @@ class ViralEndToEndModule(BaseModule):
 class ClusterFastModule(BaseModule):
     name = "cluster-fast"
     DEFAULTS = {
-        "clustering_fast": True,
+        "clustering_fast": None,
         "cluster_iter": None,
         "cdhit_params": None,
         "vOTU_ani": None,
