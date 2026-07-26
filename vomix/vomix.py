@@ -2094,6 +2094,8 @@ def run_cluster_fast(**kwargs):
 @common_options
 @click.option(
     "--checkv-original",
+    is_flag=True,
+    flag_value=True,
     required=False,
     default=None,
     help="Flag to use CheckV original instead of CheckV-PyHMMER. [default: False]",
