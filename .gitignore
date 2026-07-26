@@ -36,7 +36,8 @@
 !sample/contigs
 
 # except these subdirectories
-workflow/database
+workflow/database/*
+!workflow/database/.gitkeep
 workflow/params
 workflow/scripts/__pycache__/sample_list_parse.cpython-312.pyc
 docs/_build
