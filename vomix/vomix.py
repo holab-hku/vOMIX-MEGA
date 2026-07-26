@@ -134,7 +134,6 @@ _smk_opts = [
     "--rerun-incomplete",
     "--rerun-triggers",
     "--software-deployment-method",
-    "--sdm",
     "--executor",
     "--cluster-generic-submit-cmd",
     "--printshellcmds",
