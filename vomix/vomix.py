@@ -325,17 +325,19 @@ def snakemake_options(function):
         "--dry-run",
         "--dryrun",
         "-n",
+        is_flag=True,
+        flag_value=True,
         required=False,
         default=None,
-        flag_value=True,
         help="Do not execute anything, display what would be done. [default: False]",
     )(function)
     function = click.option(
         "--forceall",
         "-F",
+        is_flag=True,
+        flag_value=True,
         required=False,
         default=None,
-        flag_value=True,
         help="Force the execution of the selected rule and all dependencies. [default: False]",
     )(function)
     function = click.option(
@@ -346,9 +348,10 @@ def snakemake_options(function):
     )(function)
     function = click.option(
         "--unlock",
+        is_flag=True,
+        flag_value=True,
         required=False,
         default=None,
-        flag_value=True,
         help="Remove a lock on the working directory. [default: False]",
     )(function)
     function = click.option(
@@ -374,9 +377,10 @@ def snakemake_options(function):
     function = click.option(
         "--rerun-incomplete",
         "-ri",
+        is_flag=True,
+        flag_value=True,
         required=False,
         default=None,
-        flag_value=True,
         help="Re-run all jobs the output of which is recognized as incomplete. [default: False]",
     )(function)
     function = click.option(
@@ -407,9 +411,11 @@ def snakemake_options(function):
     function = click.option(
         "--printshellcmds",
         "-p",
+        is_flag=True,
+        flag_value=True,
         required=False,
         default=None,
-        help="Specify a custom executor, available via an executor plugin. [default: None]",
+        help="Print out the shell commands that will be executed. (default: False)",
     )(function)
     function = click.option(
         "--quiet",
