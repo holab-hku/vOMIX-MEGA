@@ -678,8 +678,6 @@ def run_assembly(**kwargs):
 )
 @click.option(
     "--clustering-fast",
-    is_flag=True,
-    flag_value=True,
     required=False,
     default=None,
     help="Flag triggering an accelerated MEGABlast-based clustering protocol. [default: True]",
@@ -959,8 +957,6 @@ def run_viral_identify(**kwargs):
 )
 @click.option(
     "--clustering-fast",
-    is_flag=True,
-    flag_value=True,
     required=False,
     default=None,
     help="Flag triggering an accelerated MEGABlast-based clustering protocol. [default: True]",
@@ -1730,8 +1726,6 @@ def run_prok_annotate(**kwargs):
 )
 @click.option(
     "--clustering-fast",
-    is_flag=True,
-    flag_value=True,
     required=False,
     default=None,
     help="Flag triggering an accelerated MEGABlast-based clustering protocol. [default: True]",
