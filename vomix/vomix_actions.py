@@ -260,7 +260,7 @@ class vomix_actions:
                         print(output, end="", flush=True)
 
             # Ensure a clean separation after subprocess finishes
-            print()
+            print("\n", flush=True)
 
             if p.returncode != 0:
                 raise CalledProcessError(p.returncode, p.args)
