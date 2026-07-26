@@ -1,4 +1,5 @@
 import subprocess
+import pty
 import os
 import sys
 from subprocess import Popen, PIPE, CalledProcessError
@@ -236,20 +237,33 @@ class vomix_actions:
 
         log.info(f"Working Path: [green]{currentWorkingPath}[/green]")
         log.info("Delegating execution to Snakemake backend...\n")
+
         try:
+            master_fd, slave_fd = pty.openpty()
+
             with Popen(
                 cmd,
-                stdout=PIPE,
-                bufsize=1,
-                universal_newlines=True,
+                stdout=slave_fd,
+                stderr=slave_fd,
+                close_fds=True,
                 cwd=currentWorkingPath,
             ) as p:
-                for line in p.stdout:
-                    print(line, end="")
+                # Close the slave fd in the parent process so EOF reads correctly
+                os.close(slave_fd)
+
+                # Read output from the master fd and print it live
+                with os.fdopen(master_fd) as master:
+                    while True:
+                        output = master.read(1024)
+                        if not output:
+                            break
+                        print(output, end="", flush=True)
 
             if p.returncode != 0:
                 raise CalledProcessError(p.returncode, p.args)
 
-        except subprocess.CalledProcessError as e:
-            log.error(f"Process failed with error code [red]{e.returncode}[/red]")
-            return f"Error: {e.stderr}"
+        except (OSError, subprocess.CalledProcessError) as e:
+            # pty can raise OSError (like Input/output error) when the process finishes reading
+            if isinstance(e, subprocess.CalledProcessError):
+                log.error(f"Process failed with error code [red]{e.returncode}[/red]")
+                return f"Error: {e.stderr}"
