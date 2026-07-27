@@ -85,7 +85,7 @@ rule split_contigs:
 # A) Original CheckV
 if config["checkv-original"]:
   rule checkv:
-    name: "checkv.smk CheckV split contigs"
+    name: "checkv.smk CheckV run end-to-end"
     input:
       fna=relpath(f"identify/viral/tmp/splits/{sample_id}.part_{{part}}.fa"), 
       db=expand(os.path.join(config['checkv-db'], "hmm_db/checkv_hmms/{index}.hmm"), index=range(1, 81))
@@ -167,7 +167,7 @@ else:
     log: os.path.join(logdir, "checkv_split_{part}_prodigal-gv.log")
     benchmark: os.path.join(benchmarks, "checkv_split_{part}_prodigal-gv.log")
     conda: "../envs/prodigal-gv.yml"
-    threads: max(1, round(128 / parts))
+    threads: max(1, round(64 / parts))
     resources:
       mem_mb=lambda wildcards, attempt: attempt * max(1, round(72 / parts)) * 10**3
     shell:
