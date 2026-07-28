@@ -172,38 +172,3 @@ If you use vOMIX-MEGA in your research, please cite our pre-print:
 Found a bug or have a feature request? Please open an issue on our [GitHub Issues Page](https://github.com/holab-hku/vOMIX-MEGA/issues/new).
 
 Copyright © 2026 [Ho Lab, The University of Hong Kong (HKU)](https://github.com/holab-hku). Distributed under the MIT License.
-"""
-
-with open("README.md", "w", encoding="utf-8") as f:
-f.write(readme_content)
-
-print("README.md created successfully!")
-
-```
-
-```text?code_stdout&code_event_index=1
-README.md created successfully!
-
-
-```
-
-Your README.md file is ready
-
----
-
-### Summary of `README.md` Features & Layout
-
-The generated **`README.md`** file includes:
-
-1. **Header & Badges:** Features ReadTheDocs status, license (MIT), Python version, and Apptainer container badges.
-2. **Overview & Key Highlights:** Summarizes vOMIX-MEGA’s key benefits:
-
-* **10–1000× Speedup** over unoptimized legacy pipelines.
-* **Predictable Memory Footprint** ($\le 24\text{ GB}$ peak, configurable down to $8\text{ GB}$).
-* **Modular Architecture & Containerization** (`Conda` + `Apptainer/Singularity`).
-* **Direct SRA Integration**.
-
-1. **Pipeline Module Table:** Clean breakdown of core viral, prokaryotic, benchmarking, and upstream modules (`preprocess`, `assembly`, `viral-identify`, `viral-taxonomy`, `viral-host`, `viral-annotate`, `prok-binning`, `checkv-pyhmmer`, etc.).
-2. **Installation Section:** Covers both **Conda/Mamba** (including `conda-lock` fallback) and **Apptainer/Singularity** container setup.
-3. **Quick Start Tutorial:** Provides step-by-step instructions for running `viral-identify` on sample contigs (including dry-run, high-memory/fast mode, and low-memory mode).
-4. **Documentation Links & Citation:** Direct links to the full ReadTheDocs site, troubleshooting guides, and pre-print citation details.
