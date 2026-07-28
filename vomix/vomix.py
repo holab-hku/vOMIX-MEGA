@@ -415,6 +415,7 @@ def snakemake_options(function):
     )(function)
     function = click.option(
         "--quiet",
+        "-q",
         required=False,
         default=None,
         flag_value=True,

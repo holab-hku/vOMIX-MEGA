@@ -3,7 +3,7 @@ import os
 import sys
 
 # 1. Project Information
-project = "vomix-snakemake"
+project = "vOMIX-MEGA"
 copyright = "2026, Ho Lab, HKU"
 author = "Erfan Shekarriz, HKU"
 version = "local-dev"
@@ -31,9 +31,9 @@ extensions = [
 html_theme = "furo"
 pygments_style = "tango"
 pygments_dark_style = "tango"
-html_logo = "./_static/logo_vomix-snakemake.svg"
+html_logo = "./_static/logo_vOMIX-MEGA.svg"
 html_theme_options = {
-    "sidebar_hide_name": True,  # Optional: keeps your project title visible
+    "sidebar_hide_name": True,
     "navigation_with_keys": True,
     "collapse_navigation": True,
     "navigation_depth": 3,

@@ -16,27 +16,33 @@ The `prok-annotate` module acts as a streamlined wrapper for the `HUMAnN3` analy
 **`Conda`**
 
 ```bash
-snakemake --sdm conda --use-conda --config module="prok-annotate" outdir="sample/results" datadir="sample/fastq" samplelist="sample/sample_list.csv" -j 16 --latency-wait 20
+vomix prok-annotate -h
+vomix prok-annotate --sdm conda --config --outdir sample/results --datadir sample/fastq --samplelist sample/sample_list.csv -j 16 --latency-wait 20
 ```
 
 **`Apptainer`**
 
 ```bash
-snakemake --sdm conda apptainer --config module="prok-annotate" outdir="sample/results" datadir="sample/fastq" samplelist="sample/sample_list.csv" -j 16 --latency-wait 20
+vomix prok-annotate -h
+vomix prok-annotate --sdm conda --sdm apptainer --config --outdir sample/results --datadir sample/fastq --samplelist sample/sample_list.csv -j 16 --latency-wait 20
 ```
 
 **`HPC (PBS) (Conda)`**
 
 ```bash
-EMAIL="youremail@protonmail.com"
-snakemake --sdm conda --use-conda --config module="prok-annotate" outdir="sample/results" datadir="sample/fastq" samplelist="sample/sample_list.csv" -j 88 --latency-wait 20 --executor cluster-generic --cluster-generic-submit-cmd "qsub -N {log} -l nodes=1:ppn={threads} -l mem={resources.mem_mb}m -l walltime=120:00:00 -M $EMAIL -q cgsd -o qsub.log -e qsub.log -m a"
+vomix prok-annotate -h
+EMAIL="your.email@example.com"
+QUEUE="cluster_queue_name"
+vomix prok-annotate --sdm conda --config --outdir sample/results --datadir sample/fastq --samplelist sample/sample_list.csv -j 16 --latency-wait 20 --executor cluster-generic --cluster-generic-submit-cmd "qsub -N {log} -l nodes=1:ppn={threads} -l mem={resources.mem_mb}m -l walltime=120:00:00 -M $EMAIL -q $QUEUE -o qsub.log -e qsub.log -m a"
 ```
 
 **`HPC (PBS) (Apptainer)`**
 
 ```bash
-EMAIL="youremail@protonmail.com"
-snakemake --sdm conda apptainer --config module="prok-annotate" outdir="sample/results" datadir="sample/fastq" samplelist="sample/sample_list.csv" -j 88 --latency-wait 20 --executor cluster-generic --cluster-generic-submit-cmd "qsub -N {log} -l nodes=1:ppn={threads} -l mem={resources.mem_mb}m -l walltime=120:00:00 -M $EMAIL -q cgsd -o qsub.log -e qsub.log -m a"
+vomix prok-annotate -h
+EMAIL="your.email@example.com"
+QUEUE="cluster_queue_name"
+vomix prok-annotate --sdm conda --sdm apptainer --config --outdir sample/results --datadir sample/fastq --samplelist sample/sample_list.csv -j 16 --latency-wait 20 --executor cluster-generic --cluster-generic-submit-cmd "qsub -N {log} -l nodes=1:ppn={threads} -l mem={resources.mem_mb}m -l walltime=120:00:00 -M $EMAIL -q $QUEUE -o qsub.log -e qsub.log -m a"
 ```
 
 :::

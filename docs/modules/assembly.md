@@ -16,27 +16,33 @@ The `assembly` module takes a sample list CSV file paired with cleaned, decontam
 **`Conda`**
 
 ```bash
-snakemake --sdm conda --use-conda --config module="assembly" assembler="megahit" outdir="sample/results" datadir="sample/fastq" samplelist="sample/sample_list.csv" -j 16 --latency-wait 20
+vomix assembly -h 
+vomix assembly --sdm conda --assembler megahit --outdir sample/results --datadir sample/fastq --samplelist sample/sample_list.csv -j 16 --latency-wait 20
 ```
 
 **`Apptainer`**
 
 ```bash
-snakemake --sdm conda apptainer --config module="assembly" assembler="megahit" outdir="sample/results" datadir="sample/fastq" samplelist="sample/sample_list.csv" -j 16 --latency-wait 20
+vomix assembly -h 
+vomix assembly --sdm conda --sdm apptainer --assembler megahit --outdir sample/results --datadir sample/fastq --samplelist sample/sample_list.csv -j 16 --latency-wait 20
 ```
 
 **`HPC (PBS) (Conda)`**
 
 ```bash
-EMAIL="youremail@protonmail.com"
-snakemake --sdm conda --use-conda --config module="assembly" assembler="megahit" outdir="sample/results" datadir="sample/fastq" samplelist="sample/sample_list.csv" -j 88 --latency-wait 20 --executor cluster-generic --cluster-generic-submit-cmd "qsub -N {log} -l nodes=1:ppn={threads} -l mem={resources.mem_mb}m -l walltime=120:00:00 -M $EMAIL -q cgsd -o qsub.log -e qsub.log -m a"
+vomix assembly -h 
+EMAIL="your.email@example.com"
+QUEUE="cluster_queue_name"
+vomix assembly --sdm conda --assembler megahit --outdir sample/results --datadir sample/fastq --samplelist sample/sample_list.csv -j 16 --latency-wait 20 --executor cluster-generic --cluster-generic-submit-cmd "qsub -N {log} -l nodes=1:ppn={threads} -l mem={resources.mem_mb}m -l walltime=120:00:00 -M $EMAIL -q $QUEUE -o qsub.log -e qsub.log -m a"
 ```
 
 **`HPC (PBS) (Apptainer)`**
 
 ```bash
-EMAIL="youremail@protonmail.com"
-snakemake --sdm conda apptainer --config module="assembly" assembler="megahit" outdir="sample/results" datadir="sample/fastq" samplelist="sample/sample_list.csv" -j 88 --latency-wait 20 --executor cluster-generic --cluster-generic-submit-cmd "qsub -N {log} -l nodes=1:ppn={threads} -l mem={resources.mem_mb}m -l walltime=120:00:00 -M $EMAIL -q cgsd -o qsub.log -e qsub.log -m a"
+vomix assembly -h 
+EMAIL="your.email@example.com"
+QUEUE="cluster_queue_name"
+vomix assembly --sdm conda --sdm apptainer --assembler megahit --outdir sample/results --datadir sample/fastq --samplelist sample/sample_list.csv -j 16 --latency-wait 20 --executor cluster-generic --cluster-generic-submit-cmd "qsub -N {log} -l nodes=1:ppn={threads} -l mem={resources.mem_mb}m -l walltime=120:00:00 -M $EMAIL -q $QUEUE -o qsub.log -e qsub.log -m a"
 ```
 
 :::

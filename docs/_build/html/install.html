@@ -3,7 +3,7 @@
   <head><meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <meta name="color-scheme" content="light dark"><meta name="viewport" content="width=device-width, initial-scale=1" />
-<link rel="index" title="Index" href="genindex.html"><link rel="search" title="Search" href="search.html"><link rel="next" title="Quick Start" href="quickstart.html"><link rel="prev" title="vomix-snakemake" href="index.html">
+<link rel="index" title="Index" href="genindex.html"><link rel="search" title="Search" href="search.html"><link rel="next" title="Quick Start" href="quickstart.html"><link rel="prev" title="vOMIX-MEGA" href="index.html">
         <link rel="prefetch" href="_static/logo_vomix-snakemake.svg" as="image">
 
     <!-- Generated with Sphinx 9.1.0 and Furo 2025.12.19 -->
@@ -196,9 +196,9 @@
 <div id="searchbox"></div><div class="sidebar-scroll"><div class="sidebar-tree">
   <p class="caption" role="heading"><span class="caption-text">Introduction</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="index.html">vomix-snakemake</a></li>
+<li class="toctree-l1"><a class="reference internal" href="index.html">vOMIX-MEGA</a></li>
 </ul>
-<p class="caption" role="heading"><span class="caption-text">vomix-snakemake</span></p>
+<p class="caption" role="heading"><span class="caption-text">vOMIX-MEGA</span></p>
 <ul class="current">
 <li class="toctree-l1 current current-page"><a class="current reference internal" href="#">Installation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="quickstart.html">Quick Start</a></li>
@@ -267,15 +267,15 @@
 <h1>Installation<a class="headerlink" href="#installation" title="Link to this heading">¶</a></h1>
 <section id="conda-mamba">
 <h2>Conda &amp; Mamba<a class="headerlink" href="#conda-mamba" title="Link to this heading">¶</a></h2>
-<p>You can install vomix-snakemake in you computer using general-purpose package managers ( <code class="docutils literal notranslate"><span class="pre">Mamba</span></code>, <code class="docutils literal notranslate"><span class="pre">Conda</span></code>), or run it via an <a class="reference internal" href="#apptainer-installation"><code class="docutils literal notranslate"><span class="pre">Apptainer</span></code></a> image.</p>
+<p>You can install vOMIX-MEGA in you computer using general-purpose package managers ( <code class="docutils literal notranslate"><span class="pre">Mamba</span></code>, <code class="docutils literal notranslate"><span class="pre">Conda</span></code>), or run it via an <a class="reference internal" href="#apptainer-installation"><code class="docutils literal notranslate"><span class="pre">Apptainer</span></code></a> image via <code class="docutils literal notranslate"><span class="pre">pip</span></code>.</p>
 <div class="sd-tab-set docutils">
 <input checked="checked" id="sd-tab-item-0" name="sd-tab-set-0" type="radio">
 <label class="sd-tab-label" for="sd-tab-item-0">
 Conda</label><div class="sd-tab-content docutils">
-<p><a class="reference external" href="https://docs.conda.io/projects/conda/en/stable/">Conda</a> is a package manager that handles all your dependencies for you. To install vomix-snakemake using Conda, you can create the environment from the repository environment file.</p>
+<p><a class="reference external" href="https://docs.conda.io/projects/conda/en/stable/">Conda</a> is a package manager that handles all your dependencies for you. To install vOMIX-MEGA using Conda, you can create the environment from the repository environment file.</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Download GitHub directory</span>
-git<span class="w"> </span>clone<span class="w"> </span>https://github.com/holab-hku/vomix-snakemake.git
-<span class="nb">cd</span><span class="w"> </span>vomix-snakemake
+git<span class="w"> </span>clone<span class="w"> </span>https://github.com/holab-hku/vOMIX-MEGA.git
+<span class="nb">cd</span><span class="w"> </span>vOMIX-MEGA
 
 <span class="c1"># Install base environment</span>
 conda<span class="w"> </span>env<span class="w"> </span>create<span class="w"> </span>-f<span class="w"> </span>environment.yml
@@ -283,18 +283,21 @@ conda<span class="w"> </span>env<span class="w"> </span>create<span class="w"> <
 <span class="c1"># Activate environment</span>
 conda<span class="w"> </span>activate<span class="w"> </span>vomix
 
+<span class="c1"># Install using pip</span>
+pip<span class="w"> </span>install<span class="w"> </span>.
+
 <span class="c1"># Verify Installation</span>
-snakemake<span class="w"> </span>-v
+vomix<span class="w"> </span>-h
 </pre></div>
 </div>
 </div>
 <input id="sd-tab-item-1" name="sd-tab-set-0" type="radio">
 <label class="sd-tab-label" for="sd-tab-item-1">
 Mamba</label><div class="sd-tab-content docutils">
-<p><a class="reference external" href="https://mamba.readthedocs.io/en/latest/">Mamba</a> is a package manager that handles all your dependencies for you. To install vomix-snakemake using Mamba, you can create the environment directly from the repository environment file.</p>
+<p><a class="reference external" href="https://mamba.readthedocs.io/en/latest/">Mamba</a> is a package manager that handles all your dependencies for you. To install vOMIX-MEGA using Mamba, you can create the environment directly from the repository environment file.</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Download GitHub directory</span>
-git<span class="w"> </span>clone<span class="w"> </span>https://github.com/holab-hku/vomix-snakemake.git
-<span class="nb">cd</span><span class="w"> </span>vomix-snakemake
+git<span class="w"> </span>clone<span class="w"> </span>https://github.com/holab-hku/vOMIX-MEGA.git
+<span class="nb">cd</span><span class="w"> </span>vOMIX-MEGA
 
 <span class="c1"># Install base environment</span>
 mamba<span class="w"> </span>env<span class="w"> </span>create<span class="w"> </span>-f<span class="w"> </span>environment.yml
@@ -302,8 +305,11 @@ mamba<span class="w"> </span>env<span class="w"> </span>create<span class="w"> <
 <span class="c1"># Activate environment</span>
 mamba<span class="w"> </span>activate<span class="w"> </span>vomix
 
+<span class="c1"># Install using pip</span>
+pip<span class="w"> </span>install<span class="w"> </span>.
+
 <span class="c1"># Verify Installation</span>
-snakemake<span class="w"> </span>-v
+vomix<span class="w"> </span>-h
 </pre></div>
 </div>
 </div>
@@ -312,8 +318,8 @@ snakemake<span class="w"> </span>-v
 Conda Lock</label><div class="sd-tab-content docutils">
 <p><a class="reference external" href="https://github.com/conda/conda-lock">Conda Lock</a> provides a pinned dependency lock file that is often the most reliable fallback when other installation methods fail.</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Download GitHub directory</span>
-git<span class="w"> </span>clone<span class="w"> </span>https://github.com/holab-hku/vomix-snakemake.git
-<span class="nb">cd</span><span class="w"> </span>vomix-snakemake
+git<span class="w"> </span>clone<span class="w"> </span>https://github.com/holab-hku/vOMIX-MEGA.git
+<span class="nb">cd</span><span class="w"> </span>vOMIX-MEGA
 
 <span class="c1"># Create a conda-lock environment </span>
 <span class="c1"># if you don&#39;t want to install into base environment</span>
@@ -325,8 +331,11 @@ conda-lock<span class="w"> </span>install<span class="w"> </span>--name<span cla
 conda<span class="w"> </span>deactivate<span class="w"> </span><span class="c1"># deactive conda-lock environment</span>
 conda<span class="w"> </span>activate<span class="w"> </span>vomix<span class="w"> </span><span class="c1"># activate vomix environment</span>
 
+<span class="c1"># Install using pip</span>
+pip<span class="w"> </span>install<span class="w"> </span>.
+
 <span class="c1"># Verify Installation</span>
-snakemake<span class="w"> </span>-v
+vomix<span class="w"> </span>-h
 </pre></div>
 </div>
 </div>
@@ -346,7 +355,7 @@ snakemake<span class="w"> </span>-v
 </section>
 <section id="apptainer-installation">
 <h2>Apptainer Installation<a class="headerlink" href="#apptainer-installation" title="Link to this heading">¶</a></h2>
-<p>vomix-snakemake is built on a snakemake back-end, which facilitates native containerized deployment via an <code class="docutils literal notranslate"><span class="pre">Apptainer</span></code> (formerly <code class="docutils literal notranslate"><span class="pre">Singularity</span></code>) <code class="docutils literal notranslate"><span class="pre">.sif</span></code> image. The container image generated contains explicitly each conda environment mounted on top of a base operating system. Containers are preferred for the most robust forms of reproducibility, whereas <code class="docutils literal notranslate"><span class="pre">conda</span></code> and <code class="docutils literal notranslate"><span class="pre">mamba</span></code> installations might not work on Windows or Mac-ARM systems.</p>
+<p>vOMIX-MEGA is built on a snakemake back-end, which facilitates native containerized deployment via an <code class="docutils literal notranslate"><span class="pre">Apptainer</span></code> (formerly <code class="docutils literal notranslate"><span class="pre">Singularity</span></code>) <code class="docutils literal notranslate"><span class="pre">.sif</span></code> image. The container image generated contains explicitly each conda environment mounted on top of a base operating system. Containers are preferred for the most robust forms of reproducibility, whereas <code class="docutils literal notranslate"><span class="pre">conda</span></code> and <code class="docutils literal notranslate"><span class="pre">mamba</span></code> installations might not work on Windows or Mac-ARM systems.</p>
 <div class="tip admonition">
 <p class="admonition-title">Install Apptainer</p>
 <p>Make sure you have <code class="docutils literal notranslate"><span class="pre">Apptainer</span></code> installed before you run the following commands. The advantage of Apptainer over docker is that it allows non-privilieged installation without root permissions. View the full documentation at the <a class="reference external" href="https://apptainer.org/docs/admin/main/installation.html">Apptainer Wiki</a>. Note that while the prebuilt image does not require root permission, a manual build might require it.</p>
@@ -355,52 +364,52 @@ snakemake<span class="w"> </span>-v
 <input checked="checked" id="sd-tab-item-3" name="sd-tab-set-1" type="radio">
 <label class="sd-tab-label" for="sd-tab-item-3">
 Apptainer (Download Prebuilt Image)</label><div class="sd-tab-content docutils">
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Enter vomix-snakemake directory</span>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Enter vOMIX-MEGA directory</span>
 <span class="c1"># replace this with your native installation path</span>
-<span class="nb">cd</span><span class="w"> </span>vomix-snakemake
+<span class="nb">cd</span><span class="w"> </span>vOMIX-MEGA
 
 <span class="c1"># Pull Container Image </span>
 <span class="nv">VOMIX_VERSION</span><span class="o">=</span><span class="s2">&quot;v0.1.0-beta.1&quot;</span>
 apptainer<span class="w"> </span>pull<span class="w"> </span>--name<span class="w"> </span>workflow/apptainer/vomix_<span class="si">${</span><span class="nv">VOMIX_VERSION</span><span class="si">}</span>.sif<span class="w"> </span>oras://ghcr.io/erfanshekarriz/vomix:<span class="si">${</span><span class="nv">VOMIX_VERSION</span><span class="si">}</span>
 
 <span class="c1"># Dry run (test installation)</span>
-snakemake<span class="w"> </span>--sdm<span class="w"> </span>conda<span class="w"> </span>apptainer<span class="w"> </span>--config<span class="w"> </span><span class="nv">module</span><span class="o">=</span><span class="s2">&quot;viral-identify&quot;</span><span class="w"> </span><span class="nv">outdir</span><span class="o">=</span><span class="s2">&quot;quick&quot;</span><span class="w"> </span><span class="nv">splits</span><span class="o">=</span><span class="m">0</span><span class="w"> </span><span class="nv">fasta</span><span class="o">=</span><span class="s2">&quot;sample/contigs/contigs_simulated_viral_nonviral.fasta&quot;</span><span class="w"> </span>-j<span class="w"> </span><span class="m">64</span><span class="w"> </span>--latency-wait<span class="w"> </span><span class="m">20</span><span class="w"> </span>-n
+vomix<span class="w"> </span>viral-identify<span class="w"> </span>--sdm<span class="w"> </span>apptainer<span class="w"> </span>--fasta<span class="w"> </span>sample/contigs/contigs_simulated_viral_nonviral.fasta<span class="w"> </span>--outdir<span class="w"> </span>quick-run/results<span class="w"> </span>-j<span class="w"> </span><span class="m">64</span><span class="w"> </span>--latency-wait<span class="w"> </span><span class="m">20</span><span class="w"> </span>-n
 </pre></div>
 </div>
 </div>
 <input id="sd-tab-item-4" name="sd-tab-set-1" type="radio">
 <label class="sd-tab-label" for="sd-tab-item-4">
 Apptainer (Build Local Image)</label><div class="sd-tab-content docutils">
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Enter vomix-snakemake directory</span>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Enter vOMIX-MEGA directory</span>
 <span class="c1"># replace this with your native installation path</span>
-<span class="nb">cd</span><span class="w"> </span>vomix-snakemake
+<span class="nb">cd</span><span class="w"> </span>vOMIX-MEGA
 
 <span class="c1"># Built container Image </span>
 <span class="nv">VOMIX_VERSION</span><span class="o">=</span><span class="s2">&quot;v0.1.0-beta.1&quot;</span>
 apptainer<span class="w"> </span>build<span class="w"> </span>workflow/apptainer/vomix_<span class="si">${</span><span class="nv">VERSION</span><span class="si">}</span>.sif<span class="w"> </span>workflow/apptainer/vomix_<span class="si">${</span><span class="nv">VERSION</span><span class="si">}</span>.def
 
 <span class="c1"># Dry run (test installation)</span>
-snakemake<span class="w"> </span>--sdm<span class="w"> </span>conda<span class="w"> </span>apptainer<span class="w"> </span>--config<span class="w"> </span><span class="nv">module</span><span class="o">=</span><span class="s2">&quot;viral-identify&quot;</span><span class="w"> </span><span class="nv">outdir</span><span class="o">=</span><span class="s2">&quot;quick&quot;</span><span class="w"> </span><span class="nv">splits</span><span class="o">=</span><span class="m">0</span><span class="w"> </span><span class="nv">fasta</span><span class="o">=</span><span class="s2">&quot;sample/contigs/contigs_simulated_viral_nonviral.fasta&quot;</span><span class="w"> </span>-j<span class="w"> </span><span class="m">64</span><span class="w"> </span>--latency-wait<span class="w"> </span><span class="m">20</span><span class="w"> </span>-n
+vomix<span class="w"> </span>viral-identify<span class="w"> </span>--sdm<span class="w"> </span>apptainer<span class="w"> </span>--fasta<span class="w"> </span>sample/contigs/contigs_simulated_viral_nonviral.fasta<span class="w"> </span>--outdir<span class="w"> </span>quick-run/results<span class="w"> </span>-j<span class="w"> </span><span class="m">64</span><span class="w"> </span>--latency-wait<span class="w"> </span><span class="m">20</span><span class="w"> </span>-n
 </pre></div>
 </div>
 </div>
 </div>
 <div class="note admonition">
 <p class="admonition-title">Apptainer Image Size</p>
-<p>The full vomix-snakemake apptainer build takes <code class="docutils literal notranslate"><span class="pre">9.5</span> <span class="pre">GB</span></code> of storage, which includes all pre-installed conda packages mounted on a <code class="docutils literal notranslate"><span class="pre">condaforge/miniforge3:latest</span></code> base operating system (not including databases). Make sure that you have this space availabe on your local machine before running. Due to the filesize, your HPC administrator might limit the download bandwith, so you might need to contact them to set it up for you. Running <code class="docutils literal notranslate"><span class="pre">export</span> <span class="pre">GODEBUG=&quot;http2client=0&quot;</span></code> before your pull might be a quick fix for this.</p>
+<p>The full vOMIX-MEGA apptainer build takes <code class="docutils literal notranslate"><span class="pre">9.5</span> <span class="pre">GB</span></code> of storage, which includes all pre-installed conda packages mounted on a <code class="docutils literal notranslate"><span class="pre">condaforge/miniforge3:latest</span></code> base operating system (not including databases). Make sure that you have this space availabe on your local machine before running. Due to the filesize, your HPC administrator might limit the download bandwith, so you might need to contact them to set it up for you. Running <code class="docutils literal notranslate"><span class="pre">export</span> <span class="pre">GODEBUG=&quot;http2client=0&quot;</span></code> before your pull might be a quick fix for this.</p>
 </div>
 <div class="note admonition">
 <p class="admonition-title">Using Conda within a Container</p>
-<p>Each rule in vomix-snakemake’s underlying snakemake files depends on a speicifc conda environment. To run what Snakemake calls <a class="reference external" href="https://snakemake.readthedocs.io/en/stable/snakefiles/deployment.html#ad-hoc-combination-of-conda-package-management-with-containers">“Ad-hoc combination of Conda package management with containers”</a>, which is essentially running apptainer containers with conda enviornments installed within them, you need to use the <code class="docutils literal notranslate"><span class="pre">--sdm</span> <span class="pre">conda</span> <span class="pre">apptainer</span></code> option. This allows true full reproducibility. Make sure to always use <code class="docutils literal notranslate"><span class="pre">--sdm</span> <span class="pre">conda</span> <span class="pre">apptainer</span></code>.</p>
+<p>Each rule in vOMIX-MEGA’s underlying snakemake files depends on a speicifc conda environment. To run what Snakemake calls <a class="reference external" href="https://snakemake.readthedocs.io/en/stable/snakefiles/deployment.html#ad-hoc-combination-of-conda-package-management-with-containers">“Ad-hoc combination of Conda package management with containers”</a>, which is essentially running apptainer containers with conda enviornments installed within them, you need to use the <code class="docutils literal notranslate"><span class="pre">--sdm</span> <span class="pre">conda</span> <span class="pre">--sdm</span> <span class="pre">apptainer</span></code> options in that specific format and order. This allows true full reproducibility.</p>
 </div>
 <div class="warning admonition">
 <p class="admonition-title">Wrong Apptainer Flags for Snakemake</p>
-<p>If you only use <code class="docutils literal notranslate"><span class="pre">--sdm</span> <span class="pre">apptainer</span></code>, Snakemake will not launch any conda environments and hence all jobs will fail. If you use <code class="docutils literal notranslate"><span class="pre">--sdm</span> <span class="pre">apptainer</span> <span class="pre">--use-conda</span></code> it will try and re-install conda enviornments in your local <code class="docutils literal notranslate"><span class="pre">.snakemake/conda</span></code> folder, which counteracts the purpose of containers. Using <code class="docutils literal notranslate"><span class="pre">--sdm</span> <span class="pre">apptainer</span> <span class="pre">conda</span></code> will also not work successfully.</p>
+<p>If you only use <code class="docutils literal notranslate"><span class="pre">--sdm</span> <span class="pre">apptainer</span></code>, Snakemake will not launch any conda environments and hence all jobs will fail. If you use <code class="docutils literal notranslate"><span class="pre">--sdm</span> <span class="pre">apptainer</span> <span class="pre">--use-conda</span></code> it will try and re-install conda enviornments in your local <code class="docutils literal notranslate"><span class="pre">.snakemake/conda</span></code> folder, which counteracts the purpose of containers. Using <code class="docutils literal notranslate"><span class="pre">--sdm</span> <span class="pre">apptainer</span> <span class="pre">--sdm</span> <span class="pre">conda</span></code> will also not work successfully.</p>
 </div>
 </section>
 <section id="troubleshooting-guide">
 <h2><svg version="1.1" width="0.85em" height="0.85em" class="sd-octicon sd-octicon-book" viewBox="0 0 16 16" aria-hidden="true"><path d="M0 1.75A.75.75 0 0 1 .75 1h4.253c1.227 0 2.317.59 3 1.501A3.743 3.743 0 0 1 11.006 1h4.245a.75.75 0 0 1 .75.75v10.5a.75.75 0 0 1-.75.75h-4.507a2.25 2.25 0 0 0-1.591.659l-.622.621a.75.75 0 0 1-1.06 0l-.622-.621A2.25 2.25 0 0 0 5.258 13H.75a.75.75 0 0 1-.75-.75Zm7.251 10.324.004-5.073-.002-2.253A2.25 2.25 0 0 0 5.003 2.5H1.5v9h3.757a3.75 3.75 0 0 1 1.994.574ZM8.755 4.75l-.004 7.322a3.752 3.752 0 0 1 1.992-.572H14.5v-9h-3.495a2.25 2.25 0 0 0-2.25 2.25Z"></path></svg> Troubleshooting Guide<a class="headerlink" href="#troubleshooting-guide" title="Link to this heading">¶</a></h2>
-<p>We have specific guidelines for troubleshooting vomix-snakemake so we can help you out in your analysis journey as efficiently as possible! If you run into any unexpected errors, warnings, etc. please visit our <a class="reference internal" href="troubleshoot.html"><span class="std std-doc">Troubleshooting Guide</span></a>.</p>
+<p>We have specific guidelines for troubleshooting vOMIX-MEGA so we can help you out in your analysis journey as efficiently as possible! If you run into any unexpected errors, warnings, etc. please visit our <a class="reference internal" href="troubleshoot.html"><span class="std std-doc">Troubleshooting Guide</span></a>.</p>
 </section>
 <section id="report-a-bug-to-us">
 <h2><svg version="1.1" width="0.85em" height="0.85em" class="sd-octicon sd-octicon-bug" viewBox="0 0 16 16" aria-hidden="true"><path d="M4.72.22a.75.75 0 0 1 1.06 0l1 .999a3.488 3.488 0 0 1 2.441 0l.999-1a.748.748 0 0 1 1.265.332.75.75 0 0 1-.205.729l-.775.776c.616.63.995 1.493.995 2.444v.327c0 .1-.009.197-.025.292.408.14.764.392 1.029.722l1.968-.787a.75.75 0 0 1 .556 1.392L13 7.258V9h2.25a.75.75 0 0 1 0 1.5H13v.5c0 .409-.049.806-.141 1.186l2.17.868a.75.75 0 0 1-.557 1.392l-2.184-.873A4.997 4.997 0 0 1 8 16a4.997 4.997 0 0 1-4.288-2.427l-2.183.873a.75.75 0 0 1-.558-1.392l2.17-.868A5.036 5.036 0 0 1 3 11v-.5H.75a.75.75 0 0 1 0-1.5H3V7.258L.971 6.446a.75.75 0 0 1 .558-1.392l1.967.787c.265-.33.62-.583 1.03-.722a1.677 1.677 0 0 1-.026-.292V4.5c0-.951.38-1.814.995-2.444L4.72 1.28a.75.75 0 0 1 0-1.06Zm.53 6.28a.75.75 0 0 0-.75.75V11a3.5 3.5 0 1 0 7 0V7.25a.75.75 0 0 0-.75-.75ZM6.173 5h3.654A.172.172 0 0 0 10 4.827V4.5a2 2 0 1 0-4 0v.327c0 .096.077.173.173.173Z"></path></svg> Report a bug to us<a class="headerlink" href="#report-a-bug-to-us" title="Link to this heading">¶</a></h2>

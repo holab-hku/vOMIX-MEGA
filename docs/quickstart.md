@@ -1,15 +1,15 @@
 # Quick Start
 
-vomix-snakemake is a comprehensive pipeline, and we know that big-data analysis can feel intimidating. We'd like to make that as easy as possible for you. vOMIX-snakemake simplifies analysis by removing tedious ad-hoc coding, and speeds up viral metagenomic analysis through job optimization and mecnhmarking, all while maintaining full freedom to tune parameters to your liking. Here are three different quick analysese you can do.
+vOMIX-MEGA is a comprehensive pipeline, and we know that big-data analysis can feel intimidating. We'd like to make that as easy as possible for you. vOMIX-MEGA simplifies analysis by removing tedious ad-hoc coding, and speeds up viral metagenomic analysis through job optimization and mecnhmarking, all while maintaining full freedom to tune parameters to your liking. Here are three different quick analysese you can do.
 
-```{admonition} Install vomix-snakemake first
+```{admonition} Install vOMIX-MEGA first
 :class: warning
-Please make sure to have installed vomix-snakemake and Apptainer using the [Installation Guide](/install.md). 
+Please make sure to have installed vOMIX-MEGA and Apptainer using the [Installation Guide](/install.md). 
 ```
 
 ## {octicon}`circle;0.85em` Quick Tutorial #1: Identify Viruses in Mock Contig File
 
-You can quickly analyse a mock dataset of 988 viral and non-viral mixed contigs using the `viral-identify` module. The sample data should already be included in your directory, or can be downloaded via `wget https://github.com/holab-hku/vomix-snakemake/tree/main/sample`.
+You can quickly analyse a mock dataset of 988 viral and non-viral mixed contigs using the `viral-identify` module. The sample data should already be included in your directory, or can be downloaded via `wget https://github.com/holab-hku/vOMIX-MEGA/tree/main/sample`.
 
 ::::{tab-set}
 :::{tab-item} Conda
@@ -19,16 +19,16 @@ You can quickly analyse a mock dataset of 988 viral and non-viral mixed contigs 
 conda activate vomix
 
 # Dry run (check jobs)
-snakemake --sdm conda --use-conda --config module="viral-identify" outdir="quick-run/results" contig-splits=0 fasta="sample/contigs/contigs_simulated_viral_nonviral.fasta" -j 64 --latency-wait 20 -n
+vomix viral-identify --sdm conda --fasta sample/contigs/contigs_simulated_viral_nonviral.fasta --outdir quick-run/results --contig-splits 0 --checkv-splits 0 -j 64 --latency-wait 20 -n
 
 # Use more memory (22 GB) but run faster (~10 mins)
-snakemake --sdm conda --use-conda --config module="viral-identify" outdir="quick-run/results" contig-splits=0 fasta="sample/contigs/contigs_simulated_viral_nonviral.fasta" -j 64 --latency-wait 20
+vomix viral-identify --sdm conda --fasta sample/contigs/contigs_simulated_viral_nonviral.fasta --outdir quick-run/results --contig-splits 0 --checkv-splits 0 -j 64 --latency-wait 20
 
 # Use less memory (8 GB) but run slower (~40 mins)
-snakemake --sdm conda --use-conda --config module="viral-identify" outdir="quick-run/results" contig-splits=7 checkv-splits=7 fasta="sample/contigs/contigs_simulated_viral_nonviral.fasta" -j 64 --latency-wait 20
+vomix viral-identify --sdm conda --fasta sample/contigs/contigs_simulated_viral_nonviral.fasta --outdir quick-run/results --contig-splits 7 --checkv-splits 7 -j 64 --latency-wait 20
 
 # Quick look at results
-head -n 20 quick/identify/viral/output/classification_summary_vOTUs.csv
+head -n 20 quick-run/results/identify/viral/output/classification_summary_vOTUs.csv
 ```
 
 :::
@@ -39,16 +39,16 @@ head -n 20 quick/identify/viral/output/classification_summary_vOTUs.csv
 conda activate vomix
 
 # Dry run (check jobs)
-snakemake --sdm conda apptainer --config module="viral-identify" outdir="quick-run/results" contig-splits=0 checkv-splits=0 fasta="sample/contigs/contigs_simulated_viral_nonviral.fasta" -j 64 --latency-wait 20 -n
+vomix viral-identify --sdm apptainer --fasta sample/contigs/contigs_simulated_viral_nonviral.fasta --outdir quick-run/results --contig-splits 0 --checkv-splits 0 -j 64 --latency-wait 20 -n
 
 # Use more memory (22 GB) but run faster (~10 mins)
-snakemake --sdm conda apptainer --config module="viral-identify" outdir="quick-run/results" fasta="sample/contigs/contigs_simulated_viral_nonviral.fasta" contig-splits=0 checkv-splits=0 -j 64 --latency-wait 20
+vomix viral-identify --sdm conda --sdm apptainer --fasta sample/contigs/contigs_simulated_viral_nonviral.fasta --outdir quick-run/results --contig-splits 0 --checkv-splits 0 -j 64 --latency-wait 20
 
 # Use less memory (8 GB) but run slower (~40 mins)
-snakemake --sdm conda apptainer --config module="viral-identify" outdir="quick-run/results" fasta="sample/contigs/contigs_simulated_viral_nonviral.fasta" contig-splits=7 checkv-splits=7 -j 64 --latency-wait 20
+vomix viral-identify --sdm conda --sdm apptainer --fasta sample/contigs/contigs_simulated_viral_nonviral.fasta --outdir quick-run/results --contig-splits 7 --checkv-splits 7 -j 64 --latency-wait 20
 
 # Quick look at results
-head -n 20 quick/identify/viral/output/classification_summary_vOTUs.csv 
+head -n 20 quick-run/results/identify/viral/output/classification_summary_vOTUs.csv
 ```
 
 :::
@@ -57,18 +57,19 @@ head -n 20 quick/identify/viral/output/classification_summary_vOTUs.csv
 ```bash
 # Replace with your own email address
 EMAIL="your.email@example.com"
+QUEUE="cluster_queue_name"
 
 # Activate conda environment
 conda activate vomix
 
 # Dry run (check jobs)
-snakemake --sdm conda --use-conda --config module="viral-identify" outdir="quick-run/results" contig-splits=0 fasta="sample/contigs/contigs_simulated_viral_nonviral.fasta" -j 64 --latency-wait 20 -n --executor cluster-generic --cluster-generic-submit-cmd "qsub -N {log} -l nodes=1:ppn={threads} -l mem={resources.mem_mb}m -l walltime=120:00:00 -M $EMAIL -q cgsd -o qsub.log -e qsub.log -m a"
+vomix viral-identify --sdm conda --fasta sample/contigs/contigs_simulated_viral_nonviral.fasta --outdir quick-run/results --contig-splits 0 --checkv-splits 0 -j 64 --latency-wait 20 -n --executor cluster-generic --cluster-generic-submit-cmd "qsub -N {log} -l nodes=1:ppn={threads} -l mem={resources.mem_mb}m -l walltime=120:00:00 -M $EMAIL -q $QUEUE -o qsub.log -e qsub.log -m a"
 
 # Run on cluster with 64 CPUs
-snakemake --sdm conda --use-conda --config module="viral-identify" outdir="quick-run/results" contig-splits=0 fasta="sample/contigs/contigs_simulated_viral_nonviral.fasta" -j 64 --latency-wait 20 --executor cluster-generic --cluster-generic-submit-cmd "qsub -N {log} -l nodes=1:ppn={threads} -l mem={resources.mem_mb}m -l walltime=120:00:00 -M $EMAIL -q cgsd -o qsub.log -e qsub.log -m a"
+vomix viral-identify --sdm conda --fasta sample/contigs/contigs_simulated_viral_nonviral.fasta --outdir quick-run/results --contig-splits 0 --checkv-splits 0 -j 64 --latency-wait 20 -n -j 64 --latency-wait 20 --executor cluster-generic --cluster-generic-submit-cmd "qsub -N {log} -l nodes=1:ppn={threads} -l mem={resources.mem_mb}m -l walltime=120:00:00 -M $EMAIL -q $QUEUE -o qsub.log -e qsub.log -m a"
 
 # Quick look at results
-head -n 20 quick/identify/viral/output/classification_summary_vOTUs.csv
+head -n 20 quick-run/results/identify/viral/output/classification_summary_vOTUs.csv
 ```
 
 :::
@@ -77,18 +78,19 @@ head -n 20 quick/identify/viral/output/classification_summary_vOTUs.csv
 ```bash
 # Replace with your own email address
 EMAIL="your.email@example.com"
+QUEUE="cluster_queue_name"
 
 # Activate conda environment
 conda activate vomix
 
 # Dry run (check jobs)
-snakemake --sdm apptainer --config module="viral-identify" outdir="quick-run/results" contig-splits=0 fasta="sample/contigs/contigs_simulated_viral_nonviral.fasta" -j 64 --latency-wait 20 -n --executor cluster-generic --cluster-generic-submit-cmd "qsub -N {log} -l nodes=1:ppn={threads} -l mem={resources.mem_mb}m -l walltime=120:00:00 -M $EMAIL -q cgsd -o qsub.log -e qsub.log -m a"
+vomix viral-identify --sdm apptainer --fasta sample/contigs/contigs_simulated_viral_nonviral.fasta --outdir quick-run/results --contig-splits 0 --checkv-splits 0 -j 64 --latency-wait 20 -n --executor cluster-generic --cluster-generic-submit-cmd "qsub -N {log} -l nodes=1:ppn={threads} -l mem={resources.mem_mb}m -l walltime=120:00:00 -M $EMAIL -q $QUEUE -o qsub.log -e qsub.log -m a"
 
 # Run on cluster with 64 CPUs
-snakemake --sdm conda apptainer --config module="viral-identify" outdir="quick-run/results" contig-splits=0 fasta="sample/contigs/contigs_simulated_viral_nonviral.fasta" -j 64 --latency-wait 20 --executor cluster-generic --cluster-generic-submit-cmd "qsub -N {log} -l nodes=1:ppn={threads} -l mem={resources.mem_mb}m -l walltime=120:00:00 -M $EMAIL -q cgsd -o qsub.log -e qsub.log -m a"
+vomix viral-identify --sdm conda --sdm apptainer --fasta sample/contigs/contigs_simulated_viral_nonviral.fasta --outdir quick-run/results --contig-splits 0 --checkv-splits 0 -j 64 --latency-wait 20 -n -j 64 --latency-wait 20 --executor cluster-generic --cluster-generic-submit-cmd "qsub -N {log} -l nodes=1:ppn={threads} -l mem={resources.mem_mb}m -l walltime=120:00:00 -M $EMAIL -q $QUEUE -o qsub.log -e qsub.log -m a"
 
 # Quick look at results
-head -n 20 quick/identify/viral/output/classification_summary_vOTUs.csv
+head -n 20 quick-run/results/identify/viral/output/classification_summary_vOTUs.csv
 ```
 
 :::
@@ -102,12 +104,12 @@ Conda environments for each module will be installed automatically at the beginn
 
 ```{admonition} Memory Footprint
 :class: note
-The standard viral identification analysis of vOMIX-snakemake is desinged to be at a maximum of 24Gb, used by geNomad during viral contig identification. If you are on a small computer, you can further reduce this number by introducing the `--config contig-splits=7 checkv-splits=3` which will reduce memory use at the expense of computation time.
+The standard viral identification analysis of vOMIX-MEGA is desinged to be at a maximum of 24Gb, used by geNomad during viral contig identification. If you are on a small computer, you can further reduce this number by introducing the `--config contig-splits=7 checkv-splits=3` which will reduce memory use at the expense of computation time.
 ```
 
 ## {octicon}`circle;0.85em` Quick Tutorial #2: Benchmark 6 Different Viral Contig Identification Tools
 
-Although not part of the standard vOMIX-snakemake analysis, the `viral-benchmark` module for you to quickly benchmark 6 different viral contig identification tools including geNomad, DeepVirFinder, Phamer, VirSorter2, VirFinder, and VIBRANT. You can view all softwares cited via our [references](/reference.md) page. Please note that we have extensively [benchmarked](/benchmark.md) geNomad and have identified it as the best performing general tool for viral contig identification.
+Although not part of the standard vOMIX-MEGA analysis, the `viral-benchmark` module for you to quickly benchmark 6 different viral contig identification tools including geNomad, DeepVirFinder, Phamer, VirSorter2, VirFinder, and VIBRANT. You can view all softwares cited via our [references](/reference.md) page. Please note that we have extensively [benchmarked](/benchmark.md) geNomad and have identified it as the best performing general tool for viral contig identification.
 
 ::::{tab-set}
 :::{tab-item} Conda
@@ -117,13 +119,13 @@ Although not part of the standard vOMIX-snakemake analysis, the `viral-benchmark
 conda activate vomix
 
 # Dry run (check jobs)
-snakemake --sdm conda --use-conda --config module="viral-benchmark" outdir="quick-run/results" contig-splits=0 fasta="sample/contigs/contigs_simulated_viral_nonviral.fasta" -j 64 --latency-wait 20 -n
+vomix viral-benchmark --sdm conda --fasta sample/contigs/contigs_simulated_viral_nonviral.fasta --outdir quick-run/results --contig-splits 0 -j 64 --latency-wait 20  -n
 
 # Run jobs
-snakemake --sdm conda --use-conda --config module="viral-benchmark" outdir="quick-run/results" contig-splits=0 fasta="sample/contigs/contigs_simulated_viral_nonviral.fasta" -j 64 --latency-wait 20
+vomix viral-benchmark --sdm conda --fasta sample/contigs/contigs_simulated_viral_nonviral.fasta --outdir quick-run/results --contig-splits 0 -j 64 --latency-wait 20
 
 # Quick look at results
-head -n 20 quick/identify/viral/output/benchmark_results_merged.csv
+head -n 20 quick-run/results/identify/viral/output/viral_benchmark_merged.csv
 ```
 
 :::
@@ -134,13 +136,13 @@ head -n 20 quick/identify/viral/output/benchmark_results_merged.csv
 conda activate vomix
 
 # Dry run (check jobs)
-snakemake --sdm apptainer --config module="viral-benchmark" outdir="quick-run/results" fasta="sample/contigs/contigs_simulated_viral_nonviral.fasta" contig-splits=0 -j 4 --latency-wait 20 -n
+vomix viral-benchmark --sdm apptainer --fasta sample/contigs/contigs_simulated_viral_nonviral.fasta --outdir quick-run/results --contig-splits 0 -j 64 --latency-wait 20  -n
 
 # Run jobs
-snakemake --sdm conda apptainer --config module="viral-benchmark" outdir="quick-run/results" fasta="sample/contigs/contigs_simulated_viral_nonviral.fasta" contig-splits=0 -j 4 --latency-wait 20
+vomix viral-benchmark --sdm conda --sdm apptainer --fasta sample/contigs/contigs_simulated_viral_nonviral.fasta --outdir quick-run/results --contig-splits 0 -j 64 --latency-wait 20
 
 # Quick look at results
-head -n 20 quick/identify/viral/output/benchmark_results_merged.csv
+head -n 20 quick-run/results/identify/viral/output/viral_benchmark_merged.csv
 ```
 
 :::
@@ -149,18 +151,19 @@ head -n 20 quick/identify/viral/output/benchmark_results_merged.csv
 ```bash
 # Replace with your own email address
 EMAIL="your.email@example.com"
+QUEUE="cluster_queue_name"
 
 # Activate conda environment
 conda activate vomix
 
 # Dry run (check jobs)
-snakemake --sdm conda --use-conda --config module="viral-benchmark" outdir="quick-run/results" contig-splits=0 fasta="sample/contigs/contigs_simulated_viral_nonviral.fasta" -j 64 --latency-wait 20 -n --executor cluster-generic --cluster-generic-submit-cmd "qsub -N {log} -l nodes=1:ppn={threads} -l mem={resources.mem_mb}m -l walltime=120:00:00 -M $EMAIL -q cgsd -o qsub.log -e qsub.log -m a"
+vomix viral-benchmark --sdm conda --fasta sample/contigs/contigs_simulated_viral_nonviral.fasta --outdir quick-run/results --contig-splits 0 -j 64 --latency-wait 20 --executor cluster-generic --cluster-generic-submit-cmd "qsub -N {log} -l nodes=1:ppn={threads} -l mem={resources.mem_mb}m -l walltime=120:00:00 -M $EMAIL -q $QUEUE -o qsub.log -e qsub.log -m a" -n
 
 # Run jobs on cluster with 64 CPUs
-snakemake --sdm conda --use-conda --config module="viral-benchmark" outdir="quick-run/results" contig-splits=0 fasta="sample/contigs/contigs_simulated_viral_nonviral.fasta" -j 64 --latency-wait 20 --executor cluster-generic --cluster-generic-submit-cmd "qsub -N {log} -l nodes=1:ppn={threads} -l mem={resources.mem_mb}m -l walltime=120:00:00 -M $EMAIL -q cgsd -o qsub.log -e qsub.log -m a"
+vomix viral-benchmark --sdm conda --fasta sample/contigs/contigs_simulated_viral_nonviral.fasta --outdir quick-run/results --contig-splits 0 -j 64 --latency-wait 20 --executor cluster-generic --cluster-generic-submit-cmd "qsub -N {log} -l nodes=1:ppn={threads} -l mem={resources.mem_mb}m -l walltime=120:00:00 -M $EMAIL -q $QUEUE -o qsub.log -e qsub.log -m a"
 
 # Quick look at results
-head -n 20 quick/identify/viral/output/benchmark_results_merged.csv
+head -n 20 quick-run/results/identify/viral/output/viral_benchmark_merged.csv
 ```
 
 :::
@@ -169,18 +172,19 @@ head -n 20 quick/identify/viral/output/benchmark_results_merged.csv
 ```bash
 # Replace with your own email address
 EMAIL="your.email@example.com"
+QUEUE="cluster_queue_name"
 
 # Activate conda environment
 conda activate vomix
 
 # Dry run (check jobs)
-snakemake --sdm apptainer --config module="viral-benchmark" outdir="quick-run/results" contig-splits=0 fasta="sample/contigs/contigs_simulated_viral_nonviral.fasta" -j 64 --latency-wait 20 -n --executor cluster-generic --cluster-generic-submit-cmd "qsub -N {log} -l nodes=1:ppn={threads} -l mem={resources.mem_mb}m -l walltime=120:00:00 -M $EMAIL -q cgsd -o qsub.log -e qsub.log -m a"
+vomix viral-benchmark --sdm apptainer --fasta sample/contigs/contigs_simulated_viral_nonviral.fasta --outdir quick-run/results --contig-splits 0 -j 64 --latency-wait 20 --executor cluster-generic --cluster-generic-submit-cmd "qsub -N {log} -l nodes=1:ppn={threads} -l mem={resources.mem_mb}m -l walltime=120:00:00 -M $EMAIL -q $QUEUE -o qsub.log -e qsub.log -m a" -n
 
 # Run jobs on cluster with 64 CPUs
-snakemake --sdm conda apptainer --config module="viral-benchmark" outdir="quick-run/results" contig-splits=0 fasta="sample/contigs/contigs_simulated_viral_nonviral.fasta" -j 64 --latency-wait 20 --executor cluster-generic --cluster-generic-submit-cmd "qsub -N {log} -l nodes=1:ppn={threads} -l mem={resources.mem_mb}m -l walltime=120:00:00 -M $EMAIL -q cgsd -o qsub.log -e qsub.log -m a"
+vomix viral-benchmark --sdm conda --sdm apptainer --fasta sample/contigs/contigs_simulated_viral_nonviral.fasta --outdir quick-run/results --contig-splits 0 -j 64 --latency-wait 20 --executor cluster-generic --cluster-generic-submit-cmd "qsub -N {log} -l nodes=1:ppn={threads} -l mem={resources.mem_mb}m -l walltime=120:00:00 -M $EMAIL -q $QUEUE -o qsub.log -e qsub.log -m a"
 
 # Quick look at results
-head -n 20 quick/identify/viral/output/benchmark_results_merged.csv
+head -n 20 quick-run/results/identify/viral/output/benchmark_results_merged.csv
 ```
 
 :::
@@ -188,7 +192,7 @@ head -n 20 quick/identify/viral/output/benchmark_results_merged.csv
 
 ## {octicon}`circle;0.85em` Quick Tutorial #3: Perform End-to-End Analysis on SRA Samples
 
-The main purpose of vOMIX-snakemake is to make end-to-end viral metagenomic analysis straightforward. You can provide a list of SRA accessions or combine them with local fastq.gz  files via the `sample_list.csv`. The `viral-end-to-end` module will automatically run `preprocess`, `assembly`, `viral-identify`, `viral-taxonomy`, `viral-host`, and `viral-annotate`.
+The main purpose of vOMIX-MEGA is to make end-to-end viral metagenomic analysis straightforward. You can provide a list of SRA accessions or combine them with local fastq.gz  files via the `sample_list.csv`. The `viral-end-to-end` module will automatically run `preprocess`, `assembly`, `viral-identify`, `viral-taxonomy`, `viral-host`, and `viral-annotate`.
 
 ::::{tab-set}
 :::{tab-item} Conda
@@ -198,13 +202,13 @@ The main purpose of vOMIX-snakemake is to make end-to-end viral metagenomic anal
 conda activate vomix
 
 # Dry run (check jobs)
-snakemake --sdm conda --use-conda --configfile config/config.yml --config module="viral-end-to-end" decontam-host=False outdir="sample/results" datadir="sample/fastq" samplelist="sample/sample_list.csv" -j 64 --dry-run
+vomix viral-end-to-end --sdm conda --outdir quick-run/results --samplelist sample/sample_list.csv --datadir quick-run/fastq --no-decontam-host -j 64 --dry-run
 
 # Run your pipeline
-snakemake --sdm conda --use-conda --configfile config/config.yml --config module="viral-end-to-end" decontam-host=False outdir="sample/results" datadir="sample/fastq" samplelist="sample/sample_list.csv" -j 64 --latency-wait 20
+vomix viral-end-to-end --sdm conda --outdir quick-run/results --samplelist sample/sample_list.csv --datadir quick-run/fastq --no-decontam-host -j 64
 
 # Quick look at results
-head -n 20 quick/identify/viral/output/classification_summary_vOTUs.csv 
+ls quick-run/results/
 ```
 
 :::
@@ -215,13 +219,13 @@ head -n 20 quick/identify/viral/output/classification_summary_vOTUs.csv
 conda activate vomix
 
 # Dry run (check jobs)
-snakemake --sdm apptainer --configfile config/config.yml --config module="viral-end-to-end" decontam-host=False outdir="sample/results" datadir="sample/fastq" samplelist="sample/sample_list.csv" -j 64 --dry-run
+vomix viral-end-to-end --sdm apptainer --outdir quick-run/results --samplelist sample/sample_list.csv --datadir quick-run/fastq --no-decontam-host -j 64 --dry-run
 
 # Run your pipeline
-snakemake --sdm conda apptainer --configfile config/config.yml --config module="viral-end-to-end" decontam-host=False outdir="sample/results" datadir="sample/fastq" samplelist="sample/sample_list.csv" -j 64 --latency-wait 20
+vomix viral-end-to-end --sdm conda --sdm apptainer --outdir quick-run/results --samplelist sample/sample_list.csv --datadir quick-run/fastq --no-decontam-host -j 64
 
 # Quick look at results
-head -n 20 quick/identify/viral/output/classification_summary_vOTUs.csv 
+ls quick-run/results/
 ```
 
 :::
@@ -230,18 +234,19 @@ head -n 20 quick/identify/viral/output/classification_summary_vOTUs.csv
 ```bash
 # Replace with your own email address
 EMAIL="your.email@example.com"
+QUEUE="cluster_queue_name"
 
 # Activate conda environment
 conda activate vomix
 
 # Dry run (check jobs)
-snakemake --sdm conda --use-conda --configfile config/config.yml --config module="viral-end-to-end" decontam-host=False outdir="sample/results" datadir="sample/fastq" samplelist="sample/sample_list.csv" -j 64 --dry-run --executor cluster-generic --cluster-generic-submit-cmd "qsub -N {log} -l nodes=1:ppn={threads} -l mem={resources.mem_mb}m -l walltime=120:00:00 -M $EMAIL -q cgsd -o qsub.log -e qsub.log -m a" -n
+vomix viral-end-to-end --sdm conda --outdir quick-run/results --data-dir quick-run/fastq --samplelist sample/sample_list.csv --non-decontam-host -j 64 --dry-run --executor cluster-generic --cluster-generic-submit-cmd "qsub -N {log} -l nodes=1:ppn={threads} -l mem={resources.mem_mb}m -l walltime=120:00:00 -M $EMAIL -q $QUEUE -o qsub.log -e qsub.log -m a" -n
 
 # Submit the workflow to the cluster with PBS
-snakemake --sdm conda --use-conda --configfile config/config.yml --config module="viral-end-to-end" decontam-host=False outdir="sample/results" datadir="sample/fastq" samplelist="sample/sample_list.csv" -j 64 --latency-wait 20 --executor cluster-generic --cluster-generic-submit-cmd "qsub -N {log} -l nodes=1:ppn={threads} -l mem={resources.mem_mb}m -l walltime=120:00:00 -M $EMAIL -q cgsd -o qsub.log -e qsub.log -m a"
+vomix viral-end-to-end --sdm conda --outdir quick-run/results --data-dir quick-run/fastq --samplelist sample/sample_list.csv --non-decontam-host -j 64 --dry-run --executor cluster-generic --cluster-generic-submit-cmd "qsub -N {log} -l nodes=1:ppn={threads} -l mem={resources.mem_mb}m -l walltime=120:00:00 -M $EMAIL -q $QUEUE -o qsub.log -e qsub.log -m a" -n
 
 # Quick look at results
-head -n 20 quick/identify/viral/output/classification_summary_vOTUs.csv
+ls quick-run/results/
 ```
 
 ```{admonition} HPC Apptainer & Conda Run
@@ -256,18 +261,19 @@ When scheduling jobs for HPC clusters, you can still choose between `--sdm conda
 ```bash
 # Replace with your own email address
 EMAIL="your.email@example.com"
+QUEUE="cluster_queue_name"
 
 # Activate conda environment
 conda activate vomix
 
 # Dry run (check jobs)
-snakemake --sdm apptainer --configfile config/config.yml --config module="viral-end-to-end" decontam-host=False outdir="sample/results" datadir="sample/fastq" samplelist="sample/sample_list.csv" -j 64 --dry-run --executor cluster-generic --cluster-generic-submit-cmd "qsub -N {log} -l nodes=1:ppn={threads} -l mem={resources.mem_mb}m -l walltime=120:00:00 -M $EMAIL -q cgsd -o qsub.log -e qsub.log -m a" -n
+vomix viral-end-to-end --sdm apptainer --outdir quick-run/results --data-dir quick-run/fastq --samplelist sample/sample_list.csv --non-decontam-host -j 64 --dry-run --executor cluster-generic --cluster-generic-submit-cmd "qsub -N {log} -l nodes=1:ppn={threads} -l mem={resources.mem_mb}m -l walltime=120:00:00 -M $EMAIL -q $QUEUE -o qsub.log -e qsub.log -m a" -n
 
 # Submit the workflow to the cluster with PBS
-snakemake --sdm conda apptainer --configfile config/config.yml --config module="viral-end-to-end" decontam-host=False outdir="sample/results" datadir="sample/fastq" samplelist="sample/sample_list.csv" -j 64 --latency-wait 20 --executor cluster-generic --cluster-generic-submit-cmd "qsub -N {log} -l nodes=1:ppn={threads} -l mem={resources.mem_mb}m -l walltime=120:00:00 -M $EMAIL -q cgsd -o qsub.log -e qsub.log -m a"
+vomix viral-end-to-end --sdm conda --sdm apptainer --outdir quick-run/results --data-dir quick-run/fastq --samplelist sample/sample_list.csv --non-decontam-host -j 64 --dry-run --executor cluster-generic --cluster-generic-submit-cmd "qsub -N {log} -l nodes=1:ppn={threads} -l mem={resources.mem_mb}m -l walltime=120:00:00 -M $EMAIL -q $QUEUE -o qsub.log -e qsub.log -m a" -n
 
 # Quick look at results
-head -n 20 quick/identify/viral/output/classification_summary_vOTUs.csv
+ls quick-run/results/
 ```
 
 ```{admonition} HPC Apptainer & Conda Run
@@ -291,18 +297,18 @@ The `sample_list.csv` takes SRA accessions and automatically downloads and proce
 
 ```{admonition} Custom Configuration
 :class: Tip
-You can configure all underlying commands and configuration of vOMIX-snakemake either via the `--configfile config.yml` file, or by providing specific parameters via the `--config {name}={value} snakemake directive. Please see the full [configuration guide](/advanced.md#configuration) to customize your run.`
+You can configure all underlying commands and configuration of vOMIX-MEGA either via the `--configfile config.yml` file, or by providing specific parameters via the `--config {name}={value} snakemake directive. Please see the full [configuration guide](/advanced.md#configuration) to customize your run.`
 ```
 
 ```{admonition} Further Analysis
 :class: Tip
-vOMIX-snakemake can perform more than just what the `viral-end-to-end` module can do. To view the full module list, visit the [Run & Configuration Guide](/run.md).
+vOMIX-MEGA can perform more than just what the `viral-end-to-end` module can do. To view the full module list, visit the [Run & Configuration Guide](/run.md).
 ```
 
 ## {octicon}`book;0.85em` Troubleshooting Guide
 
-We have specific guidelines for troubleshooting vOMIX-snakemake --use-conda so we can help you out in your analysis journey as efficiently as possible! If you run into any unexpected errors, warnings, etc. please visit our [Troubleshooting Guide](/troubleshoot.md).
+We have specific guidelines for troubleshooting vOMIX-MEGA --use-conda so we can help you out in your analysis journey as efficiently as possible! If you run into any unexpected errors, warnings, etc. please visit our [Troubleshooting Guide](/troubleshoot.md).
 
 ## {octicon}`bug;0.85em` Report a bug to us
 
-Have any questions or you've found a bug during your analysis? Please don't hesitate to report it to us by making an issue on our [{octicon}`mark-github;0.95em` GitHub repository](https://github.com/holab-hku/vomix-snakemake/issues/new).
+Have any questions or you've found a bug during your analysis? Please don't hesitate to report it to us by making an issue on our [{octicon}`mark-github;0.95em` GitHub repository](https://github.com/holab-hku/vOMIX-MEGA/issues/new).

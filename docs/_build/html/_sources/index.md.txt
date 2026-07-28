@@ -1,4 +1,4 @@
-# vomix-snakemake
+# vOMIX-MEGA
 
 ```{image} ./_static/pipeline_full.svg
 :width: 100%
@@ -6,14 +6,14 @@
 :align: center
 ```
 
-vomix-snakemake is the back-end pipline of the command-line tool vOMIX-MEGA: a reproducible, scalable, and fast viral metagenomic pipeline for analyzing large-scale bulk-metagenomic and viromic data. We have engineered multiple bottlenecks in current state-ofthe-art software to allow rapid and well-benchmarked viral metagenomic analysis. Here are some of vomix-snakemake's handy features:
+vOMIX-MEGA is a reproducible, scalable, and fast viral metagenomic pipeline for analyzing large-scale bulk-metagenomic and viromic data. We have engineered multiple bottlenecks in current state-ofthe-art software to allow rapid and well-benchmarked viral metagenomic analysis. Here are some of vOMIX-MEGA's handy features:
 
 ::::{grid} 3
 
 :::{grid-item-card}
 *High Speed*
 ^^^
-vomix-snakemake operates 10-1000 times faster than current pipelines that have unoptimized underlying software dependencies.
+vOMIX-MEGA operates 10-1000 times faster than current pipelines that have unoptimized underlying software dependencies.
 :::
 
 :::{grid-item-card}
@@ -54,18 +54,18 @@ Simply feed vOMIX-MEGA a list  your SRA accession codes and it will download, pr
 
 ## {octicon}`rocket;0.85em` Getting Started
 
-To start using vomix-snakemake, read the installation and quickstart guides below. In case you want to dive deeper into each module and the outputs it produces, visit the pages listed in the sidebar.
+To start using vOMIX-MEGA, read the installation and quickstart guides below. In case you want to dive deeper into each module and the outputs it produces, visit the pages listed in the sidebar.
 
 :::{card} Installation
 :link: install
 :link-type: doc
-Instructions on how to install vomix-snakemake on your computer or server.
+Instructions on how to install vOMIX-MEGA on your computer or server.
 :::
 
 :::{card} Quickstart
 :link: quickstart
 :link-type: doc
-Learn how to run vomix-snakemake on a sample dataset.
+Learn how to run vOMIX-MEGA on a sample dataset.
 :::
 
 ## {octicon}`bookmark;0.85em` Citing vOMIX-MEGA
@@ -93,7 +93,7 @@ self
 
 ```{toctree}
 :maxdepth: 1
-:caption: vomix-snakemake
+:caption: vOMIX-MEGA
 :hidden:
 
 install

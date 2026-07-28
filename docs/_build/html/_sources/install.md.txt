@@ -2,17 +2,17 @@
 
 ## Conda & Mamba
 
-You can install vomix-snakemake in you computer using general-purpose package managers ( `Mamba`, `Conda`), or run it via an [`Apptainer`](#apptainer-installation) image.
+You can install vOMIX-MEGA in you computer using general-purpose package managers ( `Mamba`, `Conda`), or run it via an [`Apptainer`](#apptainer-installation) image via `pip`.
 
 ::::{tab-set}
 
 :::{tab-item} Conda
-[Conda](https://docs.conda.io/projects/conda/en/stable/) is a package manager that handles all your dependencies for you. To install vomix-snakemake using Conda, you can create the environment from the repository environment file.
+[Conda](https://docs.conda.io/projects/conda/en/stable/) is a package manager that handles all your dependencies for you. To install vOMIX-MEGA using Conda, you can create the environment from the repository environment file.
 
 ```bash
 # Download GitHub directory
-git clone https://github.com/holab-hku/vomix-snakemake.git
-cd vomix-snakemake
+git clone https://github.com/holab-hku/vOMIX-MEGA.git
+cd vOMIX-MEGA
 
 # Install base environment
 conda env create -f environment.yml
@@ -20,19 +20,22 @@ conda env create -f environment.yml
 # Activate environment
 conda activate vomix
 
+# Install using pip
+pip install .
+
 # Verify Installation
-snakemake -v
+vomix -h
 ```
 
 :::
 
 :::{tab-item} Mamba
-[Mamba](https://mamba.readthedocs.io/en/latest/) is a package manager that handles all your dependencies for you. To install vomix-snakemake using Mamba, you can create the environment directly from the repository environment file.
+[Mamba](https://mamba.readthedocs.io/en/latest/) is a package manager that handles all your dependencies for you. To install vOMIX-MEGA using Mamba, you can create the environment directly from the repository environment file.
 
 ```bash
 # Download GitHub directory
-git clone https://github.com/holab-hku/vomix-snakemake.git
-cd vomix-snakemake
+git clone https://github.com/holab-hku/vOMIX-MEGA.git
+cd vOMIX-MEGA
 
 # Install base environment
 mamba env create -f environment.yml
@@ -40,8 +43,11 @@ mamba env create -f environment.yml
 # Activate environment
 mamba activate vomix
 
+# Install using pip
+pip install .
+
 # Verify Installation
-snakemake -v
+vomix -h
 ```
 
 :::
@@ -51,8 +57,8 @@ snakemake -v
 
 ```bash
 # Download GitHub directory
-git clone https://github.com/holab-hku/vomix-snakemake.git
-cd vomix-snakemake
+git clone https://github.com/holab-hku/vOMIX-MEGA.git
+cd vOMIX-MEGA
 
 # Create a conda-lock environment 
 # if you don't want to install into base environment
@@ -64,8 +70,11 @@ conda-lock install --name vomix conda-lock.yml
 conda deactivate # deactive conda-lock environment
 conda activate vomix # activate vomix environment
 
+# Install using pip
+pip install .
+
 # Verify Installation
-snakemake -v
+vomix -h
 ```
 
 :::
@@ -89,7 +98,7 @@ If the standard conda or mamba installation methods do not work, `conda-lock` is
 
 ## Apptainer Installation
 
-vomix-snakemake is built on a snakemake back-end, which facilitates native containerized deployment via an `Apptainer` (formerly `Singularity`) `.sif` image. The container image generated contains explicitly each conda environment mounted on top of a base operating system. Containers are preferred for the most robust forms of reproducibility, whereas `conda` and `mamba` installations might not work on Windows or Mac-ARM systems.
+vOMIX-MEGA is built on a snakemake back-end, which facilitates native containerized deployment via an `Apptainer` (formerly `Singularity`) `.sif` image. The container image generated contains explicitly each conda environment mounted on top of a base operating system. Containers are preferred for the most robust forms of reproducibility, whereas `conda` and `mamba` installations might not work on Windows or Mac-ARM systems.
 
 ```{admonition} Install Apptainer
 :class: tip
@@ -100,32 +109,32 @@ Make sure you have `Apptainer` installed before you run the following commands. 
 :::{tab-item} Apptainer (Download Prebuilt Image)
 
 ```bash
-# Enter vomix-snakemake directory
+# Enter vOMIX-MEGA directory
 # replace this with your native installation path
-cd vomix-snakemake
+cd vOMIX-MEGA
 
 # Pull Container Image 
 VOMIX_VERSION="v0.1.0-beta.1"
 apptainer pull --name workflow/apptainer/vomix_${VOMIX_VERSION}.sif oras://ghcr.io/erfanshekarriz/vomix:${VOMIX_VERSION}
 
 # Dry run (test installation)
-snakemake --sdm conda apptainer --config module="viral-identify" outdir="quick" splits=0 fasta="sample/contigs/contigs_simulated_viral_nonviral.fasta" -j 64 --latency-wait 20 -n
+vomix viral-identify --sdm apptainer --fasta sample/contigs/contigs_simulated_viral_nonviral.fasta --outdir quick-run/results -j 64 --latency-wait 20 -n
 ```
 
 :::
 :::{tab-item} Apptainer (Build Local Image)
 
 ```bash
-# Enter vomix-snakemake directory
+# Enter vOMIX-MEGA directory
 # replace this with your native installation path
-cd vomix-snakemake
+cd vOMIX-MEGA
 
 # Built container Image 
 VOMIX_VERSION="v0.1.0-beta.1"
 apptainer build workflow/apptainer/vomix_${VERSION}.sif workflow/apptainer/vomix_${VERSION}.def
 
 # Dry run (test installation)
-snakemake --sdm conda apptainer --config module="viral-identify" outdir="quick" splits=0 fasta="sample/contigs/contigs_simulated_viral_nonviral.fasta" -j 64 --latency-wait 20 -n
+vomix viral-identify --sdm apptainer --fasta sample/contigs/contigs_simulated_viral_nonviral.fasta --outdir quick-run/results -j 64 --latency-wait 20 -n
 ```
 
 :::
@@ -134,22 +143,22 @@ snakemake --sdm conda apptainer --config module="viral-identify" outdir="quick" 
 
 ```{admonition} Apptainer Image Size
 :class: note
-The full vomix-snakemake apptainer build takes `9.5 GB` of storage, which includes all pre-installed conda packages mounted on a `condaforge/miniforge3:latest` base operating system (not including databases). Make sure that you have this space availabe on your local machine before running. Due to the filesize, your HPC administrator might limit the download bandwith, so you might need to contact them to set it up for you. Running `export GODEBUG="http2client=0"` before your pull might be a quick fix for this. 
+The full vOMIX-MEGA apptainer build takes `9.5 GB` of storage, which includes all pre-installed conda packages mounted on a `condaforge/miniforge3:latest` base operating system (not including databases). Make sure that you have this space availabe on your local machine before running. Due to the filesize, your HPC administrator might limit the download bandwith, so you might need to contact them to set it up for you. Running `export GODEBUG="http2client=0"` before your pull might be a quick fix for this. 
 ```
 
 ```{admonition} Using Conda within a Container
 :class: note
-Each rule in vomix-snakemake's underlying snakemake files depends on a speicifc conda environment. To run what Snakemake calls ["Ad-hoc combination of Conda package management with containers"](https://snakemake.readthedocs.io/en/stable/snakefiles/deployment.html#ad-hoc-combination-of-conda-package-management-with-containers), which is essentially running apptainer containers with conda enviornments installed within them, you need to use the `--sdm conda apptainer` option. This allows true full reproducibility. Make sure to always use `--sdm conda apptainer`.
+Each rule in vOMIX-MEGA's underlying snakemake files depends on a speicifc conda environment. To run what Snakemake calls ["Ad-hoc combination of Conda package management with containers"](https://snakemake.readthedocs.io/en/stable/snakefiles/deployment.html#ad-hoc-combination-of-conda-package-management-with-containers), which is essentially running apptainer containers with conda enviornments installed within them, you need to use the `--sdm conda --sdm apptainer` options in that specific format and order. This allows true full reproducibility.
 ```
 
 ```{admonition} Wrong Apptainer Flags for Snakemake
 :class: warning
-If you only use `--sdm apptainer`, Snakemake will not launch any conda environments and hence all jobs will fail. If you use `--sdm apptainer --use-conda` it will try and re-install conda enviornments in your local `.snakemake/conda` folder, which counteracts the purpose of containers. Using `--sdm apptainer conda` will also not work successfully.
+If you only use `--sdm apptainer`, Snakemake will not launch any conda environments and hence all jobs will fail. If you use `--sdm apptainer --use-conda` it will try and re-install conda enviornments in your local `.snakemake/conda` folder, which counteracts the purpose of containers. Using `--sdm apptainer --sdm conda` will also not work successfully.
 ```
 
 ## {octicon}`book;0.85em` Troubleshooting Guide
 
-We have specific guidelines for troubleshooting vomix-snakemake so we can help you out in your analysis journey as efficiently as possible! If you run into any unexpected errors, warnings, etc. please visit our [Troubleshooting Guide](/troubleshoot.md).
+We have specific guidelines for troubleshooting vOMIX-MEGA so we can help you out in your analysis journey as efficiently as possible! If you run into any unexpected errors, warnings, etc. please visit our [Troubleshooting Guide](/troubleshoot.md).
 
 ## {octicon}`bug;0.85em` Report a bug to us
 

@@ -24,27 +24,33 @@ vomix-snakemake can further implement a data-split functionality to both CheckV 
 **`Conda`**
 
 ```bash
-snakemake --sdm conda --use-conda --config module="checkv-pyhmmer" fasta="sample/contigs/contigs_simulated_viral_nonviral.fasta" outdir="sample/results" -j 16 --latency-wait 20
+vomix checkv-pyhmmer -h
+vomix checkv-pyhmmer --sdm conda --fasta sample/contigs/contigs_simulated_viral_nonviral.fasta --outdir sample/results -j 16 --latency-wait 20
 ```
 
 **`Apptainer`**
 
 ```bash
-snakemake --sdm conda apptainer --config module="checkv-pyhmmer" fasta="sample/contigs/contigs_simulated_viral_nonviral.fasta" outdir="sample/results" -j 16 --latency-wait 20
+vomix checkv-pyhmmer -h
+vomix checkv-pyhmmer --sdm conda --sdm apptainer --fasta sample/contigs/contigs_simulated_viral_nonviral.fasta --outdir sample/results -j 16 --latency-wait 20
 ```
 
 **`HPC (PBS) (Conda)`**
 
 ```bash
-EMAIL="youremail@protonmail.com"
-snakemake --sdm conda --use-conda --config module="checkv-pyhmmer" fasta="sample/contigs/contigs_simulated_viral_nonviral.fasta" outdir="sample/results" -j 88 --latency-wait 20 --executor cluster-generic --cluster-generic-submit-cmd "qsub -N {log} -l nodes=1:ppn={threads} -l mem={resources.mem_mb}m -l walltime=120:00:00 -M $EMAIL -q cgsd -o qsub.log -e qsub.log -m a"
+vomix checkv-pyhmmer -h
+EMAIL="your.email@example.com"
+QUEUE="cluster_queue_name"
+vomix checkv-pyhmmer --sdm conda --fasta sample/contigs/contigs_simulated_viral_nonviral.fasta --outdir sample/results -j 16 --latency-wait 20 --executor cluster-generic --cluster-generic-submit-cmd "qsub -N {log} -l nodes=1:ppn={threads} -l mem={resources.mem_mb}m -l walltime=120:00:00 -M $EMAIL -q $QUEUE -o qsub.log -e qsub.log -m a"
 ```
 
 **`HPC (PBS) (Apptainer)`**
 
 ```bash
-EMAIL="youremail@protonmail.com"
-snakemake --sdm conda apptainer --config module="checkv-pyhmmer" fasta="sample/contigs/contigs_simulated_viral_nonviral.fasta" outdir="sample/results" -j 88 --latency-wait 20 --executor cluster-generic --cluster-generic-submit-cmd "qsub -N {log} -l nodes=1:ppn={threads} -l mem={resources.mem_mb}m -l walltime=120:00:00 -M $EMAIL -q cgsd -o qsub.log -e qsub.log -m a"
+vomix checkv-pyhmmer -h
+EMAIL="your.email@example.com"
+QUEUE="cluster_queue_name"
+vomix checkv-pyhmmer --sdm conda --sdm apptainer --fasta sample/contigs/contigs_simulated_viral_nonviral.fasta --outdir sample/results -j 16 --latency-wait 20 --executor cluster-generic --cluster-generic-submit-cmd "qsub -N {log} -l nodes=1:ppn={threads} -l mem={resources.mem_mb}m -l walltime=120:00:00 -M $EMAIL -q $QUEUE -o qsub.log -e qsub.log -m a"
 ```
 
 :::

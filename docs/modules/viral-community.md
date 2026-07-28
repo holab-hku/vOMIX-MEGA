@@ -16,27 +16,33 @@ The `viral-community` modules estimates vOTU (viral OTU) relative abundance acro
 **`Conda`**
 
 ```bash
-snakemake --sdm conda --use-conda --config module="viral-community" samplelist="sample/sample_list.csv" datadir="sample/fastq" outdir="sample/results" -j 16 --latency-wait 20
+vomix viral-community -h
+vomix viral-community --sdm conda --samplelist sample/sample_list.csv --datadir sample/fastq --outdir sample/results -j 16 --latency-wait 20
 ```
 
 **`Apptainer`**
 
 ```bash
-snakemake --sdm conda apptainer --config module="viral-community" samplelist="sample/sample_list.csv" datadir="sample/fastq" outdir="sample/results" -j 16 --latency-wait 20
+vomix viral-community -h
+vomix viral-community --sdm conda --sdm apptainer --samplelist sample/sample_list.csv --datadir sample/fastq --outdir sample/results -j 16 --latency-wait 20
 ```
 
 **`HPC (PBS) (Conda)`**
 
 ```bash
-EMAIL="youremail@protonmail.com"
-snakemake --sdm conda --use-conda --config module="viral-community" samplelist="sample/sample_list.csv" datadir="sample/fastq" outdir="sample/results" -j 88 --latency-wait 20 --executor cluster-generic --cluster-generic-submit-cmd "qsub -N {log} -l nodes=1:ppn={threads} -l mem={resources.mem_mb}m -l walltime=120:00:00 -M $EMAIL -q cgsd -o qsub.log -e qsub.log -m a"
+vomix viral-community -h
+EMAIL="your.email@example.com"
+QUEUE="cluster_queue_name"
+vomix viral-community --sdm conda --samplelist sample/sample_list.csv --datadir sample/fastq --outdir sample/results -j 16 --latency-wait 20 --executor cluster-generic --cluster-generic-submit-cmd "qsub -N {log} -l nodes=1:ppn={threads} -l mem={resources.mem_mb}m -l walltime=120:00:00 -M $EMAIL -q $QUEUE -o qsub.log -e qsub.log -m a"
 ```
 
 **`HPC (PBS) (Apptainer)`**
 
 ```bash
-EMAIL="youremail@protonmail.com"
-snakemake --sdm conda apptainer --config module="viral-community" samplelist="sample/sample_list.csv" datadir="sample/fastq" outdir="sample/results" -j 88 --latency-wait 20 --executor cluster-generic --cluster-generic-submit-cmd "qsub -N {log} -l nodes=1:ppn={threads} -l mem={resources.mem_mb}m -l walltime=120:00:00 -M $EMAIL -q cgsd -o qsub.log -e qsub.log -m a"
+vomix viral-community -h
+EMAIL="your.email@example.com"
+QUEUE="cluster_queue_name"
+vomix viral-community --sdm conda --sdm apptainer --samplelist sample/sample_list.csv --datadir sample/fastq --outdir sample/results -j 16 --latency-wait 20 --executor cluster-generic --cluster-generic-submit-cmd "qsub -N {log} -l nodes=1:ppn={threads} -l mem={resources.mem_mb}m -l walltime=120:00:00 -M $EMAIL -q $QUEUE -o qsub.log -e qsub.log -m a"
 ```
 
 :::

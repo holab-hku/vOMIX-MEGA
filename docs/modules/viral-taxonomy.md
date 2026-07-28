@@ -21,27 +21,33 @@ To maintain an optimized balance between computational efficiency and taxonomic 
 **`Conda`**
 
 ```bash
-snakemake --sdm conda --use-conda --config module="viral-taxonomy" samplelist="sample/sample_list.csv" datadir="sample/fastq" outdir="sample/results" -j 16 --latency-wait 20
+vomix viral-taxonomy -h
+vomix viral-taxonomy --sdm conda --samplelist sample/sample_list.csv --datadir sample/fastq --outdir sample/results -j 16 --latency-wait 20
 ```
 
 **`Apptainer`**
 
 ```bash
-snakemake --sdm conda apptainer --config module="viral-taxonomy" samplelist="sample/sample_list.csv" datadir="sample/fastq" outdir="sample/results" -j 16 --latency-wait 20
+vomix viral-taxonomy -h
+vomix viral-taxonomy --sdm conda --sdm apptainer --samplelist sample/sample_list.csv --datadir sample/fastq --outdir sample/results -j 16 --latency-wait 20
 ```
 
 **`HPC (PBS) (Conda)`**
 
 ```bash
-EMAIL="youremail@protonmail.com"
-snakemake --sdm conda --use-conda --config module="viral-taxonomy" samplelist="sample/sample_list.csv" datadir="sample/fastq" outdir="sample/results" -j 88 --latency-wait 20 --executor cluster-generic --cluster-generic-submit-cmd "qsub -N {log} -l nodes=1:ppn={threads} -l mem={resources.mem_mb}m -l walltime=120:00:00 -M $EMAIL -q cgsd -o qsub.log -e qsub.log -m a"
+vomix viral-taxonomy -h
+EMAIL="your.email@example.com"
+QUEUE="cluster_queue_name"
+vomix viral-taxonomy --sdm conda --samplelist sample/sample_list.csv --datadir sample/fastq --outdir sample/results -j 16 --latency-wait 20 --executor cluster-generic --cluster-generic-submit-cmd "qsub -N {log} -l nodes=1:ppn={threads} -l mem={resources.mem_mb}m -l walltime=120:00:00 -M $EMAIL -q $QUEUE -o qsub.log -e qsub.log -m a"
 ```
 
 **`HPC (PBS) (Apptainer)`**
 
 ```bash
-EMAIL="youremail@protonmail.com"
-snakemake --sdm conda apptainer --config module="viral-taxonomy" samplelist="sample/sample_list.csv" datadir="sample/fastq" outdir="sample/results" -j 88 --latency-wait 20 --executor cluster-generic --cluster-generic-submit-cmd "qsub -N {log} -l nodes=1:ppn={threads} -l mem={resources.mem_mb}m -l walltime=120:00:00 -M $EMAIL -q cgsd -o qsub.log -e qsub.log -m a"
+vomix viral-taxonomy -h
+EMAIL="your.email@example.com"
+QUEUE="cluster_queue_name"
+vomix viral-taxonomy --sdm conda --sdm apptainer --samplelist sample/sample_list.csv --datadir sample/fastq --outdir sample/results -j 16 --latency-wait 20 --executor cluster-generic --cluster-generic-submit-cmd "qsub -N {log} -l nodes=1:ppn={threads} -l mem={resources.mem_mb}m -l walltime=120:00:00 -M $EMAIL -q $QUEUE -o qsub.log -e qsub.log -m a"
 ```
 
 :::
@@ -50,27 +56,33 @@ snakemake --sdm conda apptainer --config module="viral-taxonomy" samplelist="sam
 **`Conda`**
 
 ```bash
-snakemake --sdm conda --use-conda --config module="viral-taxonomy" fasta="sample/contigs/contigs_simulated_viral_nonviral.fasta" outdir="sample/results" -j 16 --latency-wait 20
+vomix viral-taxonomy -h
+vomix viral-taxonomy --sdm conda --fasta sample/contigs/contigs_simulated_viral_nonviral.fasta --outdir sample/results -j 16 --latency-wait 20
 ```
 
 **`Apptainer`**
 
 ```bash
-snakemake --sdm conda apptainer --config module="viral-taxonomy" fasta="sample/contigs/contigs_simulated_viral_nonviral.fasta" outdir="sample/results" -j 16 --latency-wait 20
+vomix viral-taxonomy -h
+vomix viral-taxonomy --sdm conda --sdm apptainer --fasta sample/contigs/contigs_simulated_viral_nonviral.fasta --outdir sample/results -j 16 --latency-wait 20
 ```
 
 **`HPC (PBS) (Conda)`**
 
 ```bash
-EMAIL="youremail@protonmail.com"
-snakemake --sdm conda --use-conda --config module="viral-taxonomy" fasta="sample/contigs/contigs_simulated_viral_nonviral.fasta" outdir="sample/results" -j 88 --latency-wait 20 --executor cluster-generic --cluster-generic-submit-cmd "qsub -N {log} -l nodes=1:ppn={threads} -l mem={resources.mem_mb}m -l walltime=120:00:00 -M $EMAIL -q cgsd -o qsub.log -e qsub.log -m a"
+vomix viral-taxonomy -h
+EMAIL="your.email@example.com"
+QUEUE="cluster_queue_name"
+vomix viral-taxonomy --sdm conda --fasta sample/contigs/contigs_simulated_viral_nonviral.fasta --outdir sample/results -j 16 --latency-wait 20 --executor cluster-generic --cluster-generic-submit-cmd "qsub -N {log} -l nodes=1:ppn={threads} -l mem={resources.mem_mb}m -l walltime=120:00:00 -M $EMAIL -q $QUEUE -o qsub.log -e qsub.log -m a"
 ```
 
 **`HPC (PBS) (Apptainer)`**
 
 ```bash
-EMAIL="youremail@protonmail.com"
-snakemake --sdm conda apptainer --config module="viral-taxonomy" fasta="sample/contigs/contigs_simulated_viral_nonviral.fasta" outdir="sample/results" -j 88 --latency-wait 20 --executor cluster-generic --cluster-generic-submit-cmd "qsub -N {log} -l nodes=1:ppn={threads} -l mem={resources.mem_mb}m -l walltime=120:00:00 -M $EMAIL -q cgsd -o qsub.log -e qsub.log -m a"
+vomix viral-taxonomy -h
+EMAIL="your.email@example.com"
+QUEUE="cluster_queue_name"
+vomix viral-taxonomy --sdm conda --sdm apptainer --fasta sample/contigs/contigs_simulated_viral_nonviral.fasta --outdir sample/results -j 16 --latency-wait 20 --executor cluster-generic --cluster-generic-submit-cmd "qsub -N {log} -l nodes=1:ppn={threads} -l mem={resources.mem_mb}m -l walltime=120:00:00 -M $EMAIL -q $QUEUE -o qsub.log -e qsub.log -m a"
 ```
 
 :::
