@@ -56,6 +56,10 @@ def relpath(f):
   p = os.path.join(outdir, f)
   return p
 
+def fullpath(input_path: str) -> str:
+    # Expand '~' first, then get the absolute path
+    expanded_path = os.path.expanduser(input_path)
+    return os.path.abspath(expanded_path)
 
 def readfasta(f):
   """Function to read fasta files for different input purposes"""
@@ -97,16 +101,17 @@ def readfastadir(f):
   fasta_path = [os.path.join(fastadirp, fastaf) for fastaf in fastafs]
   return fasta_path
 
-
-
-
-
 # Clean directory paths & add back to config.yml file
-outdir = cleanpath(config["outdir"])
-datadir = cleanpath(config["datadir"])
-config["outdir"] = outdir
-config["datadir"] = datadir
+for configkey in ["samplelist", "datadir", "outdir", "fasta", "fastadir"]:
+    if configkey in config and config[configkey] != "":        
+        full_path = fullpath(cleanpath(config[configkey]))
+        config[configkey] = full_path  
 
+samplelist = config.get("samplelist")
+datadir    = config.get("datadir")
+outdir     = config.get("outdir")
+fasta      = config.get("fasta")
+fastadir   = config.get("fastadir")
 
 # Create & format relative output directory
 if not (os.path.exists(outdir) and os.path.exists(os.path.join(outdir, ".vomix"))):

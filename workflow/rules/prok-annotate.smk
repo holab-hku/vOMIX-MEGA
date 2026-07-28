@@ -134,15 +134,15 @@ rule humann_merge:
     rm -rf {params.outdir} {params.tmpdir}
     mkdir -p {params.outdir} {params.tmpdir}
   
-    for file in {input.gene}; do ln -s $(pwd)/$file $(pwd)/{params.tmpdir} &>> {log}; done
+    for file in {input.gene}; do ln -s $file {params.tmpdir} &>> {log}; done
     humann_join_tables --input {params.tmpdir} --output {output.gene} &>> {log}
     rm {params.tmpdir}/* 
 
-    for file in {input.abund}; do ln -s $(pwd)/$file $(pwd)/{params.tmpdir} &>> {log}; done
+    for file in {input.abund}; do ln -s $file {params.tmpdir} &>> {log}; done
     humann_join_tables --input {params.tmpdir} --output {output.abund} &>> {log}
     rm {params.tmpdir}/*
     
-    for file in {input.cov}; do ln -s $(pwd)/$file $(pwd)/{params.tmpdir} &>> {log}; done
+    for file in {input.cov}; do ln -s $file {params.tmpdir} &>> {log}; done
     humann_join_tables --input {params.tmpdir} --output {output.cov} &>> {log}
     rm {params.tmpdir}/*
     """

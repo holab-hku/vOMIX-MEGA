@@ -53,7 +53,7 @@ rule symlink:
     R2=relpath("preprocess/samples/{sample_id}/{sample_id}_R2.fastq.gz"), 
   shell:
     """
-    ln -s $(pwd)/{input.R1} $(pwd)/{output.R1}
-    ln -s $(pwd)/{input.R2} $(pwd)/{output.R2}
+    ln -s {input.R1} {output.R1}
+    ln -s {input.R2} {output.R2}
     """
 

@@ -491,7 +491,7 @@ rule checkm2:
     rm -rf {params.tmpdir} {params.outdir}
     mkdir -p {params.outdir} {params.tmpdir}/bins
 
-    ln -s $(pwd)/{params.indir}/*.fasta $(pwd)/{params.tmpdir}/bins/
+    ln -s {params.indir}/*.fasta {params.tmpdir}/bins/
 
     checkm2 predict \
         --input {params.tmpdir}/bins \

@@ -143,7 +143,7 @@ rule merge_results:
     rm -rf {params.tmpdir} {params.outdir}
     mkdir -p {params.tmpdir} {params.outdir}/bins
 
-    for dir in $(echo "{params.bindir}"); do ln -s $(pwd)/${{dir}}/*.fasta $(pwd)/{params.outdir}/bins/; done
+    for dir in $(echo "{params.bindir}"); do ln -s ${{dir}}/*.fasta {params.outdir}/bins/; done
     cat {input.binnedlist} | uniq -u > {output.binnedlist}
 
     seqkit grep --invert-match {input.contig} -f {input.binnedlist} > {params.tmpdir}/tmp.fna
