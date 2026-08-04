@@ -8,6 +8,7 @@ import pandas as pd
 import snakemake
 import json
 import datetime
+from typing import Union, List
 
 from scripts.sample_list_parse import parse_sample_list
 
@@ -160,100 +161,154 @@ with open(os.path.join(logdir,  "config.json"), "w") as configf:
   json.dump(config, configf)
 
 
+
+#########################################
+# Delete log files if module is "reset" #
+#########################################
+
+def set_module_target(logfiles: Union[str, List[str]]) -> list:
+    """Accepts a single logfile path or a list of logfile paths.
+    
+    Deletes files if config['reset'] is True and appends them to the global targets list.
+    """
+    global targets, console
+
+    # Normalize input to always be a list of strings
+    logfile_list = [logfiles] if isinstance(logfiles, str) else logfiles
+
+    if config.get("reset"):
+        module_name = config.get("module", "")
+
+        for logfile in logfile_list:
+            if not os.path.exists(logfile):
+                console.print()
+                console.print(Panel.fit(
+                    f"[bold yellow]Warning[/bold yellow]: [cyan]config['reset'] = True[/cyan] "
+                    f"for module [bold]{module_name}[/bold], but no done.log file "
+                    f"was found at [dim]{logfile}[/dim]. No action taken.",
+                    title=f"Warning: {module_name}",
+                    subtitle="No Modules to Reset",
+                    border_style="yellow"
+                ))
+            else:
+                try:
+                    os.remove(logfile)
+                    console.print()
+                    console.print(Panel.fit(
+                        f"[bold red]Warning[/bold red]: [cyan]config['reset'] = True[/cyan] "
+                        f"for module [bold]{module_name}[/bold]. The done.log file "
+                        f"at [dim]{logfile}[/dim] has been successfully deleted.",
+                        title=f"Warning: {module_name}",
+                        subtitle="Module Reset",
+                        border_style="red"
+                    ))
+                except OSError as e:
+                    console.print(f"[bold red]Error[/bold red]: Could not delete {logfile}. Reason: {e}")
+
+    # Append all logfiles incrementally to the global list
+    targets.extend(logfile_list)
+    return targets
+
+
 ####################################
 # Include & Add Targets Per Module #
 ####################################
 
 targets = []
-if config["setup-database"] or config["module"] == "setup-database" or config["module"] == "run-all":
-  include: "rules/setup-database.smk"
-  if config["module"] == "setup-database":
-    targets += [os.path.join(config["basedir"], "database/.benchmarks/done.log")]
 
+# setup-database
+if config["setup-database"] or config["module"] == "setup-database" or config["module"] == "run-all":
+    include: "rules/setup-database.smk"
+    if config["module"] == "setup-database":
+        set_module_target(os.path.join(config["basedir"], "database/.benchmarks/done.log"))
+
+# mock-data
+if config["module"] == "mock-data":
+    include: "rules/mock-data.smk"
+    set_module_target(os.path.join(config['datadir'], "mock-data/logs/done.log"))
 
 # fix symlink
 if config["module"] == "symlink":
-  include: "rules/symlink.smk"
-  targets = [relpath(".vomix/log/symlink_done.log")]
+    include: "rules/symlink.smk"
+    set_module_target(relpath(".vomix/log/symlink_done.log"))
 
 # pre-process
 if config["module"] in ["preprocess", "viral-end-to-end", "run-all"]:
-  include: "rules/preprocess.smk"
-  targets += [relpath("preprocess/logs/done.log")]
-
+    include: "rules/preprocess.smk"
+    set_module_target(relpath("preprocess/logs/done.log"))
 
 # assembly 
 if config["module"] in ["assembly", "viral-end-to-end", "run-all"]:
-  include: "rules/assembly.smk"
-  targets += [relpath(os.path.join("assembly", assembler, "logs/done.log"))]
-
+    include: "rules/assembly.smk"
+    set_module_target(relpath(os.path.join("assembly", assembler, "logs/done.log")))
 
 # viral-identify
 if config["module"] in ["viral-identify", "viral-end-to-end", "run-all"]:
-  include: "rules/viral-identify.smk"
-  include: "rules/checkv-pyhmmer.smk"
-  include: "rules/cluster-fast.smk"
-  targets += [relpath("identify/viral/logs/done.log")]
-
+    include: "rules/viral-identify.smk"
+    include: "rules/checkv-pyhmmer.smk"
+    include: "rules/cluster-fast.smk"
+    set_module_target(relpath("identify/viral/logs/done.log"))
 
 # viral-benchmark
 if config["module"] in ["viral-benchmark", "run-all"]:
-  include: "rules/viral-benchmark.smk"
-  targets += [relpath("identify/viral/logs/done_benchmarks.log")]
+    include: "rules/viral-benchmark.smk"
+    set_module_target(relpath("identify/viral/logs/done_benchmarks.log"))
 
 # viral-refilter
 if config["module"] in ["viral-refilter"]:
-  include: "rules/refilter-genomad.smk"
-  include: "rules/checkv-pyhmmer.smk"
-  include: "rules/cluster-fast.smk"
-  targets += [relpath("identify/viral/logs/done.log"), 
-      relpath("identify/viral/logs/clustering-done.log"), 
-      relpath("identify/viral/logs/checkv-done.log")]
+    include: "rules/refilter-genomad.smk"
+    include: "rules/checkv-pyhmmer.smk"
+    include: "rules/cluster-fast.smk"
+    set_module_target([
+        relpath("identify/viral/logs/done.log"), 
+        relpath("identify/viral/logs/clustering-done.log"), 
+        relpath("identify/viral/logs/checkv-done.log")
+    ])
 
 # checkv-pyhmmer
 if config["module"] in ["checkv-pyhmmer"]:
-  include: "rules/checkv-pyhmmer.smk"
-  targets += [relpath("identify/viral/logs/checkv-done.log")]
+    include: "rules/checkv-pyhmmer.smk"
+    set_module_target(relpath("identify/viral/logs/checkv-done.log"))
 
 # cluster-fast
 if config["module"] in ["cluster-fast"]:
-  include: "rules/cluster-fast.smk"
-  targets += [relpath("identify/viral/logs/clustering-done.log")]
+    include: "rules/cluster-fast.smk"
+    set_module_target(relpath("identify/viral/logs/clustering-done.log"))
 
 # viral-taxonomy
 if config["module"] in ["viral-taxonomy", "viral-end-to-end", "run-all"]:
-  include: "rules/viral-taxonomy.smk"
-  targets += [relpath("taxonomy/viral/logs/done.log")]
+    include: "rules/viral-taxonomy.smk"
+    set_module_target(relpath("taxonomy/viral/logs/done.log"))
 
 # viral-community
 if config["module"] in ["viral-community", "viral-end-to-end", "run-all"]:
-  include: "rules/viral-community.smk"
-  targets += [relpath("community/viral/logs/done.log")]
+    include: "rules/viral-community.smk"
+    set_module_target(relpath("community/viral/logs/done.log"))
 
 # prok-binning
 if config["module"] in ["prok-binning", "viral-end-to-end", "run-all"]:
-  include: "rules/prok-binning.smk"
-  targets += [relpath("binning/prok/logs/done.log")]
+    include: "rules/prok-binning.smk"
+    set_module_target(relpath("binning/prok/logs/done.log"))
 
 # viral-host
 if config["module"] in ["viral-host", "viral-end-to-end", "run-all"]:
-  targets += [relpath("host/logs/done.log")]
-  include: "rules/viral-host.smk"
+    include: "rules/viral-host.smk"
+    set_module_target(relpath("host/logs/done.log"))
 
 # viral-annotate
 if config["module"] in ["viral-annotate", "viral-end-to-end", "run-all"]:
-  include: "rules/viral-annotate.smk"
-  targets += [relpath("annotate/viral/logs/done.log")]
+    include: "rules/viral-annotate.smk"
+    set_module_target(relpath("annotate/viral/logs/done.log"))
 
 # prok-community
 if config["module"] in ["prok-community", "run-all"]:
-  include: "rules/prok-community.smk"
-  targets += [relpath("community/metaphlan/logs/done.log")]
+    include: "rules/prok-community.smk"
+    set_module_target(relpath("community/metaphlan/logs/done.log"))
 
 # prok-annotate
 if config["module"] in ["prok-annotate", "run-all"]:
-  include: "rules/prok-annotate.smk"
-  targets += [relpath("annotate/prok/logs/done.log")]
+    include: "rules/prok-annotate.smk"
+    set_module_target(relpath("annotate/prok/logs/done.log"))
 
 
 ###############
