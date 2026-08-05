@@ -26,8 +26,15 @@ properties:
         "cluster-fast",
         "setup-database",
         "symlink",
+        "mock-data",
         "run-all",
+        "reset",
       ]
+
+  reset:
+    type: boolean
+    description: "Delete the log files to reset previously completed module run and its metadata, allowing model to be run again."
+    default: False
 
   # Path Configuration
   workdir:

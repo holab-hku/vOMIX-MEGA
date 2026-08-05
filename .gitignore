@@ -23,6 +23,7 @@
 !resources/
 !workflow/
 !workflow/rules/
+!workflow/rules/**
 !workflow/software/
 !workflow/envs
 !workflow/envs/**
