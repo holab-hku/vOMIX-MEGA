@@ -10,6 +10,7 @@ platforms:
   - osx-arm64 # Apple Silicon Macs (M1/M2/M3/M4)
 dependencies:
   - python=3.12
+  - pip=26.1.2
   - snakemake=9.23.1
   - biopython=1.84
   - snakemake-executor-plugin-cluster-generic=1.0.9
