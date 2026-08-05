@@ -52,12 +52,12 @@ vOMIX-MEGA can be installed via **Conda / Mamba** or run using an **Apptainer / 
 
 ```bash
 # 1. Clone the repository
-git clone [https://github.com/holab-hku/vOMIX-MEGA.git](https://github.com/holab-hku/vOMIX-MEGA.git)
+git clone https://github.com/holab-hku/vOMIX-MEGA.git
 cd vOMIX-MEGA
 
 # 2. Create and activate the conda environment
-mamba env create -f environment.yml   # Or: conda env create -f environment.yml
-mamba activate vomix
+conda env create -f environment.yml   # Or: mamba env create -f environment.yml
+conda activate vomix
 
 # 3. Install the vOMIX CLI package
 pip install .
@@ -87,11 +87,23 @@ For HPC clusters or environments where Conda environments are restricted:
 ```bash
 cd vOMIX-MEGA
 
-# Pull the official Apptainer container (~9.5 GB)
+# 1. Clone the repository
+git clone https://github.com/holab-hku/vOMIX-MEGA.git
+cd vOMIX-MEGA
+
+# 2. Create and activate the conda environment
+conda env create -f environment.yml   # Or: mamba env create -f environment.yml
+conda activate vomix
+
+# 3. Install the vOMIX CLI package
+pip install .
+
+# 4. Pull the official Apptainer container (~9.5 GB)
 VOMIX_VERSION="v0.1.0-beta.1"
 apptainer pull --name workflow/apptainer/vomix_${VOMIX_VERSION}.sif oras://ghcr.io/erfanshekarriz/vomix:${VOMIX_VERSION}
 
-# Test installation with a dry-run
+# 5. Test installation with a dry-run
+vomix -h
 vomix viral-identify --sdm apptainer --fasta sample/contigs/contigs_simulated_viral_nonviral.fasta --outdir quick-run/results -j 64 --latency-wait 20 -n
 
 ```
