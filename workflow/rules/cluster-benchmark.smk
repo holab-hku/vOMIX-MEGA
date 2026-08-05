@@ -193,7 +193,6 @@ rule mock_Mock_10K:
             --name {params.name} \
             --num-sequences {params.num} \
             --outdir {datadir}/mock-data \
-            --tmpdir {params.tmpdir} \
             --viral-seq {input.vir} \
             --prokaryotic-seq {input.prok} \
             --eukaryotic-seq {input.euk} \

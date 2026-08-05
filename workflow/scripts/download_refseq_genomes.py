@@ -47,10 +47,6 @@ except ImportError:
 
 console = Console()
 
-# ============================================================
-# 1. CURATED SPECIES LISTS
-# ============================================================
-
 VIRAL_CATEGORIES = {
     "dsDNA": [
         "Escherichia virus T4",
@@ -95,7 +91,6 @@ VIRAL_CATEGORIES = {
     ],
 }
 
-# Prokaryotic species (bacteria + archaea)
 PROKARYOTIC_SPECIES = [
     "Escherichia coli",
     "Pseudomonas aeruginosa",
@@ -111,7 +106,6 @@ PROKARYOTIC_SPECIES = [
     "Halobacterium salinarum",
 ]
 
-# Eukaryotic species (host, fungi, plants)
 EUKARYOTIC_SPECIES = [
     "Homo sapiens",
     "Saccharomyces cerevisiae",
@@ -122,10 +116,6 @@ EUKARYOTIC_SPECIES = [
 
 # Legacy contaminants (all combined)
 CONTAMINANT_SPECIES = PROKARYOTIC_SPECIES + EUKARYOTIC_SPECIES
-
-# ============================================================
-# 2. NCBI Entrez Helper Functions
-# ============================================================
 
 
 def fetch_assembly_id(species_name, email, api_key=None, max_attempts=3, verbose=False):
@@ -313,11 +303,6 @@ def download_assembly_fasta(
     return None
 
 
-# ============================================================
-# 3. Generic download function for a species list
-# ============================================================
-
-
 def download_species_list(
     outfile,
     species_list,
@@ -468,11 +453,6 @@ def download_species_list(
     )
 
 
-# ============================================================
-# 4. Wrapper functions for specific modes
-# ============================================================
-
-
 def download_viral_genomes(
     outfile,
     email,
@@ -481,7 +461,7 @@ def download_viral_genomes(
     verbose=False,
     dry_run=False,
     summary_tsv=None,
-):
+) -> None:
     """
     Download a balanced set of viral genomes across categories.
     The summary TSV is always written, even in dry‑run mode.
@@ -650,7 +630,7 @@ def download_prokaryotic_genomes(
     verbose=False,
     dry_run=False,
     summary_tsv=None,
-):
+) -> None:
     """Download prokaryotic (bacteria + archaea) genomes."""
     download_species_list(
         outfile=outfile,
@@ -672,7 +652,7 @@ def download_eukaryotic_genomes(
     verbose=False,
     dry_run=False,
     summary_tsv=None,
-):
+) -> None:
     """Download eukaryotic (host, fungi, plants) genomes."""
     download_species_list(
         outfile=outfile,
@@ -694,7 +674,7 @@ def download_contaminant_genomes(
     verbose=False,
     dry_run=False,
     summary_tsv=None,
-):
+) -> None:
     """Legacy: download all contaminants (prokaryotic + eukaryotic) into one file."""
     download_species_list(
         outfile=outfile,
@@ -707,11 +687,6 @@ def download_contaminant_genomes(
         summary_tsv=summary_tsv,
         color="magenta",
     )
-
-
-# ============================================================
-# 5. Command-line interface
-# ============================================================
 
 
 def main():
