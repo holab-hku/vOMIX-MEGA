@@ -37,9 +37,12 @@
 !vomix/
 !sample/contigs
 
-# except these subdirectories
+# keep these subdirectories though
 workflow/database/*
-!workflow/database/.gitkeep
 workflow/params
-workflow/scripts/__pycache__/sample_list_parse.cpython-312.pyc
 docs/_build
+workflow/scripts/__pycache__/sample_list_parse.cpython-312.pyc
+
+# except these files within them
+!workflow/database/.gitkeep
+

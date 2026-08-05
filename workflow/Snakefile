@@ -222,10 +222,10 @@ if config["setup-database"] or config["module"] == "setup-database" or config["m
     if config["module"] == "setup-database":
         set_module_target(os.path.join(config["basedir"], "database/.benchmarks/done.log"))
 
-# mock-data
-if config["module"] == "mock-data":
-    include: "rules/mock-data.smk"
-    set_module_target(os.path.join(config['datadir'], "mock-data/logs/done.log"))
+# cluster-benchmark
+if config["module"] == "cluster-benchmark":
+    include: "rules/cluster-benchmark.smk"
+    set_module_target(relpath("cluster-benchmark/logs/done.log"))
 
 # fix symlink
 if config["module"] == "symlink":

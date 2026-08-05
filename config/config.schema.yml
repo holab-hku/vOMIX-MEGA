@@ -24,9 +24,9 @@ properties:
         "viral-end-to-end",
         "checkv-pyhmmer",
         "cluster-fast",
+        "cluster-benchmark",
         "setup-database",
         "symlink",
-        "mock-data",
         "run-all",
         "reset",
       ]
