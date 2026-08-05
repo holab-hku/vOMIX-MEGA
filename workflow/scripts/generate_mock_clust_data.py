@@ -240,7 +240,6 @@ def generate_mock_dataset(
     name: str,
     total_seqs: int,
     outdir: str,
-    tmpdir: str,
     viral_seq: str,
     prokaryotic_seq: str,
     eukaryotic_seq: str,
@@ -251,8 +250,6 @@ def generate_mock_dataset(
     mut_rate_min: float = 0.001,
     mut_rate_max: float = 0.05,
     duplication_factor: int = 1,
-    overlap_min: int = 0,
-    overlap_max: int = 0,
     num_species: int = 10,
     seed: int = 42,
     ground_truth_file: Optional[str] = None,
@@ -292,10 +289,9 @@ def generate_mock_dataset(
 
     console.print(f"[green][GEN] Generating {name} with {total_seqs} sequences...[/]")
 
-    # Load sequences
     viral_records = read_fasta_seq(viral_seq)
     if not viral_records:
-        raise RuntimeError("Viral sequences file is empty or missing. Please run download_refseq_viral rule first.")
+        raise RuntimeError(f"Viral sequences file is empty or missing.")
 
     prokaryotic_records = read_fasta_seq(prokaryotic_seq) if prokaryotic_seq else []
     eukaryotic_records = read_fasta_seq(eukaryotic_seq) if eukaryotic_seq else []

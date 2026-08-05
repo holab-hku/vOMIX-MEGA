@@ -13,25 +13,25 @@ os.makedirs(basedir,   exist_ok=True)
 
 
 DATASET_PARAMS = {
-    "Mock-10K":          {"size": 10000,  "virus": 0.5,  "prok": 0.3,  "euk": 0.2,  "strain": 0, "species": 10, "seed": 42},
-    "Mock-10K-HighVir":  {"size": 10000,  "virus": 1.0,  "prok": 0.0,  "euk": 0.0,  "strain": 0, "species": 10, "seed": 123},
-    "Mock-10K-LowVir":   {"size": 10000,  "virus": 0.1,  "prok": 0.5,  "euk": 0.4,  "strain": 0, "species": 10, "seed": 456},
-    "Mock-50K":          {"size": 50000,  "virus": 0.5,  "prok": 0.3,  "euk": 0.2,  "strain": 0, "species": 10, "seed": 789},
-    "Mock-100K":         {"size": 100000, "virus": 0.5,  "prok": 0.3,  "euk": 0.2,  "strain": 0, "species": 10, "seed": 1011},
-    "Mock-300K":         {"size": 300000, "virus": 0.5,  "prok": 0.3,  "euk": 0.2,  "strain": 0, "species": 10, "seed": 1213},
-    "Mock-1000K":        {"size": 1000000,"virus": 0.5,  "prok": 0.3,  "euk": 0.2,  "strain": 0, "species": 10, "seed": 1415},
-    "Mock-Strain":       {"size": 20000,  "virus": 1.0,  "prok": 0.0,  "euk": 0.0,  "strain": 1, "species": 10, "seed": 1617},
+    "Mock-10K":          {"size": 10000,  "virus": 0.5,  "prok": 0.3,  "euk": 0.2,  "strain": 0, "species": 10, "seed": config.get("seed", 42)},
+    "Mock-10K-HighVir":  {"size": 10000,  "virus": 1.0,  "prok": 0.0,  "euk": 0.0,  "strain": 0, "species": 10, "seed": config.get("seed", 42)},
+    "Mock-10K-LowVir":   {"size": 10000,  "virus": 0.1,  "prok": 0.5,  "euk": 0.4,  "strain": 0, "species": 10, "seed": config.get("seed", 42)},
+    "Mock-50K":          {"size": 50000,  "virus": 0.5,  "prok": 0.3,  "euk": 0.2,  "strain": 0, "species": 10, "seed": config.get("seed", 42)},
+    "Mock-100K":         {"size": 100000, "virus": 0.5,  "prok": 0.3,  "euk": 0.2,  "strain": 0, "species": 10, "seed": config.get("seed", 42)},
+    "Mock-300K":         {"size": 300000, "virus": 0.5,  "prok": 0.3,  "euk": 0.2,  "strain": 0, "species": 10, "seed": config.get("seed", 42)},
+    "Mock-1000K":        {"size": 1000000,"virus": 0.5,  "prok": 0.3,  "euk": 0.2,  "strain": 0, "species": 10, "seed": config.get("seed", 42)},
+    "Mock-Strain":       {"size": 20000,  "virus": 1.0,  "prok": 0.0,  "euk": 0.0,  "strain": 1, "species": 10, "seed": config.get("seed", 42)},
 }
 
 DATASET_PARAMS = {
-    "Mock-10K":          {"size": 10000,  "virus": 0.5,  "prok": 0.3,  "euk": 0.2,  "strain": 0, "species": 10, "seed": 42},
-    "Mock-10K-HighVir":  {"size": 10000,  "virus": 1.0,  "prok": 0.0,  "euk": 0.0,  "strain": 0, "species": 10, "seed": 123},
-    "Mock-10K-LowVir":   {"size": 10000,  "virus": 0.1,  "prok": 0.5,  "euk": 0.4,  "strain": 0, "species": 10, "seed": 456},
-    "Mock-50K":          {"size": 50000,  "virus": 0.5,  "prok": 0.3,  "euk": 0.2,  "strain": 0, "species": 10, "seed": 789},
-    "Mock-100K":         {"size": 100000, "virus": 0.5,  "prok": 0.3,  "euk": 0.2,  "strain": 0, "species": 10, "seed": 1011},
-    "Mock-300K":         {"size": 300000, "virus": 0.5,  "prok": 0.3,  "euk": 0.2,  "strain": 0, "species": 10, "seed": 1213},
-    "Mock-1000K":        {"size": 1000000,"virus": 0.5,  "prok": 0.3,  "euk": 0.2,  "strain": 0, "species": 10, "seed": 1415},
-    "Mock-Strain":       {"size": 20000,  "virus": 1.0,  "prok": 0.0,  "euk": 0.0,  "strain": 1, "species": 10, "seed": 1617},
+    "Mock-10K":          {"size": 10000,  "virus": 0.5,  "prok": 0.3,  "euk": 0.2,  "strain": 0, "species": 10, "seed": config.get("seed", 42)},
+    "Mock-10K-HighVir":  {"size": 10000,  "virus": 1.0,  "prok": 0.0,  "euk": 0.0,  "strain": 0, "species": 10, "seed": config.get("seed", 42)},
+    "Mock-10K-LowVir":   {"size": 10000,  "virus": 0.1,  "prok": 0.5,  "euk": 0.4,  "strain": 0, "species": 10, "seed": config.get("seed", 42)},
+    "Mock-50K":          {"size": 50000,  "virus": 0.5,  "prok": 0.3,  "euk": 0.2,  "strain": 0, "species": 10, "seed": config.get("seed", 42)},
+    "Mock-100K":         {"size": 100000, "virus": 0.5,  "prok": 0.3,  "euk": 0.2,  "strain": 0, "species": 10, "seed": config.get("seed", 42)},
+    "Mock-300K":         {"size": 300000, "virus": 0.5,  "prok": 0.3,  "euk": 0.2,  "strain": 0, "species": 10, "seed": config.get("seed", 42)},
+    "Mock-1000K":        {"size": 1000000,"virus": 0.5,  "prok": 0.3,  "euk": 0.2,  "strain": 0, "species": 10, "seed": config.get("seed", 42)},
+    "Mock-Strain":       {"size": 20000,  "virus": 1.0,  "prok": 0.0,  "euk": 0.0,  "strain": 1, "species": 10, "seed": config.get("seed", 42)},
 }
 
 def get_resources(dataset):

@@ -36,6 +36,11 @@ properties:
     description: "Delete the log files to reset previously completed module run and its metadata, allowing model to be run again."
     default: False
 
+  seed:
+    type: integer
+    description: "Set seed for random processes such as tournament-style clustering to allow reproducibility."
+    default: 42
+
   # Path Configuration
   workdir:
     type: string

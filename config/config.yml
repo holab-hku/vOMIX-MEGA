@@ -1,4 +1,6 @@
 module: "viral-end-to-end"
+reset: False
+seed: 42
 workdir: "."
 basedir: ""
 outdir: "results/"
