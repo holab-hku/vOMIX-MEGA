@@ -12,7 +12,11 @@ nowstr=config["latest-run"]
 outdir=config["outdir"]
 datadir=config["datadir"]
 
-samples, assemblies = parse_sample_list(config["samplelist"], datadir, outdir, email, api_key, nowstr)
+if config.get("module") == "viral-end-to-end":
+  parse_quiet = True
+else: 
+  parse_quiet = False
+samples, assemblies = parse_sample_list(config["samplelist"], datadir, outdir, email, api_key, nowstr, parse_quiet)
 
 # Check if there are any co-assemblies and abort if using SPAdes and co-assembly
 if (len(assemblies.keys()) != len(samples.keys())) and (assembler == "spades"):

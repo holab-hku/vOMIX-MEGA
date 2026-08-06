@@ -72,7 +72,7 @@ rule split_input:
         pieces = n_chunks_layer_1,
         outdir = relpath("identify/viral/output/derep/cluster-splits"),
         tmpdir = os.path.join(tmpd, "cluster-splits"), 
-        seed = confg["seed"]
+        seed = config["seed"]
     log: os.path.join(logdir, "split_input.log")
     benchmark: os.path.join(benchmarks, "split_input.log")
     conda: "../envs/seqkit-biopython.yml"

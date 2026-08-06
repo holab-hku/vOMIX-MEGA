@@ -41,6 +41,7 @@
 workflow/database/*
 workflow/params
 docs/_build
+docs/_build/**
 workflow/scripts/__pycache__/sample_list_parse.cpython-312.pyc
 
 # except these files within them

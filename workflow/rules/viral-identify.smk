@@ -27,7 +27,11 @@ elif config['fastadir'] != "":
   fastap = readfastadir(config['fastadir'])
   assembly_ids = config["assembly-ids"]
 else:
-  samples, assemblies = parse_sample_list(config["samplelist"], datadir, outdir, email, api_key, nowstr)
+  if config.get("module") == "viral-end-to-end":
+    parse_quiet = True
+  else: 
+    parse_quiet = False
+  samples, assemblies = parse_sample_list(config["samplelist"], datadir, outdir, email, api_key, nowstr, parse_quiet)
   fastap = relpath(os.path.join("assembly", assembler, "samples/{sample_id}/output/final.contigs.fa"))
   assembly_ids = assemblies.keys()
 

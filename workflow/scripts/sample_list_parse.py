@@ -24,7 +24,7 @@ from rich.panel import Panel
 console = Console()
 
 
-def validate_samples(samples):
+def validate_samples(samples, quiet: bool = False):
     """
     Performs checks on the samples provided in the sample_list.csv
     to either verify their existence locally or on the SRA.
@@ -35,18 +35,21 @@ def validate_samples(samples):
      If a file has no paired {2} label, it is assumed to be single-end.
 
     """
-    console.print(
-        Panel.fit(
-            """[dim]Validating availability of local and remote SRA raw sequences.\n\nIf you are using local files, you can either:\n1) Provide full file paths in the R1 and R2 columns of sample_list.csv [only R1 if single-end]\n2) Place the fastq files in the config['datadir'] path with <sample>_{1,2}.fastq.gz naming format.\nCo-assemblies and mix-assemblies can be setup by writing the same <assembly> column for different samples.\n""",
-            title="Sample Validation",
-            subtitle="In Progress...",
+    if not quiet:
+        console.print(
+            Panel.fit(
+                """[dim]Validating availability of local and remote SRA raw sequences.\n\nIf you are using local files, you can either:\n1) Provide full file paths in the R1 and R2 columns of sample_list.csv [only R1 if single-end]\n2) Place the fastq files in the config['datadir'] path with <sample>_{1,2}.fastq.gz naming format.\nCo-assemblies and mix-assemblies can be setup by writing the same <assembly> column for different samples.\n""",
+                title="Sample Validation",
+                subtitle="In Progress...",
+            )
         )
-    )
 
     # 1) LOCAL SEARCH - search if any files exist in local directory
 
-    console.print(f"\nValidating total {len(samples)} samples...")
-    console.print("Performing local sample search...")
+    if not quiet:
+        console.print(
+            f"\nValidating total {len(samples)} samples...\nPerforming local sample search..."
+        )
 
     notfound_acc = []
     err_acc = []
@@ -77,26 +80,30 @@ def validate_samples(samples):
         )
         sys.exit(1)
 
-    console.print(f"{found_local} samples pre-downloaded...")
+    if not quiet:
+        console.print(f"{found_local} samples pre-downloaded...")
 
     # 2) REMOTE SEARCH - for entries that could not be found locally
 
     accessions = []
     sizes_gb = []
     if len(notfound_acc) > 0:
-        console.print(
-            f"Performing remote SRA sample search on {len(notfound_acc)} samples...\n"
-        )
+        if not quiet:
+            console.print(
+                f"Performing remote SRA sample search on {len(notfound_acc)} samples...\n"
+            )
 
         for i in range(0, len(notfound_acc), 500):
             batch = notfound_acc[i : i + 500]
 
             if i + 500 > len(notfound_acc):
-                console.print(
-                    f"[dim]Processing SRA accessions {i+1}-{len(notfound_acc)}"
-                )
+                if not quiet:
+                    console.print(
+                        f"[dim]Processing SRA accessions {i+1}-{len(notfound_acc)}"
+                    )
             else:
-                console.print(f"[dim]Processing SRA accessions {i+1}-{i+500}")
+                if not quiet:
+                    console.print(f"[dim]Processing SRA accessions {i+1}-{i+500}")
 
             try:
                 handle = Entrez.efetch(
@@ -142,12 +149,13 @@ def validate_samples(samples):
             )
             sys.exit(1)
 
-    console.print("\nDone validating all samples!")
-    if sum(sizes_gb) > 0:
+    if not quiet:
+        console.print("\nDone validating all samples!")
+    if (sum(sizes_gb) > 0) and (not quiet):
         console.print(f"Downloading {round(sum(sizes_gb))} GB of data...\n")
 
 
-def parse_sample_list(f, datadir, outdir, email, api_key, nowstr):
+def parse_sample_list(f, datadir, outdir, email, api_key, nowstr, quiet: bool = False):
     """
     Parse the sample list. Each sample is stored as a dictionary in the samples{} dictionary.
     samples{sample_name} will have the following information:
@@ -352,17 +360,17 @@ def parse_sample_list(f, datadir, outdir, email, api_key, nowstr):
         with open(samplejson, "r") as sampleold:
             samples_old = json.load(sampleold)
             if samples_old == samples:
-                console.print(
-                    Panel.fit(
-                        """[bold]Warning[/bold]: [dim]{json} already exists and is identical to the sample list provided {fi}. Skipping validation. If you would like to redo sample validation, run 'rm {json}' and try again.""".format(
-                            json=samplejson, fi=f
-                        ),
-                        title="Warning",
-                        subtitle="Sample List JSON",
+                if not quiet:
+                    console.print(
+                        Panel.fit(
+                            """[bold]Warning[/bold]: [dim]{json} already exists and is identical to the sample list provided {fi}. Skipping validation. If you would like to redo sample validation, run 'rm {json}' and try again.""".format(
+                                json=samplejson, fi=f
+                            ),
+                            title="Warning",
+                            subtitle="Sample List JSON",
+                        )
                     )
-                )
                 return samples, assemblies
-                sys.exit()
 
     # If not exited already, validate and write
     Entrez.email = email

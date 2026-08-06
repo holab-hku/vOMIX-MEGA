@@ -17,7 +17,11 @@ nowstr=config["latest-run"]
 outdir=config["outdir"]
 datadir=config["datadir"]
 
-samples, assemblies = parse_sample_list(config["samplelist"], datadir, outdir, email, api_key, nowstr)
+if config.get("module") == "viral-end-to-end":
+  parse_quiet = True
+else: 
+  parse_quiet = False
+samples, assemblies = parse_sample_list(config["samplelist"], datadir, outdir, email, api_key, nowstr, parse_quiet)
 
 # MASTER RULE 
 
