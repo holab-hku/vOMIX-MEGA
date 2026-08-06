@@ -388,7 +388,7 @@ def snakemake_options(function):
         "--sdm",
         multiple=True,
         required=False,
-        default=None,
+        default="conda",
         help="Specify software environment deployment method. [default: conda]",
     )(function)
     function = click.option(
