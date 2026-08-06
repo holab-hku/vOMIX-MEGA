@@ -175,7 +175,7 @@ If you use vOMIX-MEGA in your research, please cite our pre-print:
 
 > **vOMIX-MEGA: A critical speed enhancement for end-to-end viral metagenomics**
 > Erfan Shekarriz, Elsa Vijendran, Joshua WK Ho
-> *bioRxiv* (2026). DOI: [10.1101/vomix-mega](https://vomix-mega.readthedocs.io/en/latest/)
+> *bioRxiv* (2026). DOI: [https://doi.org/10.64898/2026.07.28.741255](https://www.biorxiv.org/content/10.64898/2026.07.28.741255v1.full)
 
 ---
 

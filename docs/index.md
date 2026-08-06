@@ -77,7 +77,7 @@ If you use vOMIX-MEGA in your work, please consider citing its pre-print manuscr
 
 **vOMIX-MEGA: A critical speed enhancement for end-to-end viral metagenomics**
 ^^^
-Erfan Shekarriz, Elsa VIJENDRAN, Joshua WK Ho  — *bioRxiv* (2026), DOI: XXXXXXXXXXXXXXXXXXX.
+Erfan Shekarriz, Elsa VIJENDRAN, Joshua WK Ho  — *bioRxiv* (2026), DOI: [10.64898/2026.07.28.741255](https://doi.org/10.64898/2026.07.28.741255).
 :::
 
 ## {octicon}`bug;0.85em` Report a bug to us
