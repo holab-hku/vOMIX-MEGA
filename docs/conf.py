@@ -30,7 +30,7 @@ extensions = [
 # Sets the classic, mobile-friendly ReadTheDocs sidebar layout
 html_theme = "furo"
 pygments_style = "tango"
-pygments_dark_style = "tango"
+pygments_dark_style = "monokai"
 html_logo = "./_static/logo_vOMIX-MEGA.svg"
 html_theme_options = {
     "sidebar_hide_name": True,
