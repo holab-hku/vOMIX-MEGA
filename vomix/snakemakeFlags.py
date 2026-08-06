@@ -14,6 +14,7 @@ class SnakemakeFlags:
         executor,
         cluster_generic_submit_cmd,
         printshellcmds,
+        list_conda_envs,
         quiet,
         snakemake_args,
     ):
@@ -30,5 +31,6 @@ class SnakemakeFlags:
         self.executor = executor
         self.cluster_generic_submit_cmd = cluster_generic_submit_cmd
         self.printshellcmds = printshellcmds
+        self.list_conda_envs = list_conda_envs
         self.quiet = quiet
         self.snakemake_args = snakemake_args

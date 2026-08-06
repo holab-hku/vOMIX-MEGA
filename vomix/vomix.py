@@ -138,6 +138,7 @@ _smk_opts = [
     "--executor",
     "--cluster-generic-submit-cmd",
     "--printshellcmds",
+    "--list-conda-envs",
     "--quiet",
     "--snakemake-args",
     "--dryrun",
@@ -202,6 +203,7 @@ def create_snakemake_flags(kwargs):
         kwargs.get("executor"),
         kwargs.get("cluster_generic_submit_cmd"),
         kwargs.get("printshellcmds"),
+        kwargs.get("list_conda_envs"),
         kwargs.get("quiet"),
         kwargs.get("snakemake_args"),
     )
@@ -316,7 +318,7 @@ def common_options(function):
         flag_value=True,
         default=False,
         required=False,
-        help="Delete the log files to reset previously completed module run and its metadata, allowing model to be run again. (default: False)",
+        help="Delete the log files to reset previously completed module run and its metadata, allowing module to be run again. (default: False)",
     )(function)
     return function
 
@@ -423,6 +425,14 @@ def snakemake_options(function):
         default=None,
         help="Print out the shell commands that will be executed. (default: False)",
     )(function)
+    function = click.option(
+            "--list-conda-envs",
+            is_flag=True,
+            flag_value=True,
+            required=False,
+            default=None,
+            help="List all conda environments and their location on disk. (default: False)",
+        )(function)
     function = click.option(
         "--quiet",
         "-q",
