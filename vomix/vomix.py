@@ -220,93 +220,93 @@ def common_options(function):
         "--workdir",
         default=None,
         required=False,
-        help="The working directory for the underlying Snakemake workflow back-end. [default: None]",
+        help="Working directory for the Snakemake workflow backend. Only modify for advanced customization or debugging purposes. (default: '.')",
     )(function)
     function = click.option(
         "--outdir",
         default=None,
         required=False,
-        help="Directory path where structured output results will be deposited. [default: None]",
+        help="Output directory for all pipeline results. New directories are automatically created; existing directories will be overwritten or appended. (default: 'results/')",
     )(function)
     function = click.option(
         "--datadir",
         default=None,
         required=False,
-        help="The path to raw FASTQ files. [default: None]",
+        help="Directory path for raw FASTQ files. Used to verify existing files or as the target destination for new downloads from NCBI SRA. (default: 'fastq/')",
     )(function)
     function = click.option(
         "--samplelist",
         default=None,
         required=False,
-        help="The path to the sample_list.csv configuration file. [default: None]",
+        help="Path to the sample_list.csv configuration file. This file defines input files and sample metadata. See documentation at https://github.com/holab-hku/vOMIX-MEGA/wiki for formatting specifications. (default: '')",
     )(function)
     function = click.option(
         "--fasta",
         default=None,
         required=False,
-        help="The path to a single input FASTA file. [default: None]",
+        help="Path to a single FASTA input file for modules that accept single-file input. File extension must be .fasta, .fa, or .fna. (default: '')",
     )(function)
     function = click.option(
         "--fastadir",
         default=None,
         required=False,
-        help="The path to a directory containing input FASTA files. [default: None]",
+        help="Path to a directory containing multiple FASTA files. All files with .fasta, .fa, or .fna extensions will be automatically selected and processed. (default: '')",
     )(function)
     function = click.option(
         "--sample-name",
         default=None,
         required=False,
-        help="Explicit sample name utilized for output file naming. [default: None]",
+        help="Sample name for output file naming when providing input via --fasta or config['fasta']. (default: '')",
     )(function)
     function = click.option(
         "--assembly-ids",
         default=None,
         required=False,
-        help="A list format specified array mapping sample names to input files. [default: None]",
+        help="JSON-formatted array mapping sample names to input files (e.g., '[\"sampleA\", \"SampleB\"]') when using --fasta-dir. This feature is currently under evaluation. (default: '')",
     )(function)
     function = click.option(
         "--latest-run",
         default=None,
         required=False,
-        help="Internal logging parameter designating the timestamp. [default: None]",
+        help="Internal timestamp tracking the current execution run for history logging within the .vomix subdirectory. (default: '')",
     )(function)
     function = click.option(
         "--keep-intermediates",
         is_flag=True,
         default=None,
         required=False,
-        help="Retain substantial intermediate processing files. [default: False]",
+        help="Retain intermediate processing files (e.g., fastp-cleaned raw FASTQ files before host decontamination). Useful for debugging or manual inspection. (default: False)",
     )(function)
     function = click.option(
         "--setup-database",
         is_flag=True,
         default=None,
         required=False,
-        help="Initialize or update databases. [default: False]",
+        help="Initialize or update databases when executing modules other than 'setup-database'. Existing databases won't be reinstalled unless forced with Snakemake parameters like --forcerun or -F. (default: True)",
     )(function)
     function = click.option(
         "--max-cores",
         default=None,
         required=False,
-        help="Max CPU cores allocated dynamically across parallel tasks. [default: None]",
+        help="Maximum number of CPU cores allocated across parallel Snakemake tasks. Distinct from execution parameters like -j or -n. Currently under development. (default: 4)",
     )(function)
     function = click.option(
         "--NCBI-email",
         default=None,
         required=False,
-        help="User email address provided to NCBI E-utilities. [default: None]",
+        help="Email address for NCBI E-utilities API access. Required for data retrieval and download verification. (default: 'vomixtest@gmail.com')",
     )(function)
     function = click.option(
         "--NCBI-API-key",
         default=None,
         required=False,
-        help="NCBI API key required for higher throughput data retrieval. [default: None]",
+        help="NCBI API key for higher throughput data retrieval. Obtain from NCBI following instructions at https://ncbiinsights.ncbi.nlm.nih.gov/2017/11/02/new-api-keys-for-the-e-utilities. (default: '')",
     )(function)
     function = click.option(
         "--custom-config",
         default=None,
         required=False,
-        help="Path to your custom config.yml [default: None]",
+        help="Path to your custom config.yml (default: )",
     )(function)
     return function
 
@@ -320,7 +320,7 @@ def snakemake_options(function):
         flag_value=True,
         required=False,
         default=None,
-        help="Do not execute anything, display what would be done. [default: False]",
+        help="Do not execute anything, display what would be done. (default: )",
     )(function)
     function = click.option(
         "--forceall",
@@ -329,13 +329,13 @@ def snakemake_options(function):
         flag_value=True,
         required=False,
         default=None,
-        help="Force the execution of the selected rule and all dependencies. [default: False]",
+        help="Force the execution of the selected rule and all dependencies. (default: )",
     )(function)
     function = click.option(
         "--configfile",
         default=None,
         required=False,
-        help="Specify or overwrite the config file of the workflow. [default: None]",
+        help="Specify or overwrite the config file of the workflow. (default: )",
     )(function)
     function = click.option(
         "--unlock",
@@ -343,27 +343,27 @@ def snakemake_options(function):
         flag_value=True,
         required=False,
         default=None,
-        help="Remove a lock on the working directory. [default: False]",
+        help="Remove a lock on the working directory. (default: )",
     )(function)
     function = click.option(
         "--cores",
         "-c",
         default=None,
         required=False,
-        help="Use at most N CPU cores/jobs in parallel. [default: None]",
+        help="Use at most N CPU cores/jobs in parallel. (default: )",
     )(function)
     function = click.option(
         "--jobs",
         "-j",
         default=None,
         required=False,
-        help="Use at most N CPU cluster/cloud jobs in parallel. [default: None]",
+        help="Use at most N CPU cluster/cloud jobs in parallel. (default: )",
     )(function)
     function = click.option(
         "--latency-wait",
         default=None,
         required=False,
-        help="Wait given seconds if an output file of a job is not present. [default: None]",
+        help="Wait given seconds if an output file of a job is not present. (default: )",
     )(function)
     function = click.option(
         "--rerun-incomplete",
@@ -372,14 +372,14 @@ def snakemake_options(function):
         flag_value=True,
         required=False,
         default=None,
-        help="Re-run all jobs the output of which is recognized as incomplete. [default: False]",
+        help="Re-run all jobs the output of which is recognized as incomplete. (default: )",
     )(function)
     function = click.option(
         "--rerun-triggers",
         multiple=True,
         required=False,
         default=None,
-        help="Define what triggers the rerunning of a job. [default: mtime]",
+        help="Define what triggers the rerunning of a job. (default: )",
     )(function)
     function = click.option(
         "--software-deployment-method",
@@ -388,15 +388,15 @@ def snakemake_options(function):
         "--sdm",
         multiple=True,
         required=False,
-        default="conda",
-        help="Specify software environment deployment method. [default: conda]",
+        default=["conda"],
+        help="Specify software environment deployment method. (default: )",
     )(function)
     function = click.option(
         "--executor",
         "-e",
         required=False,
         default=None,
-        help="Specify a custom executor, available via an executor plugin. [default: None]",
+        help="Specify a custom executor, available via an executor plugin. (default: )",
     )(function)
     function = click.option(
         "--cluster-generic-submit-cmd",
@@ -419,13 +419,13 @@ def snakemake_options(function):
         required=False,
         default=None,
         flag_value=True,
-        help="Do not output certain information. [default: False]",
+        help="Do not output certain information. (default: )",
     )(function)
     function = click.option(
         "--snakemake-args",
         required=False,
         default=None,
-        help='Additional arguments to pass to the native snakemake command. Must be surround by double quotes `"`. [default: None]',
+        help='Additional arguments to pass to the native snakemake command. Must be surround by double quotes `"`. (default: )',
     )(function)
     return function
 
@@ -452,7 +452,7 @@ def cli():
     flag_value=True,
     default=None,
     required=False,
-    help="Restrict execution exclusively to remote SRA file downloads. [default: False]",
+    help="Only download SRA data from NCBI without performing preprocessing steps. Downloads FASTQ files and stops. (default: False)",
 )
 @click.option(
     "--decontam-host/--no-decontam-host",
@@ -460,55 +460,55 @@ def cli():
     flag_value=True,
     default=None,
     required=False,
-    help="Perform host decontamination post fastp quality trimming. [default: False]",
+    help="Perform host decontamination after fastp quality trimming. Requires host indexes specified via hostile-index-name. (default: False)",
 )
 @click.option(
     "--dwnld-params",
     required=False,
     default=None,
-    help="Optional configuration parameters used during raw FASTQ retrieval. [default: None]",
+    help="Additional parameters for NCBI SRA data retrieval via entrez-fetch. Customize download behavior and options. (default: '')",
 )
 @click.option(
     "--pigz-params",
     required=False,
     default=None,
-    help="Execution parameters passed directly to pigz. [default: None]",
+    help="Multi-threaded compression parameters for pigz when compressing downloaded FASTQ data. (default: '')",
 )
 @click.option(
     "--fastp-params",
     required=False,
     default=None,
-    help="Additional runtime arguments supplied to the fastp quality control engine. [default: None]",
+    help="Additional quality control parameters for fastp read trimming and filtering. (default: '')",
 )
 @click.option(
     "--hostile-params",
     required=False,
     default=None,
-    help="Additional runtime arguments supplied to the Hostile host decontamination module. [default: None]",
+    help="Additional parameters for Hostile host decontamination module. (default: '')",
 )
 @click.option(
     "--hostile-aligner",
     required=False,
     default=None,
-    help="The short-read alignment backend algorithm employed for host decontamination. [default: None]",
+    help="Alignment algorithm for host decontamination. Options: 'bowtie2' (recommended for short reads) or 'minimap2'. (default: 'bowtie2')",
 )
 @click.option(
     "--hostile-aligner-params",
     required=False,
     default=None,
-    help="Additional runtime arguments supplied directly to the selected Hostile alignment tool. [default: None]",
+    help="Additional parameters for the selected Hostile alignment tool (bowtie2 or minimap2). (default: '')",
 )
 @click.option(
     "--hostile-index-name",
     required=False,
     default=None,
-    help="The name identifier of pre-built Hostile indices. [default: None]",
+    help="Name of pre-built Hostile indices. Available indices depend on installed Hostile version. See https://github.com/bede/hostile for available options. (default: 'human-t2t-hla')",
 )
 @click.option(
     "--hostile-index-db",
     required=False,
     default=None,
-    help="The directory path where the Hostile database is installed. [default: None]",
+    help="Path to Hostile database directory for host decontamination. Database will be downloaded automatically if not present. (default: 'database/hostile')",
 )
 @snakemake_options
 def run_preprocess(**kwargs):
@@ -548,31 +548,31 @@ def run_preprocess(**kwargs):
     "--assembler",
     default=None,
     required=False,
-    help="The primary assembly tool engine selected for the assembly module. [default: None]",
+    help="Assembly engine for metagenome assembly. Currently supports MEGAHIT (recommended) and SPAdes (in development). (default: 'megahit')",
 )
 @click.option(
     "--megahit-min-len",
     required=False,
     default=None,
-    help="The minimum contig length threshold used during the MEGAHIT assembly filter steps. [default: 300]",
+    help="Minimum contig length for MEGAHIT assembly filtering. Shorter contigs are excluded from output. (default: 300)",
 )
 @click.option(
     "--megahit-params",
     required=False,
     default=None,
-    help="Additional runtime parameters supplied directly to the MEGAHIT execution pipeline. [default: None]",
+    help="Additional parameters for MEGAHIT assembler. See MEGAHIT documentation for available options. (default: '--prune-level 3')",
 )
 @click.option(
     "--spades-params",
     required=False,
     default=None,
-    help="Additional runtime parameters supplied directly to the SPAdes metagenomic assembler execution line. [default: None]",
+    help="Additional parameters for SPAdes assembler. Currently supports metagenomic mode with --meta. (default: '--meta')",
 )
 @click.option(
     "--spades-memory",
     required=False,
     default=None,
-    help="The upper threshold of RAM memory (in gigabytes) allocated for SPAdes assembly execution. [default: 250]",
+    help="Maximum RAM allocation in GB for SPAdes assembly. Adjust based on available system resources. (default: 250)",
 )
 @snakemake_options
 def run_assembly(**kwargs):
@@ -607,49 +607,43 @@ def run_assembly(**kwargs):
     "--contig-min-len",
     required=False,
     default=None,
-    help="The absolute minimum length constraint for contig inclusion. [default: 0]",
+    help="Minimum contig length for viral identification analysis. Sequences shorter than this are excluded. (default: 0)",
 )
 @click.option(
     "--contig-splits",
     required=False,
     default=None,
-    help="Number of clustering and pooling iterations (L) for vOTU clustering. Initially splits data into 2^(L-1) partitions for memory efficiency. Set to 1 to disable partitioning. [default: 0]",
-)
-@click.option(
-    "--contig-splits",
-    required=False,
-    default=None,
-    help="Number of clustering and pooling iterations (L) for vOTU clustering. Initially splits data into 2^(L-1) partitions for memory efficiency. Set to 1 to disable partitioning. [default: 0]",
+    help="Number of parallel data partitions in viral identification tools to produce n+1 chunks of data. Used for reducing memory overhead (e.g. geNomad, VIBRANT, VirFinder, DeepVirFinder, PhaMer, VirSorter2). Set to 0 to disable partitioning. (default: 0)",
 )
 @click.option(
     "--genomad-db",
     required=False,
     default=None,
-    help="The directory path where the geNomad database is installed. [default: None]",
+    help="Path to geNomad database directory for viral identification. Downloaded automatically if not present. (default: 'database/genomad')",
 )
 @click.option(
     "--genomad-min-len",
     required=False,
     default=None,
-    help="The minimum contig length evaluated by geNomad. [default: 1500]",
+    help="Minimum contig length for geNomad analysis. Shorter sequences are excluded from viral classification. (default: 1000)",
 )
 @click.option(
     "--genomad-params",
     required=False,
     default=None,
-    help="Additional runtime command line arguments supplied to geNomad execution. [default: None]",
+    help="Additional parameters for geNomad viral identification. Optimize sensitivity/specificity using score calibration and relaxed settings. (default: '--enable-score-calibration --relaxed')",
 )
 @click.option(
     "--genomad-cutoff",
     required=False,
     default=None,
-    help="The minimal numeric confidence threshold required by geNomad. [default: 0.7]",
+    help="Minimum confidence threshold for geNomad viral classification. Higher values increase specificity at the cost of sensitivity. (default: 0.7)",
 )
 @click.option(
     "--genomad-cutoff-s",
     required=False,
     default=None,
-    help="The minimum confidence threshold applied during geNomad secondary filtering. [default: 0]",
+    help="Secondary filtering confidence threshold for geNomad. Set to 0 to disable secondary filtering. (default: 0)",
 )
 @click.option(
     "--checkv-original/--checkv-pyhmmer",
@@ -657,25 +651,25 @@ def run_assembly(**kwargs):
     flag_value=True,
     required=False,
     default=None,
-    help="Flag allowing execution of standard CheckV. [default: False]",
+    help="Use original CheckV implementation instead of the faster CheckV-PyHMMER version. CheckV-PyHMMER is recommended for large datasets. (default: False)",
 )
 @click.option(
     "--checkv-splits",
     required=False,
     default=None,
-    help="Number of input data splits for CheckV or CheckV-PyHMMER analysis, splitting data into n+1 chunks. Higher values reduce memory usage but increase runtime. Set to 0 for no splitting. [default: 0]",
+    help="Number of input data splits for CheckV or CheckV-PyHMMER analysis, splitting data into n+1 chunks. Higher values reduce memory usage but increase runtime. Set to 0 for no splitting. (default: 0)",
 )
 @click.option(
     "--checkv-params",
     required=False,
     default=None,
-    help="Additional operational arguments supplied directly to the CheckV pipeline. [default: None]",
+    help="Additional parameters for CheckV viral genome quality assessment. See CheckV documentation for available options. (default: '')",
 )
 @click.option(
     "--checkv-database",
     required=False,
     default=None,
-    help="The directory path where the CheckV database is installed. [default: None]",
+    help="Path to CheckV database directory for viral quality control and genome completeness assessment. (default: 'database/checkv')",
 )
 @click.option(
     "--clustering-fast/--clustering-cdhit",
@@ -683,37 +677,37 @@ def run_assembly(**kwargs):
     flag_value=True,
     required=False,
     default=None,
-    help="Flag triggering an accelerated MEGABlast-based clustering protocol. [default: True]",
+    help="Use MEGABLAST-based fast clustering for viral operational taxonomic units (vOTUs). Disable to use CD-HIT (slower but sometimes more precise). (default: True)",
 )
 @click.option(
     "--cluster-iter",
     required=False,
     default=None,
-    help="Number of clustering and pooling iterations (L) for vOTU clustering. Initially splits data into 2^(L-1) partitions for memory efficiency. Set to 1 to disable partitioning. [default: 1]",
+    help="Number of clustering and pooling iterations (L) for vOTU clustering. Initially splits data into 2^(L-1) partitions for memory efficiency. Set to 1 to disable partitioning. (default: 1)",
 )
 @click.option(
     "--cdhit-params",
     required=False,
     default=None,
-    help="Additional operational runtime values supplied directly to the CD-HIT clustering utility. [default: None]",
+    help="Additional parameters for CD-HIT clustering. Used when clustering-fast is disabled. (default: '-c 0.95 -aS 0.85 -d 400 -M 0 -n 5')",
 )
 @click.option(
     "--vOTU-ani",
     required=False,
     default=None,
-    help="The average nucleotide identity (ANI) clustering percentage threshold. [default: 95]",
+    help="Average Nucleotide Identity (ANI) threshold for vOTU clustering (default 95% per MIUViG guidelines). (default: 95)",
 )
 @click.option(
     "--vOTU-targetcov",
     required=False,
     default=None,
-    help="The minimum target coverage alignment coverage percentage. [default: 85]",
+    help="Minimum target coverage percentage for vOTU clustering (default 85% per MIUViG guidelines). (default: 85)",
 )
 @click.option(
     "--vOTU-querycov",
     required=False,
     default=None,
-    help="The target query alignment coverage percentage criteria. [default: 0]",
+    help="Minimum query coverage percentage for vOTU clustering. Adjust for more permissive or stringent clustering. (default: 0)",
 )
 @snakemake_options
 def run_viral_identify(**kwargs):
@@ -762,175 +756,175 @@ def run_viral_identify(**kwargs):
     "--PhaBox2-db",
     required=False,
     default=None,
-    help="The directory path where the PhaBox2 database is installed. [default: None]",
+    help="Path to PhaBox2 database directory for phage classification and analysis. Automatically downloaded if missing. (default: 'database/phabox_db_v2')",
 )
 @click.option(
     "--phabox2-db-name",
     required=False,
     default=None,
-    help="The designated database name or identifier file package required for PhaBox2. [default: None]",
+    help="Database name identifier for PhaBox2 tool execution. Automatically determined from the database version. (default: 'phabox_db_v2')",
 )
 @click.option(
     "--phabox2-db-baselink",
     required=False,
     default=None,
-    help="The primary remote server base link URL used to fetch PhaBox2. [default: None]",
+    help="Base URL for PhaBox2 database downloads. Used for updates and reinstallation. (default: 'https://github.com/KennthShang/PhaBOX/releases/download/v2')",
 )
 @click.option(
     "--genomad-db",
     required=False,
     default=None,
-    help="The directory path where the geNomad database is installed. [default: None]",
+    help="Path to geNomad database directory for viral identification. Downloaded automatically if not present. (default: 'database/genomad')",
 )
 @click.option(
     "--virsorter2-db",
     required=False,
     default=None,
-    help="The directory path where the VirSorter2 database is installed. [default: None]",
+    help="Path to VirSorter2 database directory for viral sequence detection. Downloaded automatically if missing. (default: 'database/virsorter2')",
 )
 @click.option(
     "--vibrant-db",
     required=False,
     default=None,
-    help="The directory path where the VIBRANT database is installed. [default: None]",
+    help="Path to VIBRANT database directory for viral functional annotation. Downloaded automatically if not present. (default: 'database/vibrant')",
 )
 @click.option(
     "--contig-min-len",
     required=False,
     default=None,
-    help="The absolute minimum length constraint for contig inclusion. [default: 0]",
+    help="Minimum contig length for viral identification analysis. Sequences shorter than this are excluded. (default: 0)",
 )
 @click.option(
     "--contig-splits",
     required=False,
     default=None,
-    help="Number of clustering and pooling iterations (L) for vOTU clustering. Initially splits data into 2^(L-1) partitions for memory efficiency. Set to 1 to disable partitioning. [default: 0]",
+    help="Number of parallel data partitions in viral identification tools to produce n+1 chunks of data. Used for reducing memory overhead (e.g. geNomad, VIBRANT, VirFinder, DeepVirFinder, PhaMer, VirSorter2). Set to 0 to disable partitioning. (default: 0)",
 )
 @click.option(
     "--genomad-min-len",
     required=False,
     default=None,
-    help="The minimum contig length evaluated by geNomad. [default: 1000]",
+    help="Minimum contig length for geNomad analysis. Shorter sequences are excluded from viral classification. (default: 1000)",
 )
 @click.option(
     "--genomad-params",
     required=False,
     default=None,
-    help="Additional runtime command line arguments supplied to geNomad. [default: None]",
+    help="Additional parameters for geNomad viral identification. Optimize sensitivity/specificity using score calibration and relaxed settings. (default: '--enable-score-calibration --relaxed')",
 )
 @click.option(
     "--genomad-cutoff",
     required=False,
     default=None,
-    help="The minimal numeric confidence threshold required by geNomad. [default: 0.7]",
+    help="Minimum confidence threshold for geNomad viral classification. Higher values increase specificity at the cost of sensitivity. (default: 0.7)",
 )
 @click.option(
     "--genomad-cutoff-s",
     required=False,
     default=None,
-    help="The minimum confidence threshold applied during geNomad secondary filtering. [default: 0]",
+    help="Secondary filtering confidence threshold for geNomad. Set to 0 to disable secondary filtering. (default: 0)",
 )
 @click.option(
     "--dvf-min-len",
     required=False,
     default=None,
-    help="The lower bound contig length cut-off implemented during DeepVirFinder evaluation. [default: 1500]",
+    help="Minimum contig length for DeepVirFinder analysis. Shorter contigs are excluded from evaluation. (default: 1500)",
 )
 @click.option(
     "--phamer-min-len",
     required=False,
     default=None,
-    help="The lower bound contig length cut-off implemented during PhaMer evaluation. [default: 2000]",
+    help="Minimum contig length for PhaMer analysis. Shorter sequences are excluded from evaluation. (default: 2000)",
 )
 @click.option(
     "--dvf-params",
     required=False,
     default=None,
-    help="Additional system parameters passed directly to the DeepVirFinder tool. [default: None]",
+    help="Additional parameters for DeepVirFinder viral detection. Customize sensitivity and specificity. (default: '')",
 )
 @click.option(
     "--phamer-params",
     required=False,
     default=None,
-    help="Additional system parameters passed directly to the PhaMer tool. [default: None]",
+    help="Additional parameters for PhaMer execution. (default: '')",
 )
 @click.option(
     "--virsorter2-params",
     required=False,
     default=None,
-    help="Additional system parameters passed directly to the VirSorter2 tool. [default: None]",
+    help="Additional parameters for VirSorter2 viral detection. (default: '')",
 )
 @click.option(
     "--vf-params",
     required=False,
     default=None,
-    help="Additional system parameters passed directly to the VirFinder tool. [default: None]",
+    help="Additional parameters for VirFinder viral detection tool. (default: '')",
 )
 @click.option(
     "--seeker-params",
     required=False,
     default=None,
-    help="Additional system parameters passed directly to the Seeker tool. [default: None]",
+    help="Additional parameters for Seeker deep-learning viral detection. (default: '')",
 )
 @click.option(
     "--PPR-params",
     required=False,
     default=None,
-    help="Additional system parameters passed directly to the PPR-META tool. [default: None]",
+    help="Additional parameters for PPR-META viral detection. (default: '')",
 )
 @click.option(
     "--dvf-cutoff",
     required=False,
     default=None,
-    help="The minimal confidence score metric required by DeepVirFinder. [default: 0.7]",
+    help="Minimum confidence score for DeepVirFinder viral classification. Higher values increase specificity. (default: 0.7)",
 )
 @click.option(
     "--dvf-pval",
     required=False,
     default=None,
-    help="The maximum critical p-value threshold permitted by DeepVirFinder. [default: 0.05]",
+    help="Maximum p-value threshold for DeepVirFinder viral classification. More significant p-values indicate higher confidence. (default: 0.05)",
 )
 @click.option(
     "--phamer-pred",
     required=False,
     default=None,
-    help="The taxonomic classification category targeted by PhaMer prediction routines. [default: None]",
+    help="PhaMer prediction category. Options: 'phage' (detect phages) or 'non-phage'. (default: 'phage')",
 )
 @click.option(
     "--phamer-cutoff",
     required=False,
     default=None,
-    help="The minimal confidence threshold value required for a positive viral determination within PhaMer. [default: 0]",
+    help="Minimum confidence threshold for PhaMer viral classification. Adjust based on desired sensitivity/specificity. (default: 0)",
 )
 @click.option(
     "--vf-cutoff",
     required=False,
     default=None,
-    help="The minimal confidence threshold value required for a positive viral determination within VirFinder. [default: 0]",
+    help="Minimum confidence threshold for VirFinder viral classification. (default: 0)",
 )
 @click.option(
     "--virsorter2-cutoff",
     required=False,
     default=None,
-    help="The minimal confidence threshold value required for a positive viral determination within VirSorter2. [default: 0]",
+    help="Minimum confidence score for VirSorter2 viral classification. (default: 0)",
 )
 @click.option(
     "--seeker-cutoff",
     required=False,
     default=None,
-    help="The minimal confidence threshold value required for a positive viral determination within Seeker. [default: 0]",
+    help="Minimum confidence threshold for Seeker viral classification. (default: 0)",
 )
 @click.option(
     "--ppr-cutoff",
     required=False,
     default=None,
-    help="The minimal confidence threshold value required for a positive viral determination within PPR-META. [default: 0]",
+    help="Minimum confidence threshold for PPR-META viral classification. (default: 0)",
 )
 @click.option(
     "--vibrant-cutoff",
     required=False,
     default=None,
-    help="The minimal confidence threshold value required for a positive viral determination within VIBRANT. [default: 0]",
+    help="Minimum confidence threshold for VIBRANT viral classification. (default: 0)",
 )
 @click.option(
     "--checkv-original/--checkv-pyhmmer",
@@ -938,25 +932,25 @@ def run_viral_identify(**kwargs):
     flag_value=True,
     required=False,
     default=None,
-    help="Flag allowing execution of standard CheckV. [default: False]",
+    help="Use original CheckV implementation instead of the faster CheckV-PyHMMER version. CheckV-PyHMMER is recommended for large datasets. (default: False)",
 )
 @click.option(
     "--checkv-splits",
     required=False,
     default=None,
-    help="Number of input data splits for CheckV or CheckV-PyHMMER analysis, splitting data into n+1 chunks. Higher values reduce memory usage but increase runtime. Set to 0 for no splitting. [default: 0]",
+    help="Number of input data splits for CheckV or CheckV-PyHMMER analysis, splitting data into n+1 chunks. Higher values reduce memory usage but increase runtime. Set to 0 for no splitting. (default: 0)",
 )
 @click.option(
     "--checkv-params",
     required=False,
     default=None,
-    help="Additional operational arguments supplied directly to the CheckV pipeline execution. [default: None]",
+    help="Additional parameters for CheckV viral genome quality assessment. See CheckV documentation for available options. (default: '')",
 )
 @click.option(
     "--checkv-database",
     required=False,
     default=None,
-    help="The directory path where the CheckV database is installed. [default: None]",
+    help="Path to CheckV database directory for viral quality control and genome completeness assessment. (default: 'database/checkv')",
 )
 @click.option(
     "--clustering-fast/--clustering-cdhit",
@@ -964,37 +958,37 @@ def run_viral_identify(**kwargs):
     flag_value=True,
     required=False,
     default=None,
-    help="Flag triggering an accelerated MEGABlast-based clustering protocol. [default: True]",
+    help="Use MEGABLAST-based fast clustering for viral operational taxonomic units (vOTUs). Disable to use CD-HIT (slower but sometimes more precise). (default: True)",
 )
 @click.option(
     "--cluster-iter",
     required=False,
     default=None,
-    help="Number of clustering and pooling iterations (L) for vOTU clustering. Initially splits data into 2^(L-1) partitions for memory efficiency. Set to 1 to disable partitioning. [default: 1]",
+    help="Number of clustering and pooling iterations (L) for vOTU clustering. Initially splits data into 2^(L-1) partitions for memory efficiency. Set to 1 to disable partitioning. (default: 1)",
 )
 @click.option(
     "--cdhit-params",
     required=False,
     default=None,
-    help="Additional operational runtime values supplied directly to the CD-HIT clustering utility. [default: None]",
+    help="Additional parameters for CD-HIT clustering. Used when clustering-fast is disabled. (default: '-c 0.95 -aS 0.85 -d 400 -M 0 -n 5')",
 )
 @click.option(
     "--vOTU-ani",
     required=False,
     default=None,
-    help="The average nucleotide identity (ANI) clustering percentage threshold. [default: 95]",
+    help="Average Nucleotide Identity (ANI) threshold for vOTU clustering (default 95% per MIUViG guidelines). (default: 95)",
 )
 @click.option(
     "--vOTU-targetcov",
     required=False,
     default=None,
-    help="The minimum target coverage alignment coverage percentage. [default: 85]",
+    help="Minimum target coverage percentage for vOTU clustering (default 85% per MIUViG guidelines). (default: 85)",
 )
 @click.option(
     "--vOTU-querycov",
     required=False,
     default=None,
-    help="The target query alignment coverage percentage criteria. [default: 0]",
+    help="Minimum query coverage percentage for vOTU clustering. Adjust for more permissive or stringent clustering. (default: 0)",
 )
 @snakemake_options
 def run_viral_benchmark(**kwargs):
@@ -1051,43 +1045,43 @@ def run_viral_benchmark(**kwargs):
     "--genomad-db",
     required=False,
     default=None,
-    help="Path to geNomad database directory. [default: None]",
+    help="Path to geNomad database directory for viral identification. Downloaded automatically if not present. (default: 'database/genomad')",
 )
 @click.option(
     "--PhaBox2-db",
     required=False,
     default=None,
-    help="The directory path where the PhaBox2 database is installed. [default: None]",
+    help="Path to PhaBox2 database directory for phage classification and analysis. Automatically downloaded if missing. (default: 'database/phabox_db_v2')",
 )
 @click.option(
     "--phabox2-db-name",
     required=False,
     default=None,
-    help="The designated database name or identifier file package required for PhaBox2. [default: None]",
+    help="Database name identifier for PhaBox2 tool execution. Automatically determined from the database version. (default: 'phabox_db_v2')",
 )
 @click.option(
     "--phabox2-db-baselink",
     required=False,
     default=None,
-    help="The primary remote server base link URL used to fetch PhaBox2. [default: None]",
+    help="Base URL for PhaBox2 database downloads. Used for updates and reinstallation. (default: 'https://github.com/KennthShang/PhaBOX/releases/download/v2')",
 )
 @click.option(
     "--phagcn-min-len",
     required=False,
     default=None,
-    help="The minimum allowed contig length for evaluation using PhaGCN. [default: 1500]",
+    help="Minimum contig length for PhaGCN taxonomic classification. Shorter sequences are excluded. (default: 1000)",
 )
 @click.option(
     "--phagcn-params",
     required=False,
     default=None,
-    help="Additional operational arguments passed to the PhaGCN classification instance. [default: None]",
+    help="Additional parameters for PhaGCN taxonomy classification. (default: '')",
 )
 @click.option(
     "--genomad-params-tax",
     required=False,
     default=None,
-    help="Additional operational configurations passed to geNomad during viral taxonomic assignment. [default: None]",
+    help="Additional parameters for geNomad taxonomy classification. Customize taxonomic assignment behavior. (default: '--enable-score-calibration --relaxed')",
 )
 @snakemake_options
 def run_viral_taxonomy(**kwargs):
@@ -1126,31 +1120,31 @@ def run_viral_taxonomy(**kwargs):
     "--PhaBox2-db",
     required=False,
     default=None,
-    help="The directory path where the PhaBox2 database is installed. [default: None]",
+    help="Path to PhaBox2 database directory for phage classification and analysis. Automatically downloaded if missing. (default: 'database/phabox_db_v2')",
 )
 @click.option(
     "--phabox2-db-name",
     required=False,
     default=None,
-    help="The designated database name or identifier file package required for PhaBox2. [default: None]",
+    help="Database name identifier for PhaBox2 tool execution. Automatically determined from the database version. (default: 'phabox_db_v2')",
 )
 @click.option(
     "--phabox2-db-baselink",
     required=False,
     default=None,
-    help="The primary remote server base link URL used to fetch PhaBox2. [default: None]",
+    help="Base URL for PhaBox2 database downloads. Used for updates and reinstallation. (default: 'https://github.com/KennthShang/PhaBOX/releases/download/v2')",
 )
 @click.option(
     "--CHERRY-params",
     required=False,
     default=None,
-    help="Additional execution parameters configured for the CHERRY host prediction algorithm. [default: None]",
+    help="Additional parameters for CHERRY host prediction algorithm. (default: '')",
 )
 @click.option(
     "--PhaTYP-params",
     required=False,
     default=None,
-    help="Additional custom parameters passed directly to the PhaTYP lifestyle prediction module. [default: None]",
+    help="Additional parameters for PhaTYP phage lifestyle prediction. (default: '')",
 )
 @click.option(
     "--iphop-host/--cherry-host",
@@ -1158,37 +1152,37 @@ def run_viral_taxonomy(**kwargs):
     flag_value=True,
     required=False,
     default=None,
-    help="Flag indicating whether to perform iPHoP-based viral host prediction instead of CHERRY. [default: False]",
+    help="Use iPHoP for viral host prediction instead of CHERRY. iPHoP requires more memory (>100GB) and larger database. (default: False)",
 )
 @click.option(
     "--iphop-cutoff",
     required=False,
     default=None,
-    help="The minimum confidence threshold required by iPHoP to assign a host classification profile. [default: 90]",
+    help="Minimum confidence threshold for iPHoP host classification. Higher values increase accuracy at the cost of assignment coverage. (default: 90)",
 )
 @click.option(
     "--iphop-params",
     required=False,
     default=None,
-    help="Additional configuration arguments supplied directly to the iPHoP platform interface. [default: None]",
+    help="Additional parameters for iPHoP host prediction. (default: '')",
 )
 @click.option(
     "--iphop-db",
     required=False,
     default=None,
-    help="The directory path where the iPHoP database is installed. [default: None]",
+    help="Path to iPHoP database directory for viral host prediction. Note this database is large (>100GB) and requires substantial disk space. (default: 'database/iphop')",
 )
 @click.option(
     "--iphop-db-version",
     required=False,
     default=None,
-    help="The version identifier for the iPHoP database. [default: None]",
+    help="Version identifier for iPHoP database. Verify compatibility at https://bitbucket.org/srouxjgi/iphop/src/main/#markdown-header-host-databases-and-versions. (default: 'iPHoP_db_Aug23_rw')",
 )
 @click.option(
     "--iphop-db-basename",
     required=False,
     default=None,
-    help="The primary base name of the iPHoP database. [default: None]",
+    help="Base name of the iPHoP database. Must match the version specified by iphop-db-version. See documentation for compatibility. (default: 'Aug_2023_pub_rw')",
 )
 @snakemake_options
 def run_viral_host(**kwargs):
@@ -1229,13 +1223,13 @@ def run_viral_host(**kwargs):
     "--coverm-params",
     required=False,
     default=None,
-    help="Additional mapping or calculation flags passed to the CoverM coverage engine. [default: None]",
+    help="Additional parameters for CoverM read mapping and coverage calculation. Customize mapping sensitivity and coverage metrics. (default: '--mapper minimap2-sr --min-read-percent-identity 95 --min-read-aligned-percent 75 --trim-min 10 --trim-max 90')",
 )
 @click.option(
     "--coverm-methods",
     required=False,
     default=None,
-    help="The calculation metric outputs selected for CoverM. [default: None]",
+    help="CoverM coverage metrics to calculate. Available options include tpm, rpkm, and relative abundance. (default: 'tpm rpkm')",
 )
 @snakemake_options
 def run_viral_community(**kwargs):
@@ -1266,61 +1260,61 @@ def run_viral_community(**kwargs):
     "--PhaBox2-db",
     required=False,
     default=None,
-    help="The directory path where the PhaBox2 database is installed. [default: None]",
+    help="Path to PhaBox2 database directory for phage classification and analysis. Automatically downloaded if missing. (default: 'database/phabox_db_v2')",
 )
 @click.option(
     "--phabox2-db-name",
     required=False,
     default=None,
-    help="The designated database name or identifier file package required for PhaBox2. [default: None]",
+    help="Database name identifier for PhaBox2 tool execution. Automatically determined from the database version. (default: 'phabox_db_v2')",
 )
 @click.option(
     "--phabox2-db-baselink",
     required=False,
     default=None,
-    help="The primary remote server base link URL used to fetch PhaBox2. [default: None]",
+    help="Base URL for PhaBox2 database downloads. Used for updates and reinstallation. (default: 'https://github.com/KennthShang/PhaBOX/releases/download/v2')",
 )
 @click.option(
     "--eggNOG-params",
     required=False,
     default=None,
-    help="Parameters for running eggNOG-mapper v2. [default: None]",
+    help="Additional parameters for eggNOG-mapper viral functional annotation. Customize database search and annotation. (default: '')",
 )
 @click.option(
     "--PhaVIP-params",
     required=False,
     default=None,
-    help="Minimum contig length to filter BEFORE viral identification. [default: None]",
+    help="Additional parameters for PhaVIP viral pathogenicity prediction. (default: '')",
 )
 @click.option(
     "--metacerberus-db",
     required=False,
     default=None,
-    help="The directory path where the MetaCerberus database is installed. [default: None]",
+    help="Path to MetaCerberus database directory for comprehensive viral annotation. (default: 'database/metacerberus')",
 )
 @click.option(
     "--metacerberus-setup-params",
     required=False,
     default=None,
-    help="Operational configurations supplied to initialize build or index the MetaCerberus database. [default: None]",
+    help="Additional parameters for MetaCerberus database setup and indexing. (default: '')",
 )
 @click.option(
     "--metacerberus-params",
     required=False,
     default=None,
-    help="Parameters for running the MetaCerberus database. [default: None]",
+    help="Additional parameters for MetaCerberus viral annotation. Customize HMM database and annotation options. (default: '--hmm ALL')",
 )
 @click.option(
     "--pharokka-db",
     required=False,
     default=None,
-    help="The directory path where the pharokka database is installed. [default: None]",
+    help="Path to pharokka database directory for bacteriophage gene annotation. (default: 'database/pharokka')",
 )
 @click.option(
     "--pharokka-params",
     required=False,
     default=None,
-    help="Additional execution parameters passed directly to the pharokka bacteriophage annotation framework. [default: None]",
+    help="Additional parameters for pharokka phage annotation. Customize gene prediction and functional annotation. (default: '-g prodigal-gv --meta')",
 )
 @snakemake_options
 def run_viral_annotate(**kwargs):
@@ -1362,13 +1356,13 @@ def run_viral_annotate(**kwargs):
     "--mpa-params",
     required=False,
     default=None,
-    help="Parameters for metaphlan function. [default: None]",
+    help="Additional parameters for MetaPhlAn prokaryotic community profiling. (default: '--ignore_eukaryotes')",
 )
 @click.option(
     "--mpa-indexv",
     required=False,
     default=None,
-    help="Database version for metaphlan to use. [default: None]",
+    help="MetaPhlAn database version. The database will be automatically downloaded if not present. (default: 'mpa_vOct22_CHOCOPhlAnSGB_202212')",
 )
 @snakemake_options
 def run_prok_community(**kwargs):
@@ -1397,44 +1391,44 @@ def run_prok_community(**kwargs):
     "--checkm2-db",
     required=False,
     default=None,
-    help="The directory path where the CheckM2 database is installed. [default: None]",
+    help="Path to CheckM2 database directory for genome quality assessment and completeness evaluation. (default: 'database/checkm2')",
 )
 @click.option(
     "--GTDBTk-db",
     required=False,
     default=None,
-    help="The directory path where the GTDB-Tk database is installed. [default: None]",
+    help="Path to GTDB-Tk database directory for taxonomic classification of prokaryotic genomes. (default: 'database/GTDB-Tk')",
 )
 @click.option(
     "--GTDBTk-db-version",
     required=False,
     default=None,
     type=str,
-    help="The reference version of the GTDB-Tk database. [default: None]",
+    help="GTDB-Tk database version. Must match the installed GTDB-Tk version. See https://ecogenomics.github.io/GTDBTk/installing/index.html#gtdb-tk-reference-data. (default: '232')",
 )
 @click.option(
     "--GTDBTk-identify-params",
     required=False,
     default=None,
-    help="Additional parameter variables supplied directly to the GTDB-Tk identify command execution. [default: None]",
+    help="Additional parameters for GTDB-Tk identify step. Customize marker gene identification and selection. (default: '')",
 )
 @click.option(
     "--GTDBTk-align-params",
     required=False,
     default=None,
-    help="Additional parameter variables supplied directly to the GTDB-Tk align command execution. [default: None]",
+    help="Additional parameters for GTDB-Tk align step. Customize multiple sequence alignment. (default: '')",
 )
 @click.option(
     "--GTDBTk-classify-params",
     required=False,
     default=None,
-    help="Additional parameter variables supplied directly to the GTDB-Tk classify command execution. [default: None]",
+    help="Additional parameters for GTDB-Tk classify step. Customize taxonomic classification. (default: '')",
 )
 @click.option(
     "--VAMB-params",
     required=False,
     default=None,
-    help="Additional parameter variables supplied directly to the VAMB command execution. [default: None]",
+    help="Additional parameters for VAMB binning. Customize neural network clustering parameters. (default: '-m 100')",
 )
 @click.option(
     "--binning-consensus/--binning-gpu",
@@ -1442,55 +1436,55 @@ def run_prok_community(**kwargs):
     flag_value=True,
     required=False,
     default=None,
-    help="Flag enabling a consensus-based metagenomic binning protocol. [default: True]",
+    help="Use consensus binning with MetaBAT2, MaxBin2, and CONCOCT via DASTool. Disable to use GPU-accelerated VAMB binning. (default: True)",
 )
 @click.option(
     "--strobealign-params",
     required=False,
     default=None,
-    help="Additional alignment flags or scoring rules passed to the strobealign tool backend. [default: None]",
+    help="Additional parameters for strobealign read alignment during binning. (default: '')",
 )
 @click.option(
     "--MetaBAT2-params",
     required=False,
     default=None,
-    help="Additional parameters for the MetaBAT2 tool. [default: None]",
+    help="Additional parameters for MetaBAT2 metagenomic binning. (default: '-m 1500')",
 )
 @click.option(
     "--MaxBin2-params",
     required=False,
     default=None,
-    help="Additional parameters for the MaxBin2 tool. [default: None]",
+    help="Additional parameters for MaxBin2 metagenomic binning. Customize iterative binning and probability thresholds. (default: '-min_contig_length 1500 -max_iteration 50 -prob_threshold 0.9')",
 )
 @click.option(
     "--CONCOCT-params",
     required=False,
     default=None,
-    help="Additional parameters for the CONCOCT tool. [default: None]",
+    help="Additional parameters for CONCOCT metagenomic binning. (default: '')",
 )
 @click.option(
     "--jgi-summarize-params",
     required=False,
     default=None,
-    help="Additional runtime parameters supplied to the jgi_summarize_bam_contig_depth command. [default: None]",
+    help="Additional parameters for jgi_summarize_bam_contig_depth. Customize read depth calculation and identity thresholds. (default: '--percentIdentity 97')",
 )
 @click.option(
     "--DASTool-params",
     required=False,
     default=None,
-    help="Additional parameters for the DASTool tool. [default: None]",
+    help="Additional parameters for DASTool bin consolidation. Customize scoring and bin selection. (default: '')",
 )
 @click.option(
     "--checkm2-params",
     required=False,
     default=None,
-    help="Additional parameter fields provided directly to the CheckM2 bin validation pipeline. [default: None]",
+    help="Additional parameters for CheckM2 genome quality assessment. (default: '')",
 )
 @click.option(
     "--galah-params",
     required=False,
     default=None,
-    help="Additional parameters for the Galah tool. [default: None]",
+    help="Additional parameters for galah bin dereplication. Customize ANI threshold and alignment parameters. (default: '--ani 95 --min-aligned-fraction 15 --fragment-length 3000')",
 )
 @snakemake_options
 def run_prok_binning(**kwargs):
@@ -1538,7 +1532,7 @@ def run_prok_binning(**kwargs):
     "--humann-params",
     required=False,
     default=None,
-    help="Additional software parameters directed to the HUMAnN functional annotation pipeline. [default: None]",
+    help="Additional parameters for HUMAnN3 functional annotation. Customize mapping and statistical analysis. (default: '--remove-temp-output')",
 )
 @snakemake_options
 def run_prok_annotate(**kwargs):
@@ -1567,7 +1561,7 @@ def run_prok_annotate(**kwargs):
     "--dwnld-only",
     default=None,
     required=False,
-    help="Restrict execution exclusively to remote SRA file downloads. [default: False]",
+    help="Only download SRA data from NCBI without performing preprocessing steps. Downloads FASTQ files and stops. (default: False)",
 )
 @click.option(
     "--decontam-host/--no-decontam-host",
@@ -1575,133 +1569,127 @@ def run_prok_annotate(**kwargs):
     flag_value=True,
     default=None,
     required=False,
-    help="Perform host decontamination post fastp quality trimming. [default: False]",
+    help="Perform host decontamination after fastp quality trimming. Requires host indexes specified via hostile-index-name. (default: False)",
 )
 @click.option(
     "--dwnld-params",
     required=False,
     default=None,
-    help="Optional configuration parameters used during raw FASTQ retrieval. [default: None]",
+    help="Additional parameters for NCBI SRA data retrieval via entrez-fetch. Customize download behavior and options. (default: '')",
 )
 @click.option(
     "--pigz-params",
     required=False,
     default=None,
-    help="Execution parameters passed directly to pigz. [default: None]",
+    help="Multi-threaded compression parameters for pigz when compressing downloaded FASTQ data. (default: '')",
 )
 @click.option(
     "--fastp-params",
     required=False,
     default=None,
-    help="Additional runtime arguments supplied to the fastp quality control engine. [default: None]",
+    help="Additional quality control parameters for fastp read trimming and filtering. (default: '')",
 )
 @click.option(
     "--hostile-params",
     required=False,
     default=None,
-    help="Additional runtime arguments supplied to the Hostile host decontamination module. [default: None]",
+    help="Additional parameters for Hostile host decontamination module. (default: '')",
 )
 @click.option(
     "--hostile-aligner",
     required=False,
     default=None,
-    help="The short-read alignment backend algorithm employed for host decontamination. [default: None]",
+    help="Alignment algorithm for host decontamination. Options: 'bowtie2' (recommended for short reads) or 'minimap2'. (default: 'bowtie2')",
 )
 @click.option(
     "--hostile-aligner-params",
     required=False,
     default=None,
-    help="Additional runtime arguments supplied directly to the selected Hostile alignment tool. [default: None]",
+    help="Additional parameters for the selected Hostile alignment tool (bowtie2 or minimap2). (default: '')",
 )
 @click.option(
     "--hostile-index-name",
     required=False,
     default=None,
-    help="The name identifier of pre-built Hostile indices. [default: None]",
+    help="Name of pre-built Hostile indices. Available indices depend on installed Hostile version. See https://github.com/bede/hostile for available options. (default: 'human-t2t-hla')",
 )
 @click.option(
     "--hostile-index-db",
     required=False,
     default=None,
-    help="The directory path where the Hostile database is installed. [default: None]",
+    help="Path to Hostile database directory for host decontamination. Database will be downloaded automatically if not present. (default: 'database/hostile')",
 )
 @click.option(
     "--assembler",
     default=None,
     required=False,
-    help="The primary assembly tool engine selected for the assembly module. [default: None]",
+    help="Assembly engine for metagenome assembly. Currently supports MEGAHIT (recommended) and SPAdes (in development). (default: 'megahit')",
 )
 @click.option(
     "--megahit-min-len",
     required=False,
     default=None,
-    help="The minimum contig length threshold used during the MEGAHIT assembly filter steps. [default: 300]",
+    help="Minimum contig length for MEGAHIT assembly filtering. Shorter contigs are excluded from output. (default: 300)",
 )
 @click.option(
     "--megahit-params",
     required=False,
     default=None,
-    help="Additional runtime parameters supplied directly to the MEGAHIT execution pipeline. [default: None]",
+    help="Additional parameters for MEGAHIT assembler. See MEGAHIT documentation for available options. (default: '--prune-level 3')",
 )
 @click.option(
     "--spades-params",
     required=False,
     default=None,
-    help="Additional runtime parameters supplied directly to the SPAdes metagenomic assembler execution line. [default: None]",
+    help="Additional parameters for SPAdes assembler. Currently supports metagenomic mode with --meta. (default: '--meta')",
 )
 @click.option(
     "--spades-memory",
     required=False,
     default=None,
-    help="The upper threshold of RAM memory (in gigabytes) allocated for SPAdes assembly execution. [default: 250]",
+    help="Maximum RAM allocation in GB for SPAdes assembly. Adjust based on available system resources. (default: 250)",
 )
 @click.option(
     "--contig-min-len",
     required=False,
     default=None,
-    help="The absolute minimum length constraint for contig inclusion. [default: 0]",
+    help="Minimum contig length for viral identification analysis. Sequences shorter than this are excluded. (default: 0)",
 )
 @click.option(
     "--contig-splits",
     required=False,
     default=None,
-    help="Number of clustering and pooling iterations (L) for vOTU clustering. Initially splits data into 2^(L-1) partitions for memory efficiency. Set to 1 to disable partitioning. [default: 0]",
-)
-@click.option(
-    "--contig-splits",
-    required=False,
-    default=None,
-    help="Number of clustering and pooling iterations (L) for vOTU clustering. Initially splits data into 2^(L-1) partitions for memory efficiency. Set to 1 to disable partitioning. [default: 0]",
+    help="Number of parallel data partitions in viral identification tools to produce n+1 chunks of data. Used for reducing memory overhead (e.g. geNomad, VIBRANT, VirFinder, DeepVirFinder, PhaMer, VirSorter2). Set to 0 to disable partitioning. (default: 0)",
 )
 @click.option(
     "--genomad-db",
     required=False,
     default=None,
-    help="The directory path where the geNomad database is installed. [default: None]",
+    help="Path to geNomad database directory for viral identification. Downloaded automatically if not present. (default: 'database/genomad')",
 )
 @click.option(
     "--genomad-min-len",
     required=False,
     default=None,
-    help="The minimum contig length evaluated by geNomad. [default: 1500]",
+    help="Minimum contig length for geNomad analysis. Shorter sequences are excluded from viral classification. (default: 1000)",
 )
 @click.option(
     "--genomad-params",
     required=False,
     default=None,
-    help="Additional runtime command line arguments supplied to geNomad execution. [default: None]",
+    help="Additional parameters for geNomad viral identification. Optimize sensitivity/specificity using score calibration and relaxed settings. (default: '--enable-score-calibration --relaxed')",
 )
 @click.option(
     "--genomad-cutoff",
     required=False,
     default=None,
-    help="The minimal numeric confidence threshold required by geNomad. [default: 0.7]",
+    help="Minimum confidence threshold for geNomad viral classification. Higher values increase specificity at the cost of sensitivity. (default: 0.7)",
 )
 @click.option(
     "--genomad-cutoff-s",
     required=False,
     default=None,
-    help="The minimum confidence threshold applied during geNomad secondary filtering. [default: 0]",
+    help="Secondary filtering confidence threshold for geNomad. Set to 0 to disable secondary filtering. (default: 0)",
 )
 @click.option(
     "--checkv-original/--checkv-pyhmmer",
@@ -1709,25 +1697,25 @@ def run_prok_annotate(**kwargs):
     flag_value=True,
     required=False,
     default=None,
-    help="Flag allowing execution of standard CheckV. [default: False]",
+    help="Use original CheckV implementation instead of the faster CheckV-PyHMMER version. CheckV-PyHMMER is recommended for large datasets. (default: False)",
 )
 @click.option(
     "--checkv-splits",
     required=False,
     default=None,
-    help="Number of input data splits for CheckV or CheckV-PyHMMER analysis, splitting data into n+1 chunks. Higher values reduce memory usage but increase runtime. Set to 0 for no splitting. [default: 0]",
+    help="Number of input data splits for CheckV or CheckV-PyHMMER analysis, splitting data into n+1 chunks. Higher values reduce memory usage but increase runtime. Set to 0 for no splitting. (default: 0)",
 )
 @click.option(
     "--checkv-params",
     required=False,
     default=None,
-    help="Additional operational arguments supplied directly to the CheckV pipeline. [default: None]",
+    help="Additional parameters for CheckV viral genome quality assessment. See CheckV documentation for available options. (default: '')",
 )
 @click.option(
     "--checkv-database",
     required=False,
     default=None,
-    help="The directory path where the CheckV database is installed. [default: None]",
+    help="Path to CheckV database directory for viral quality control and genome completeness assessment. (default: 'database/checkv')",
 )
 @click.option(
     "--clustering-fast/--clustering-cdhit",
@@ -1735,85 +1723,85 @@ def run_prok_annotate(**kwargs):
     flag_value=True,
     required=False,
     default=None,
-    help="Flag triggering an accelerated MEGABlast-based clustering protocol. [default: True]",
+    help="Use MEGABLAST-based fast clustering for viral operational taxonomic units (vOTUs). Disable to use CD-HIT (slower but sometimes more precise). (default: True)",
 )
 @click.option(
     "--cluster-iter",
     required=False,
     default=None,
-    help="Number of clustering and pooling iterations (L) for vOTU clustering. Initially splits data into 2^(L-1) partitions for memory efficiency. Set to 1 to disable partitioning. [default: 1]",
+    help="Number of clustering and pooling iterations (L) for vOTU clustering. Initially splits data into 2^(L-1) partitions for memory efficiency. Set to 1 to disable partitioning. (default: 1)",
 )
 @click.option(
     "--cdhit-params",
     required=False,
     default=None,
-    help="Additional operational runtime values supplied directly to the CD-HIT clustering utility. [default: None]",
+    help="Additional parameters for CD-HIT clustering. Used when clustering-fast is disabled. (default: '-c 0.95 -aS 0.85 -d 400 -M 0 -n 5')",
 )
 @click.option(
     "--vOTU-ani",
     required=False,
     default=None,
-    help="The average nucleotide identity (ANI) clustering percentage threshold. [default: 95]",
+    help="Average Nucleotide Identity (ANI) threshold for vOTU clustering (default 95% per MIUViG guidelines). (default: 95)",
 )
 @click.option(
     "--vOTU-targetcov",
     required=False,
     default=None,
-    help="The minimum target coverage alignment coverage percentage. [default: 85]",
+    help="Minimum target coverage percentage for vOTU clustering (default 85% per MIUViG guidelines). (default: 85)",
 )
 @click.option(
     "--vOTU-querycov",
     required=False,
     default=None,
-    help="The target query alignment coverage percentage criteria. [default: 0]",
+    help="Minimum query coverage percentage for vOTU clustering. Adjust for more permissive or stringent clustering. (default: 0)",
 )
 @click.option(
     "--PhaBox2-db",
     required=False,
     default=None,
-    help="The directory path where the PhaBox2 database is installed. [default: None]",
+    help="Path to PhaBox2 database directory for phage classification and analysis. Automatically downloaded if missing. (default: 'database/phabox_db_v2')",
 )
 @click.option(
     "--phabox2-db-name",
     required=False,
     default=None,
-    help="The designated database name or identifier file package required for PhaBox2. [default: None]",
+    help="Database name identifier for PhaBox2 tool execution. Automatically determined from the database version. (default: 'phabox_db_v2')",
 )
 @click.option(
     "--phabox2-db-baselink",
     required=False,
     default=None,
-    help="The primary remote server base link URL used to fetch PhaBox2. [default: None]",
+    help="Base URL for PhaBox2 database downloads. Used for updates and reinstallation. (default: 'https://github.com/KennthShang/PhaBOX/releases/download/v2')",
 )
 @click.option(
     "--phagcn-min-len",
     required=False,
     default=None,
-    help="The minimum allowed contig length for evaluation using PhaGCN. [default: 1500]",
+    help="Minimum contig length for PhaGCN taxonomic classification. Shorter sequences are excluded. (default: 1000)",
 )
 @click.option(
     "--phagcn-params",
     required=False,
     default=None,
-    help="Additional operational arguments passed to the PhaGCN classification instance. [default: None]",
+    help="Additional parameters for PhaGCN taxonomy classification. (default: '')",
 )
 @click.option(
     "--genomad-params-tax",
     required=False,
     default=None,
-    help="Additional operational configurations passed to geNomad during viral taxonomic assignment. [default: None]",
+    help="Additional parameters for geNomad taxonomy classification. Customize taxonomic assignment behavior. (default: '--enable-score-calibration --relaxed')",
 )
 @click.option(
     "--CHERRY-params",
     required=False,
     default=None,
-    help="Additional execution parameters configured for the CHERRY host prediction algorithm. [default: None]",
+    help="Additional parameters for CHERRY host prediction algorithm. (default: '')",
 )
 @click.option(
     "--PhaTYP-params",
     required=False,
     default=None,
-    help="Additional custom parameters passed directly to the PhaTYP lifestyle prediction module. [default: None]",
+    help="Additional parameters for PhaTYP phage lifestyle prediction. (default: '')",
 )
 @click.option(
     "--iphop-host/--cherry-host",
@@ -1821,121 +1809,79 @@ def run_prok_annotate(**kwargs):
     flag_value=True,
     required=False,
     default=None,
-    help="Flag indicating whether to perform iPHoP-based viral host prediction instead of CHERRY. [default: False]",
+    help="Use iPHoP for viral host prediction instead of CHERRY. iPHoP requires more memory (>100GB) and larger database. (default: False)",
 )
 @click.option(
     "--iphop-cutoff",
     required=False,
     default=None,
-    help="The minimum confidence threshold required by iPHoP to assign a host classification profile. [default: 90]",
+    help="Minimum confidence threshold for iPHoP host classification. Higher values increase accuracy at the cost of assignment coverage. (default: 90)",
 )
 @click.option(
     "--iphop-params",
     required=False,
     default=None,
-    help="Additional configuration arguments supplied directly to the iPHoP platform interface. [default: None]",
+    help="Additional parameters for iPHoP host prediction. (default: '')",
 )
 @click.option(
     "--iphop-db",
     required=False,
     default=None,
-    help="The directory path where the iPHoP database is installed. [default: None]",
+    help="Path to iPHoP database directory for viral host prediction. Note this database is large (>100GB) and requires substantial disk space. (default: 'database/iphop')",
 )
 @click.option(
     "--eggNOG-params",
     required=False,
     default=None,
-    help="Parameters for running eggNOG-mapper v2. [default: None]",
+    help="Additional parameters for eggNOG-mapper viral functional annotation. Customize database search and annotation. (default: '')",
 )
 @click.option(
     "--PhaVIP-params",
     required=False,
     default=None,
-    help="Minimum contig length to filter BEFORE viral identification. [default: None]",
+    help="Additional parameters for PhaVIP viral pathogenicity prediction. (default: '')",
 )
 @click.option(
     "--metacerberus-db",
     required=False,
     default=None,
-    help="The directory path where the MetaCerberus database is installed. [default: None]",
+    help="Path to MetaCerberus database directory for comprehensive viral annotation. (default: 'database/metacerberus')",
 )
 @click.option(
     "--metacerberus-setup-params",
     required=False,
     default=None,
-    help="Operational configurations supplied to initialize build or index the MetaCerberus database. [default: None]",
+    help="Additional parameters for MetaCerberus database setup and indexing. (default: '')",
 )
 @click.option(
     "--metacerberus-params",
     required=False,
     default=None,
-    help="Parameters for running the MetaCerberus database. [default: None]",
+    help="Additional parameters for MetaCerberus viral annotation. Customize HMM database and annotation options. (default: '--hmm ALL')",
 )
 @click.option(
     "--pharokka-db",
     required=False,
     default=None,
-    help="The directory path where the pharokka database is installed. [default: None]",
+    help="Path to pharokka database directory for bacteriophage gene annotation. (default: 'database/pharokka')",
 )
 @click.option(
     "--pharokka-params",
     required=False,
     default=None,
-    help="Additional execution parameters passed directly to the pharokka bacteriophage annotation framework. [default: None]",
-)
-@click.option(
-    "--eggNOG-params",
-    required=False,
-    default=None,
-    help="Parameters for running eggNOG-mapper v2. [default: None]",
-)
-@click.option(
-    "--PhaVIP-params",
-    required=False,
-    default=None,
-    help="Minimum contig length to filter BEFORE viral identification. [default: None]",
-)
-@click.option(
-    "--metacerberus-db",
-    required=False,
-    default=None,
-    help="The directory path where the MetaCerberus database is installed. [default: None]",
-)
-@click.option(
-    "--metacerberus-setup-params",
-    required=False,
-    default=None,
-    help="Operational configurations supplied to initialize build or index the MetaCerberus database. [default: None]",
-)
-@click.option(
-    "--metacerberus-params",
-    required=False,
-    default=None,
-    help="Parameters for running the MetaCerberus database. [default: None]",
-)
-@click.option(
-    "--pharokka-db",
-    required=False,
-    default=None,
-    help="The directory path where the pharokka database is installed. [default: None]",
-)
-@click.option(
-    "--pharokka-params",
-    required=False,
-    default=None,
-    help="Additional execution parameters passed directly to the pharokka bacteriophage annotation framework. [default: None]",
+    help="Additional parameters for pharokka phage annotation. Customize gene prediction and functional annotation. (default: '-g prodigal-gv --meta')",
 )
 @click.option(
     "--coverm-params",
     required=False,
     default=None,
-    help="Additional mapping or calculation flags passed to the CoverM coverage engine. [default: None]",
+    help="Additional parameters for CoverM read mapping and coverage calculation. Customize mapping sensitivity and coverage metrics. (default: '--mapper minimap2-sr --min-read-percent-identity 95 --min-read-aligned-percent 75 --trim-min 10 --trim-max 90')",
 )
 @click.option(
     "--coverm-methods",
     required=False,
     default=None,
-    help="The calculation metric outputs selected for CoverM. [default: None]",
+    help="CoverM coverage metrics to calculate. Available options include tpm, rpkm, and relative abundance. (default: 'tpm rpkm')",
 )
 @snakemake_options
 def run_viral_end_to_end(**kwargs):
@@ -2021,37 +1967,37 @@ def run_viral_end_to_end(**kwargs):
     flag_value=True,
     required=False,
     default=None,
-    help="Flag to run fast clustering using CheckV's MEGABLAST approach. [default: True]",
+    help="Use MEGABLAST-based fast clustering for viral operational taxonomic units (vOTUs). Disable to use CD-HIT (slower but sometimes more precise). (default: True)",
 )
 @click.option(
     "--cluster-iter",
     required=False,
     default=None,
-    help="Number of clustering and pooling iterations (L) for vOTU clustering. Initially splits data into 2^(L-1) partitions for memory efficiency. Set to 1 to disable partitioning. [default: 1]",
+    help="Number of clustering and pooling iterations (L) for vOTU clustering. Initially splits data into 2^(L-1) partitions for memory efficiency. Set to 1 to disable partitioning. (default: 1)",
 )
 @click.option(
     "--cdhit-params",
     required=False,
     default=None,
-    help="Additional parameters to pass on to CD-HIT if clustering-fast is set to False. [default: None]",
+    help="Additional parameters for CD-HIT clustering. Used when clustering-fast is disabled. (default: '-c 0.95 -aS 0.85 -d 400 -M 0 -n 5')",
 )
 @click.option(
     "--vOTU-ani",
     required=False,
     default=None,
-    help="Minimum average nucleotide identity for fast clustering algorithm of viral contigs. [default: 95]",
+    help="Average Nucleotide Identity (ANI) threshold for vOTU clustering (default 95% per MIUViG guidelines). (default: 95)",
 )
 @click.option(
     "--vOTU-targetcov",
     required=False,
     default=None,
-    help="Minimum target coverage for fast clustering algorithm of viral contigs. [default: 85]",
+    help="Minimum target coverage percentage for vOTU clustering (default 85% per MIUViG guidelines). (default: 85)",
 )
 @click.option(
     "--vOTU-querycov",
     required=False,
     default=None,
-    help="Minimum query coverage for fast clustering algorithm of viral contigs. [default: 0]",
+    help="Minimum query coverage percentage for vOTU clustering. Adjust for more permissive or stringent clustering. (default: 0)",
 )
 @snakemake_options
 def run_cluster_fast(**kwargs):
@@ -2091,25 +2037,25 @@ def run_cluster_fast(**kwargs):
     flag_value=True,
     required=False,
     default=None,
-    help="Flag to use CheckV original instead of CheckV-PyHMMER. [default: False]",
+    help="Use original CheckV implementation instead of the faster CheckV-PyHMMER version. CheckV-PyHMMER is recommended for large datasets. (default: False)",
 )
 @click.option(
     "--checkv-splits",
     required=False,
     default=None,
-    help="Number of input data splits for CheckV or CheckV-PyHMMER analysis, splitting data into n+1 chunks. Higher values reduce memory usage but increase runtime. Set to 0 for no splitting. [default: 0]",
+    help="Number of input data splits for CheckV or CheckV-PyHMMER analysis, splitting data into n+1 chunks. Higher values reduce memory usage but increase runtime. Set to 0 for no splitting. (default: 0)",
 )
 @click.option(
     "--checkv-params",
     required=False,
     default=None,
-    help="Additional parameters to pass on to CheckV. [default: None]",
+    help="Additional parameters for CheckV viral genome quality assessment. See CheckV documentation for available options. (default: '')",
 )
 @click.option(
     "--checkv-database",
     required=False,
     default=None,
-    help="Path to CheckV database. [default: None]",
+    help="Path to CheckV database directory for viral quality control and genome completeness assessment. (default: 'database/checkv')",
 )
 @snakemake_options
 def run_checkv_pyhmmer(**kwargs):
@@ -2145,122 +2091,122 @@ def run_checkv_pyhmmer(**kwargs):
     "--hostile-index-db",
     required=False,
     default=None,
-    help="The directory path where the Hostile database is installed. [default: None]",
+    help="Path to Hostile database directory for host decontamination. Database will be downloaded automatically if not present. (default: 'database/hostile')",
 )
 @click.option(
     "--PhaBox2-db",
     required=False,
     default=None,
-    help="Path to PhaBox2 database for download. [default: None]",
+    help="Path to PhaBox2 database directory for phage classification and analysis. Automatically downloaded if missing. (default: 'database/phabox_db_v2')",
 )
 @click.option(
     "--phabox2-db-name",
     required=False,
     default=None,
-    help="The designated database name or identifier file package required for PhaBox2. [default: None]",
+    help="Database name identifier for PhaBox2 tool execution. Automatically determined from the database version. (default: 'phabox_db_v2')",
 )
 @click.option(
     "--phabox2-db-baselink",
     required=False,
     default=None,
-    help="The primary remote server base link URL used to fetch PhaBox2. [default: None]",
+    help="Base URL for PhaBox2 database downloads. Used for updates and reinstallation. (default: 'https://github.com/KennthShang/PhaBOX/releases/download/v2')",
 )
 @click.option(
     "--genomad-db",
     required=False,
     default=None,
-    help="Path to geNomad database for download. [default: None]",
+    help="Path to geNomad database directory for viral identification. Downloaded automatically if not present. (default: 'database/genomad')",
 )
 @click.option(
     "--virsorter2-db",
     required=False,
     default=None,
-    help="The directory path where the VirSorter2 database is installed. [default: None]",
+    help="Path to VirSorter2 database directory for viral sequence detection. Downloaded automatically if missing. (default: 'database/virsorter2')",
 )
 @click.option(
     "--vibrant-db",
     required=False,
     default=None,
-    help="The directory path where the VIBRANT database is installed. [default: None]",
+    help="Path to VIBRANT database directory for viral functional annotation. Downloaded automatically if not present. (default: 'database/vibrant')",
 )
 @click.option(
     "--checkv-db",
     required=False,
     default=None,
-    help="Path to CheckV database for download. [default: None]",
+    help="Path to CheckV database directory for viral quality control and genome completeness assessment. (default: 'database/checkv')",
 )
 @click.option(
     "--eggNOG-db",
     required=False,
     default=None,
-    help="Path to eggNOG v2 database for download. [default: None]",
+    help="Path to eggNOG database directory for functional annotation. Supports eggNOG-mapper v2. (default: 'database/eggNOGv2')",
 )
 @click.option(
     "--eggNOG-db-params",
     required=False,
     default=None,
-    help="Parameters for downloading eggNOG v2 database. [default: None]",
+    help="Additional parameters for eggNOG database download and setup. See https://github.com/eggnogdb/eggnog-mapper for options. (default: '')",
 )
 @click.option(
     "--checkm2-db",
     required=False,
     default=None,
-    help="The directory path where the CheckM2 database is installed. [default: None]",
+    help="Path to CheckM2 database directory for genome quality assessment and completeness evaluation. (default: 'database/checkm2')",
 )
 @click.option(
     "--GTDBTk-db",
     required=False,
     default=None,
-    help="The directory path where the GTDB-Tk database is installed. [default: None]",
+    help="Path to GTDB-Tk database directory for taxonomic classification of prokaryotic genomes. (default: 'database/GTDB-Tk')",
 )
 @click.option(
     "--GTDBTk-db-version",
     required=False,
     default=None,
     type=str,
-    help="The reference version of the GTDB-Tk database. [default: None]",
+    help="GTDB-Tk database version. Must match the installed GTDB-Tk version. See https://ecogenomics.github.io/GTDBTk/installing/index.html#gtdb-tk-reference-data. (default: '232')",
 )
 @click.option(
     "--iphop-db",
     required=False,
     default=None,
-    help="Path to iPHoP database for download. [default: None]",
+    help="Path to iPHoP database directory for viral host prediction. Note this database is large (>100GB) and requires substantial disk space. (default: 'database/iphop')",
 )
 @click.option(
     "--iphop-db-version",
     required=False,
     default=None,
-    help="The version identifier for the iPHoP database. [default: None]",
+    help="Version identifier for iPHoP database. Verify compatibility at https://bitbucket.org/srouxjgi/iphop/src/main/#markdown-header-host-databases-and-versions. (default: 'iPHoP_db_Aug23_rw')",
 )
 @click.option(
     "--iphop-db-basename",
     required=False,
     default=None,
-    help="The primary base name of the iPHoP database. [default: None]",
+    help="Base name of the iPHoP database. Must match the version specified by iphop-db-version. See documentation for compatibility. (default: 'Aug_2023_pub_rw')",
 )
 @click.option(
     "--humann-db",
     required=False,
     default=None,
-    help="Path to HUMAnN3 databases for download. [default: None]",
+    help="Path to HUMAnN3 database directory for functional profiling of prokaryotic communities. (default: 'database/humann')",
 )
 @click.option(
     "--metacerberus-db",
     required=False,
     default=None,
-    help="The directory path where the MetaCerberus database is installed. [default: None]",
+    help="Path to MetaCerberus database directory for comprehensive viral annotation. (default: 'database/metacerberus')",
 )
 @click.option(
     "--metacerberus-setup-params",
     required=False,
     default=None,
-    help="Operational configurations supplied to initialize build or index the MetaCerberus database. [default: None]",
+    help="Additional parameters for MetaCerberus database setup and indexing. (default: '')",
 )
 @click.option(
     "--pharokka-db",
     required=False,
     default=None,
-    help="The directory path where the pharokka database is installed. [default: None]",
+    help="Path to pharokka database directory for bacteriophage gene annotation. (default: 'database/pharokka')",
 )
 @snakemake_options
 def run_setup_database(**kwargs):
