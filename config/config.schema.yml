@@ -33,7 +33,7 @@ properties:
 
   reset:
     type: boolean
-    description: "Delete the log files to reset previously completed module run and its metadata, allowing model to be run again."
+    description: "Delete the log files to reset previously completed module run and its metadata, allowing module to be run again."
     default: False
 
   seed:

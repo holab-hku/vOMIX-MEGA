@@ -17,6 +17,7 @@ class Module:
         ncbi_email="",
         ncbi_api_key="",
         custom_config=None,
+        reset=False,
     ):
         self.module = module
         self.workdir = workdir
@@ -34,3 +35,4 @@ class Module:
         self.ncbi_email = ncbi_email
         self.ncbi_api_key = ncbi_api_key
         self.custom_config = custom_config
+        self.reset = reset

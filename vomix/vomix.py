@@ -122,6 +122,7 @@ _common_opts = [
     "--NCBI-email",
     "--NCBI-API-key",
     "--custom-config",
+    "--reset",
 ]
 _smk_opts = [
     "--dry-run",
@@ -179,6 +180,7 @@ def setOptions(module_obj, kwargs):
     module_obj.ncbi_email = kwargs.get("ncbi_email")
     module_obj.ncbi_api_key = kwargs.get("ncbi_api_key")
     module_obj.custom_config = kwargs.get("custom_config")
+    module_obj.reset = kwargs.get("reset")
     return module_obj
 
 
@@ -307,6 +309,14 @@ def common_options(function):
         default=None,
         required=False,
         help="Path to your custom config.yml (default: None)",
+    )(function)
+    function = click.option(
+        "--reset",
+        is_flag=True,
+        flag_value=True,
+        default=False,
+        required=False,
+        help="Delete the log files to reset previously completed module run and its metadata, allowing model to be run again. (default: False)",
     )(function)
     return function
 
