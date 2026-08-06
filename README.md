@@ -1,6 +1,6 @@
 [![Documentation Status](https://readthedocs.org/projects/vomix-mega/badge/?version=latest)](https://vomix-mega.readthedocs.io/en/latest/?badge=latest)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Python 3.9+](https://img.shields.io/badge/python-3.9+-blue.svg)](https://www.python.org/downloads/)
+[![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
+[![Python 3.12.13](https://img.shields.io/badge/python-3.12.13-blue.svg)](https://www.python.org/downloads/release/python-31213/)
 [![Apptainer](https://img.shields.io/badge/container-Apptainer%2FSingularity-orange.svg)](https://apptainer.org/)
 
 **vOMIX-MEGA** is a highly scalable, fast, and reproducible viral metagenomic pipeline designed for large-scale bulk-metagenomic and viromic data analysis. Built on top of a Snakemake backend with automated Conda and Apptainer/Singularity container support, vOMIX-MEGA resolves performance bottlenecks in current state-of-the-art tools to achieve dramatic speedups without sacrificing accuracy.
