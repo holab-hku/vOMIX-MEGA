@@ -14,3 +14,5 @@ dependencies:
   - snakemake=9.23.1
   - biopython=1.84
   - snakemake-executor-plugin-cluster-generic=1.0.9
+  - click=8.1.8
+  - rich-click=1.9.8

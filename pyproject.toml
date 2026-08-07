@@ -1,15 +1,18 @@
 [project]
 name = "vomix"
 version = "0.1.0"
-description = "A Python wrapper for vomix"
+description = "An ultra-fast & modular end-to-end pipeline for terabyte-scale viral metagenomics analysis."
 authors = [
     { name="Erfan SHEKARRIZ", email="eshekar@connect.hku.hk" }
 ]
 readme = "README.md"
-requires-python = ">=3.8"
+requires-python = ">=3.12,<3.13"
 dependencies = [
-  "click<8.2.0",
-  "rich_click",
+    "click==8.1.8",
+    "rich-click==1.9.8",
+    "snakemake==9.23.1",
+    "biopython==1.84",
+    "snakemake-executor-plugin-cluster-generic==1.0.9",
 ]
 
 [tool.setuptools]
