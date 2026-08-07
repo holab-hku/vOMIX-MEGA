@@ -106,6 +106,7 @@ click.rich_click.COMMAND_GROUPS = {
 }
 
 _common_opts = [
+    "--help",
     "--workdir",
     "--outdir",
     "--datadir",
@@ -426,13 +427,13 @@ def snakemake_options(function):
         help="Print out the shell commands that will be executed. (default: False)",
     )(function)
     function = click.option(
-            "--list-conda-envs",
-            is_flag=True,
-            flag_value=True,
-            required=False,
-            default=None,
-            help="List all conda environments and their location on disk. (default: False)",
-        )(function)
+        "--list-conda-envs",
+        is_flag=True,
+        flag_value=True,
+        required=False,
+        default=None,
+        help="List all conda environments and their location on disk. (default: False)",
+    )(function)
     function = click.option(
         "--quiet",
         "-q",
