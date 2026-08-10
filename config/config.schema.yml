@@ -170,6 +170,7 @@ properties:
     type: string
     description: "Base name of the iPHoP database. Must match the version specified by iphop-db-version. See documentation for compatibility."
     default: "Aug_2023_pub_rw"
+    module: ["viral-host.smk"]
 
   eggNOG-db:
     type: string
@@ -351,6 +352,21 @@ properties:
     default: 0
     minimum: 0
 
+  cluster-method:
+    type: string
+    description: "Choose your clustering method for the clustering-fast module."
+    default: "checkv-megablast"
+    enum:
+      [
+        "cd-hit",
+        "checkv-megablast",
+        "vclust",
+        "viraclust",
+        "linclust",
+        "clusterize",
+        "uclust",
+      ]
+
   clustering-fast:
     type: boolean
     description: "Use MEGABLAST-based fast clustering for viral operational taxonomic units (vOTUs). Disable to use CD-HIT (slower but sometimes more precise)."
@@ -388,6 +404,48 @@ properties:
     default: 0
     minimum: 0
     maximum: 100
+
+  checkv-megablast-ani:
+    type: number
+    description: "Average Nucleotide Identity (ANI) threshold for CheckV-MEGABLAST clustering (default 95% per MIUViG guidelines)."
+    default: 95
+    minimum: 0
+    maximum: 100
+
+  checkv-megablast-targetcov:
+    type: number
+    description: "Minimum target coverage percentage for CheckV-MEGABLAST clustering (default 85% per MIUViG guidelines)."
+    default: 85
+    minimum: 0
+    maximum: 100
+
+  checkv-megablast-querycov:
+    type: number
+    description: "Minimum query coverage percentage for CheckV-MEGABLAST clustering. Adjust for more permissive or stringent clustering."
+    default: 0
+    minimum: 0
+    maximum: 100
+
+  vclust-prefilter-params:
+    type: string
+    description: "Additional parameters to add to vclust prefilter command."
+    default: ""
+
+  vclust-align-params:
+    type: string
+    description: "Additional parameters to add to vclust align command."
+    default: ""
+
+  vclust-cluster-algorithm:
+    type: string
+    description: "Algorithm to use for the vclust cluster command (single, complete, uclust, cd-hit, set-cover, leiden). Make sure to use compatible vlucster-cluster-params for your algorithm."
+    default: "leiden"
+    enum: ["single", "complete", "uclust", "cd-hit", "set-cover", "leiden"]
+
+  vclust-cluster-params:
+    type: string
+    description: "Additional parameters to add to vclust cluster command."
+    default: ""
 
   # Viral Benchmark Options
   dvf-min-len:
