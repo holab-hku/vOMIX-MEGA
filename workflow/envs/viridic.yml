@@ -1,0 +1,7 @@
+name: viridic
+channels:
+  - conda-forge
+  - bioconda
+  - defaults
+dependencies:
+  - viridic=1.2.0

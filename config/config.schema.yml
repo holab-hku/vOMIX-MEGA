@@ -358,13 +358,14 @@ properties:
     default: "checkv-megablast"
     enum:
       [
-        "cd-hit",
+        "cd-hit-est",
         "checkv-megablast",
         "vclust",
-        "viraclust",
         "linclust",
-        "clusterize",
-        "uclust",
+        "viridic",
+        "vsearch",
+        "dnaclust",
+        "all",
       ]
 
   clustering-fast:
@@ -445,6 +446,42 @@ properties:
   vclust-cluster-params:
     type: string
     description: "Additional parameters to add to vclust cluster command."
+    default: ""
+
+    dnaclust-similarity:
+    type: number
+    description: "Sequence identity threshold for DNACLUST clustering (fraction, 0.0-1.0). Default 0.95 (95% identity)."
+    default: 0.95
+    minimum: 0.0
+    maximum: 1.0
+
+  dnaclust-params:
+    type: string
+    description: "Additional command-line parameters to pass to DNACLUST."
+    default: ""
+
+  vsearch-identity:
+    type: number
+    description: "Global identity threshold for VSEARCH clustering (fraction, 0.0-1.0). Default 0.95 (95% identity)."
+    default: 0.95
+    minimum: 0.0
+    maximum: 1.0
+
+  vsearch-params:
+    type: string
+    description: "Additional command-line parameters to pass to VSEARCH."
+    default: ""
+
+  viridic-threshold:
+    type: number
+    description: "ANI threshold for VIRIDIC clustering (fraction, 0.0-1.0). Default 0.95 (95% ANI)."
+    default: 0.95
+    minimum: 0.0
+    maximum: 1.0
+
+  viridic-params:
+    type: string
+    description: "Additional command-line parameters to pass to VIRIDIC."
     default: ""
 
   # Viral Benchmark Options

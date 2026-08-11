@@ -1,0 +1,7 @@
+name: dnaclust
+channels:
+  - conda-forge
+  - bioconda
+  - defaults
+dependencies:
+  - dnaclust=0.2.1
