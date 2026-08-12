@@ -129,18 +129,6 @@ if not (os.path.exists(outdir) and os.path.exists(os.path.join(outdir, ".vomix")
 wildcard_constraints:
   sample_id = "[A-Za-z0-9_-]+"
 
-assembler = config["assembler"]
-os.makedirs(datadir, exist_ok=True)
-
-### Perform a few chekcs
-if assembler not in ["megahit", "spades"]:
-  console.print(Panel.fit("""Assembler '{}' does not exists. Currently 'megahit' and 'spades' are supported and their parameters can be defined in the config.yml file. Default assembler is 'megahit'""".format(assembler), title="Error", subtitle="Wrong Assembler"))
-  sys.exit(1)
-
-if not isinstance(config['max-cores'], int):
-  console.print(Panel.fit(f"config['max-cores'] is not an integer: {config['max-cores']}, you can change the parameter in config/config.yml file", title="Error", subtitle="config['max-cores'] not integer"))
-  sys.exit(1)
-
 
 inputkeys = ["fasta", "samplelist", "fastadir"]
 emptykeys = sum(1 for key in inputkeys if config.get(key, "") != "")
@@ -240,7 +228,7 @@ if config["module"] in ["preprocess", "viral-end-to-end", "run-all"]:
 # assembly 
 if config["module"] in ["assembly", "viral-end-to-end", "run-all"]:
     include: "rules/assembly.smk"
-    set_module_target(relpath(os.path.join("assembly", assembler, "logs/done.log")))
+    set_module_target(relpath("assembly/logs/done.log"))
 
 # viral-identify
 if config["module"] in ["viral-identify", "viral-end-to-end", "run-all"]:
@@ -286,7 +274,7 @@ if config["module"] in ["viral-community", "viral-end-to-end", "run-all"]:
     set_module_target(relpath("community/viral/logs/done.log"))
 
 # prok-binning
-if config["module"] in ["prok-binning", "viral-end-to-end", "run-all"]:
+if config["module"] in ["prok-binning", "run-all"]:
     include: "rules/prok-binning.smk"
     set_module_target(relpath("binning/prok/logs/done.log"))
 
