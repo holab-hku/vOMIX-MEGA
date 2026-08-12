@@ -37,10 +37,7 @@ elif config['fastadir'] != "":
     fastap = readfastadir(config['fastadir'])
     assembly_ids = config["assembly-ids"]
 else:
-    if config.get("module") == "viral-end-to-end":
-        parse_quiet = True
-    else:
-        parse_quiet = False
+    parse_quiet = config.get("module") in ["viral-end-to-end", "run-all"]
     verbose = config.get("verbose", False)
     samples, assemblies = parse_sample_list(
         config["samplelist"],

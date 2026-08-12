@@ -14,10 +14,7 @@ nowstr=config["latest-run"]
 outdir=config["outdir"]
 datadir=config["datadir"]
 
-if config.get("module") == "viral-end-to-end":
-  parse_quiet = True
-else: 
-  parse_quiet = False
+parse_quiet = config.get("module") in ["viral-end-to-end", "run-all"]
 samples, assemblies = parse_sample_list(config["samplelist"], datadir, outdir, email, api_key, nowstr, parse_quiet)
 
 rule prodigal_gv:

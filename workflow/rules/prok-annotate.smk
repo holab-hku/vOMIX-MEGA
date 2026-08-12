@@ -14,7 +14,7 @@ nowstr = config["latest-run"]
 outdir = config["outdir"]
 datadir = config["datadir"]
 
-parse_quiet = config.get("module") == "viral-end-to-end"
+parse_quiet = config.get("module") in ["viral-end-to-end", "run-all"]
 parse_verbose = config.get("verbose", False)
 samples, assemblies = parse_sample_list(
     config["samplelist"],
@@ -179,7 +179,7 @@ rule humann_merge:
     humann_join_tables --input {params.tmpdir} --output {output.cov} &>> {log}
     rm {params.tmpdir}/*
     """
-    
+
 rule humann_normalize:
   name: "prok-annotate.smk HUMAnN3 normalize results"
   input:
