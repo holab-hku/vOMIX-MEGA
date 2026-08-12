@@ -78,7 +78,8 @@ checkv-megablast-querycov: 0
 vclust-prefilter-params: ''
 vclust-align-params: ''
 vclust-cluster-algorithm: 'leiden'
-vclust-cluster-params: 0.95
+vclust-cluster-params: ''
+dnaclust-similarity: 0.95
 dnaclust-params: ''
 vsearch-identity: 0.95
 vsearch-params: ''
