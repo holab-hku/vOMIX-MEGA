@@ -470,7 +470,7 @@ properties:
     description: "Additional parameters to add to vclust cluster command."
     default: ""
 
-    dnaclust-similarity:
+  dnaclust-similarity:
     type: number
     description: "Sequence identity threshold for DNACLUST clustering (fraction, 0.0-1.0). Default 0.95 (95% identity)."
     default: 0.95
