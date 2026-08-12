@@ -1,18 +1,47 @@
-logdir=relpath("annotate/prok/logs")
-benchmarks=relpath("annotate/prok/benchmarks")
+import sys
+from rich.console import Console
+from rich.panel import Panel
+
+console = Console()
+
+logdir = relpath("annotate/prok/logs")
+benchmarks = relpath("annotate/prok/benchmarks")
 tmpd = relpath("annotate/prok/tmp")
 
-email=config["NCBI-email"]
-api_key=config["NCBI-API-key"]
-nowstr=config["latest-run"]
-outdir=config["outdir"]
-datadir=config["datadir"]
+email = config["NCBI-email"]
+api_key = config["NCBI-API-key"]
+nowstr = config["latest-run"]
+outdir = config["outdir"]
+datadir = config["datadir"]
 
-if config.get("module") == "viral-end-to-end":
-  parse_quiet = True
-else: 
-  parse_quiet = False
-samples, assemblies = parse_sample_list(config["samplelist"], datadir, outdir, email, api_key, nowstr, parse_quiet)
+parse_quiet = config.get("module") == "viral-end-to-end"
+parse_verbose = config.get("verbose", False)
+samples, assemblies = parse_sample_list(
+    config["samplelist"],
+    datadir,
+    outdir,
+    email,
+    api_key,
+    nowstr,
+    quiet=parse_quiet,
+    verbose=parse_verbose
+)
+
+long_read_samples = [
+    s for s, info in samples.items()
+    if info.get("read_type") in ["pacbio", "nanopore"]
+]
+if long_read_samples:
+    console.print(
+        Panel.fit(
+            f"[bold red]ERROR:[/] Prokaryotic annotation (HUMAnN3) does not support long reads.\n"
+            f"Found long‑read samples: {long_read_samples}\n"
+            f"Please remove these samples from the sample list for this module, or use a different workflow for long‑read data.",
+            title="Long‑Read Not Supported",
+            border_style="red"
+        )
+    )
+    sys.exit(1)
 
 os.makedirs(logdir, exist_ok=True)
 os.makedirs(benchmarks, exist_ok=True)

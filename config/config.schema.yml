@@ -620,14 +620,29 @@ properties:
     default: "--enable-score-calibration --relaxed"
 
   # Viral Community Options
+  coverm-sr-mapper:
+    type: string
+    description: "CoverM mapper for short reads (paired/single)."
+    default: "minimap2-sr"
+
+  coverm-pacbio-mapper:
+    type: string
+    description: "CoverM mapper for PacBio reads (HiFi recommended)."
+    default: "minimap2-hifi"
+
+  coverm-nanopore-mapper:
+    type: string
+    description: "CoverM mapper for Nanopore reads."
+    default: "minimap2-ont"
+
   coverm-params:
     type: string
-    description: "Additional parameters for CoverM read mapping and coverage calculation. Customize mapping sensitivity and coverage metrics."
-    default: "--mapper minimap2-sr --min-read-percent-identity 95 --min-read-aligned-percent 75 --trim-min 10 --trim-max 90"
+    description: "Additional CoverM parameters (excluding --mapper)."
+    default: "--min-read-percent-identity 95 --min-read-aligned-percent 75 --trim-min 10 --trim-max 90"
 
   coverm-methods:
     type: string
-    description: "CoverM coverage metrics to calculate. Available options include tpm, rpkm, and relative abundance."
+    description: "CoverM metrics (space-separated)."
     default: "tpm rpkm"
 
   # Viral Host Prediction Options

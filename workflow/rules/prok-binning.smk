@@ -1,27 +1,49 @@
-import os 
+import sys
+from rich.console import Console
+from rich.panel import Panel
+
+console = Console()
 
 logdir=relpath("binning/prok/logs")
 benchmarks=relpath("binning/prok/benchmarks")
 tmpd=relpath("binning/prok/tmp")
 
-email=config["NCBI-email"]
-api_key=config["NCBI-API-key"]
-nowstr=config["latest-run"]
-outdir=config["outdir"]
-datadir=config["datadir"]
+email = config["NCBI-email"]
+api_key = config["NCBI-API-key"]
+nowstr = config["latest-run"]
+outdir = config["outdir"]
+datadir = config["datadir"]
 
-if config.get("module") == "viral-end-to-end":
-  parse_quiet = True
-else: 
-  parse_quiet = False
-samples, assemblies = parse_sample_list(config["samplelist"], datadir, outdir, email, api_key, nowstr, parse_quiet)
+parse_quiet = config.get("module") == "viral-end-to-end"
+parse_verbose = config.get("verbose", False)
+samples, assemblies = parse_sample_list(
+    config["samplelist"],
+    datadir,
+    outdir,
+    email,
+    api_key,
+    nowstr,
+    quiet=parse_quiet,
+    verbose=parse_verbose
+)
 
-os.makedirs(logdir, exist_ok=True)
-os.makedirs(benchmarks, exist_ok=True)
-os.makedirs(tmpd, exist_ok=True)
+long_read_samples = [
+    s for s, info in samples.items()
+    if info.get("read_type") in ["pacbio", "nanopore"]
+]
+if long_read_samples:
+    console.print(
+        Panel.fit(
+            f"[bold red]ERROR:[/] Prokaryotic binning does not yet support long reads.\n"
+            f"Found long‑read samples: {long_read_samples}\n"
+            f"Please remove these samples from the sample list for this module, or use a different workflow for long‑read data.",
+            title="Long‑Read Not Supported",
+            border_style="red"
+        )
+    )
+    sys.exit(1)
+short_read_assembler = config['short-read-assembler']
 
-n_cores = config['max-cores'] 
-assembler = config['assembler']
 
 
 ### MASTER RULE 
@@ -82,7 +104,7 @@ rule strobealign:
   input:
     R1=relpath("preprocess/samples/{sample_id}/output/{sample_id}_R1_cut.trim.filt.fastq.gz"),
     R2=relpath("preprocess/samples/{sample_id}/output/{sample_id}_R2_cut.trim.filt.fastq.gz"),
-    fasta=lambda wildcards: relpath(os.path.join("assembly", assembler, "samples", samples[wildcards.sample_id]["assembly"], "output/final.contigs.fa")),
+    fasta=lambda wildcards: relpath(os.path.join("assembly", short_read_assembler, "samples", samples[wildcards.sample_id]["assembly"], "output/final.contigs.fa")),
   output:
     bam=relpath("binning/prok/samples/{sample_id}/strobealign/{sample_id}.sorted.bam")
   params:
@@ -166,7 +188,7 @@ rule binprep:
 rule vamb:
   name: "prok-binning.smk VAMB binning"
   input: 
-    fasta=relpath(os.path.join("assembly", assembler, "samples/{assembly_id}/output/final.contigs.fa")),
+    fasta=relpath(os.path.join("assembly", short_read_assembler, "samples/{assembly_id}/output/final.contigs.fa")),
     txt=relpath("binning/prok/assemblies/{assembly_id}/MetaBAT2/depthfile.txt")
   output:
    relpath("binning/prok/assemblies/{assembly_id}/VAMB/vae_clusters_metadata.tsv")
@@ -224,7 +246,7 @@ rule metabat2maxbin:
 rule metabat2:
   name: "prok-binning.smk MetaBAT2 binning"
   input:
-    fasta=relpath(os.path.join("assembly", assembler, "samples/{assembly_id}/output/final.contigs.fa")),
+    fasta=relpath(os.path.join("assembly", short_read_assembler, "samples/{assembly_id}/output/final.contigs.fa")),
     txt=relpath("binning/prok/assemblies/{assembly_id}/MetaBAT2/depthfile.txt")
   output:
     relpath("binning/prok/assemblies/{assembly_id}/MetaBAT2/bins/metabat2.unbinned.fa")
@@ -258,7 +280,7 @@ rule maxbin2:
   name: "prok-binning.smk MaxBin2 binning"
   input:
     jgi=relpath("binning/prok/assemblies/{assembly_id}/MaxBin2/depthfile.txt"),
-    fasta=relpath(os.path.join("assembly", assembler, "samples/{assembly_id}/output/final.contigs.fa"))
+    fasta=relpath(os.path.join("assembly", short_read_assembler, "samples/{assembly_id}/output/final.contigs.fa"))
   output:
     relpath("binning/prok/assemblies/{assembly_id}/MaxBin2/bins/maxbin2.summary")
   params:
@@ -293,7 +315,7 @@ rule concoctprep:
         sample_id = assemblies[wildcards.assembly_id]["sample_id"]),
     bams=lambda wildcards: expand(relpath("binning/prok/samples/{sample_id}/strobealign/{sample_id}.sorted.bam"),
         sample_id = assemblies[wildcards.assembly_id]["sample_id"]),
-    fasta=relpath(os.path.join("assembly", assembler, "samples/{assembly_id}/output/final.contigs.fa"))
+    fasta=relpath(os.path.join("assembly", short_read_assembler, "samples/{assembly_id}/output/final.contigs.fa"))
   output:
     bed=relpath("binning/prok/assemblies/{assembly_id}/CONCOCT/final.contigs.10k.bed"),
     fa=relpath("binning/prok/assemblies/{assembly_id}/CONCOCT/final.contigs.10k.fa"), 
@@ -331,7 +353,7 @@ rule concoctprep:
 rule concoct:
   name: "prok-binning.smk CONCOCT binning"
   input:
-    fasta=relpath(os.path.join("assembly", assembler, "samples/{assembly_id}/output/final.contigs.fa")),
+    fasta=relpath(os.path.join("assembly", short_read_assembler, "samples/{assembly_id}/output/final.contigs.fa")),
     bed=relpath("binning/prok/assemblies/{assembly_id}/CONCOCT/final.contigs.10k.bed"),
     fa=relpath("binning/prok/assemblies/{assembly_id}/CONCOCT/final.contigs.10k.fa"),       
     tsv=relpath("binning/prok/assemblies/{assembly_id}/CONCOCT/depth.tsv"),
@@ -401,7 +423,7 @@ rule contigs2bin:
 rule dastool:
   name: "prok-binning.smk DAS Tool consensus binning"
   input:
-    fasta=relpath(os.path.join("assembly", assembler, "samples/{assembly_id}/output/final.contigs.fa")),
+    fasta=relpath(os.path.join("assembly", short_read_assembler, "samples/{assembly_id}/output/final.contigs.fa")),
     MetaBAT2=relpath("binning/prok/assemblies/{assembly_id}/MetaBAT2/contigs2bin.tsv"),
     MaxBin2=relpath("binning/prok/assemblies/{assembly_id}/MaxBin2/contigs2bin.tsv"),
     CONCOCT=relpath("binning/prok/assemblies/{assembly_id}/CONCOCT/contigs2bin.tsv")
