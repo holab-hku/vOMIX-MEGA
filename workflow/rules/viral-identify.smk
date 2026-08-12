@@ -1,86 +1,122 @@
-import os 
+import os
+import sys
+from rich.console import Console
+from rich.panel import Panel
 
-logdir=relpath("identify/viral/logs")
-benchmarks=relpath("identify/viral/benchmarks")
-tmpd=relpath("identify/viral/tmp")
+console = Console()
 
-email=config["NCBI-email"]
-api_key=config["NCBI-API-key"]
-nowstr=config["latest-run"]
-outdir=config["outdir"]
-datadir=config["datadir"]
+logdir = relpath("identify/viral/logs")
+benchmarks = relpath("identify/viral/benchmarks")
+tmpd = relpath("identify/viral/tmp")
+
+email = config["NCBI-email"]
+api_key = config["NCBI-API-key"]
+nowstr = config["latest-run"]
+outdir = config["outdir"]
+datadir = config["datadir"]
 
 os.makedirs(logdir, exist_ok=True)
 os.makedirs(benchmarks, exist_ok=True)
 os.makedirs(tmpd, exist_ok=True)
 
-n_cores = config['max-cores']
-assembler = config['assembler']
+short_read_assembler = config.get('short-read-assembler', 'megahit')
 
-
-### Read fasta or fastadir input
+# ------------------------------------------------------------
+# Read input (fasta, fastadir, or sample list)
+# ------------------------------------------------------------
 if config['fasta'] != "":
-  fastap = readfasta(config['fasta'])
-  sample_id = config["sample-name"]
-  assembly_ids = [sample_id]
+    fastap = readfasta(config['fasta'])
+    sample_id = config["sample-name"]
+    assembly_ids = [sample_id]
+    # fastap is a string (single file)
+    def get_fasta_input(wildcards):
+        return fastap
+    fastap_func = get_fasta_input
+
 elif config['fastadir'] != "":
-  fastap = readfastadir(config['fastadir'])
-  assembly_ids = config["assembly-ids"]
+    fasta_files = readfastadir(config['fastadir'])
+    assembly_ids = config["assembly-ids"]
+    # Build mapping from sample_id (basename) to full path
+    # We assume the order matches
+    fasta_dict = dict(zip(assembly_ids, fasta_files))
+    def get_fasta_input(wildcards):
+        return fasta_dict[wildcards.sample_id]
+    fastap_func = get_fasta_input
+
 else:
-  if config.get("module") == "viral-end-to-end":
-    parse_quiet = True
-  else: 
-    parse_quiet = False
-  samples, assemblies = parse_sample_list(config["samplelist"], datadir, outdir, email, api_key, nowstr, parse_quiet)
-  fastap = relpath(os.path.join("assembly", assembler, "samples/{sample_id}/output/final.contigs.fa"))
-  assembly_ids = assemblies.keys()
+    if config.get("module") == "viral-end-to-end":
+        parse_quiet = True
+    else:
+        parse_quiet = False
+    samples, assemblies = parse_sample_list(
+        config["samplelist"], datadir, outdir, email, api_key, nowstr, parse_quiet
+    )
+    assembly_ids = list(assemblies.keys())
 
+    # Function to get assembly path based on read_type
+    def get_assembly_path(sample_id):
+        rt = assemblies[sample_id]['read_type']
+        if rt in ["paired", "single"]:
+            assembler = short_read_assembler
+        elif rt == "pacbio":
+            assembler = "metamdbg"
+        elif rt == "nanopore":
+            assembler = "nanomdbg"
+        else:
+            # fallback
+            assembler = short_read_assembler
+        return relpath(os.path.join("assembly", assembler, "samples", sample_id, "output", "final.contigs.fa"))
 
-### MASTER RULE 
+    def get_fasta_input(wildcards):
+        return get_assembly_path(wildcards.sample_id)
 
+    fastap_func = get_fasta_input
+
+# ------------------------------------------------------------
+# MASTER RULE
+# ------------------------------------------------------------
 rule done_log:
-  name: "viral-identify.smk Done. removing tmp files"
-  localrule: True
-  input:
-    relpath("identify/viral/output/combined.final.vOTUs.fa"), 
-    #os.path.join(benchmarks, "summary.tsv")
-  output:
-    os.path.join(logdir, "done.log")
-  params:
-    tmpdir=tmpd
-  log: os.path.join(logdir, "done.log")
-  shell:
-    """
-    rm -rf {params.tmpdir}/*
-    touch {output}
-    """
+    name: "viral-identify.smk Done. removing tmp files"
+    localrule: True
+    input:
+        relpath("identify/viral/output/combined.final.vOTUs.fa"),
+    output:
+        os.path.join(logdir, "done.log")
+    params:
+        tmpdir = tmpd
+    log: os.path.join(logdir, "done.log")
+    shell:
+        """
+        rm -rf {params.tmpdir}/*
+        touch {output}
+        """
 
-
-### RULES
-
+# ------------------------------------------------------------
+# RULES
+# ------------------------------------------------------------
 rule filter_contigs:
-  name: "viral-identify.smk filter contigs [length]"
-  localrule: True
-  input:
-    fastap
-  output:
-    relpath("identify/viral/samples/{sample_id}/tmp/final.contigs.filtered.fa")
-  params:
-    minlen=config['contig-min-len'],
-    outdir=relpath("identify/viral/samples/{sample_id}/tmp"), 
-    tmpdir=os.path.join(tmpd, "contigs/{sample_id}")
-  log: os.path.join(logdir, "filtercontig_{sample_id}.log")
-  conda: "../envs/seqkit-biopython.yml"
-  threads: 1
-  shell:
-    """
-    rm -rf {params.tmpdir}/* {params.outdir}
-    mkdir -p {params.tmpdir} {params.outdir}
-    
-    seqkit seq {input} --min-len {params.minlen} > {params.tmpdir}/tmp.fa
+    name: "viral-identify.smk filter contigs [length]"
+    localrule: True
+    input:
+        fastap_func
+    output:
+        relpath("identify/viral/samples/{sample_id}/tmp/final.contigs.filtered.fa")
+    params:
+        minlen = config['contig-min-len'],
+        outdir = relpath("identify/viral/samples/{sample_id}/tmp"),
+        tmpdir = os.path.join(tmpd, "contigs/{sample_id}")
+    log: os.path.join(logdir, "filtercontig_{sample_id}.log")
+    conda: "../envs/seqkit-biopython.yml"
+    threads: 1
+    shell:
+        """
+        rm -rf {params.tmpdir}/* {params.outdir}
+        mkdir -p {params.tmpdir} {params.outdir}
 
-    mv {params.tmpdir}/tmp.fa {output}
-    """
+        seqkit seq {input} --min-len {params.minlen} > {params.tmpdir}/tmp.fa
+
+        mv {params.tmpdir}/tmp.fa {output}
+        """
 
 
 

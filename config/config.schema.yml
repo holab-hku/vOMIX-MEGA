@@ -114,6 +114,11 @@ properties:
     description: "Maximum number of CPU cores allocated across parallel Snakemake tasks. Distinct from execution parameters like -j or -n. Currently under development."
     default: 4
 
+  verbose:
+    type: boolean
+    description: "Print out full logs of all scripts running wherever applicable. Use when debugging."
+    default: False
+
   # NCBI Access
   NCBI-email:
     type: string
@@ -276,7 +281,8 @@ properties:
   hostile-aligner:
     type: string
     description: "Alignment algorithm for host decontamination. Options: 'bowtie2' (recommended for short reads) or 'minimap2'."
-    default: "bowtie2"
+    default: "minimap2"
+    enum: ["bowtie2", "minimap2"]
 
   hostile-aligner-params:
     type: string
@@ -286,9 +292,25 @@ properties:
   # Assembly Module Options
   assembler:
     type: string
-    description: "Assembly engine for metagenome assembly. Currently supports MEGAHIT (recommended) and SPAdes (in development)."
+    description: "(DEPRACATED) Assembly engine for metagenome assembly. Currently supports MEGAHIT (recommended) and SPAdes (in development)."
     default: "megahit"
     enum: ["megahit", "spades"]
+
+  short-read-assembler:
+    type: string
+    description: "Short-read assembly engine for metagenome assembly. Currently supports MEGAHIT (recommended) and SPAdes (in development). For long-reads, only metaMDBG (for PacBio HiFi) and nanoMDBG (for Oxford Nanopore Technologies) are supported."
+    default: "megahit"
+    enum: ["megahit", "spades"]
+
+  metamdbg-params:
+    type: string
+    description: "Additional parameters for metaMDBG assembler (PacBio). See metaMDBG documentation for available options."
+    default: ""
+
+  nanomdbg-params:
+    type: string
+    description: "Additional parameters for nanoMDBG assembler (ONT). See nanoMDBG documentation for available options."
+    default: ""
 
   megahit-min-len:
     type: integer
@@ -773,6 +795,7 @@ required:
   - keep-intermediates
   - setup-database
   - max-cores
+  - verbose
   - NCBI-email
   - NCBI-API-key
   - hostile-index-db

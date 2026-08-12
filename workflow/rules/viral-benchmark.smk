@@ -1,101 +1,137 @@
 import os
+import sys
+from rich.console import Console
+from rich.panel import Panel
 
-logdir=relpath("identify/viral/logs")
-benchmarks=relpath("identify/viral/benchmarks")
-tmpd=relpath("identify/viral/tmp")
+console = Console()
 
-email=config["NCBI-email"]
-api_key=config["NCBI-API-key"]
-nowstr=config["latest-run"]
-outdir=config["outdir"]
-datadir=config["datadir"]
+logdir = relpath("identify/viral/logs")
+benchmarks = relpath("identify/viral/benchmarks")
+tmpd = relpath("identify/viral/tmp")
+
+email = config["NCBI-email"]
+api_key = config["NCBI-API-key"]
+nowstr = config["latest-run"]
+outdir = config["outdir"]
+datadir = config["datadir"]
 
 os.makedirs(logdir, exist_ok=True)
 os.makedirs(benchmarks, exist_ok=True)
 os.makedirs(tmpd, exist_ok=True)
 
-n_cores = config['max-cores']
-assembler = config['assembler']
+short_read_assembler = config.get('short-read-assembler', 'megahit')
+
+# Split parts for parallelisation
 split_part = list(range(1, config["contig-splits"] + 2))
-split_part_ids = [f"{i:03d}" for i in range(1, config["contig-splits"] + 2)] # matches seqkit
+split_part_ids = [f"{i:03d}" for i in range(1, config["contig-splits"] + 2)]  # matches seqkit
 
+# ------------------------------------------------------------
+# Helper to get assembly FASTA path based on read_type
+# ------------------------------------------------------------
+def get_assembly_fasta(sample_id):
+    """Return the path to the final contigs FASTA for a given sample/assembly."""
+    if config['fasta'] != "" or config['fastadir'] != "":
+        return None 
+    rt = assemblies[sample_id]['read_type']
+    if rt in ["paired", "single"]:
+        assembler = short_read_assembler
+    elif rt == "pacbio":
+        assembler = "metamdbg"
+    elif rt == "nanopore":
+        assembler = "nanomdbg"
+    else:
+        assembler = short_read_assembler  # fallback
+    return relpath(os.path.join("assembly", assembler, "samples", sample_id, "output", "final.contigs.fa"))
 
-### Read fasta or fastadir input
+# ------------------------------------------------------------
+# Read input (fasta, fastadir, or sample list)
+# ------------------------------------------------------------
 if config['fasta'] != "":
-  fastap = readfasta(config['fasta'])
-  sample_id = config["sample-name"]
-  assembly_ids = [sample_id]
+    fastap = readfasta(config['fasta'])
+    sample_id = config["sample-name"]
+    assembly_ids = [sample_id]
+    # For fasta input, we just pass the single file
+    def fastap_func(wildcards):
+        return fastap
+
 elif config['fastadir'] != "":
-  fastap = readfastadir(config['fastadir'])
-  assembly_ids = config["assembly-ids"]
+    fasta_files = readfastadir(config['fastadir'])
+    assembly_ids = config["assembly-ids"]
+    # Build mapping from sample_id (basename) to full path
+    fasta_dict = dict(zip(assembly_ids, fasta_files))
+    def fastap_func(wildcards):
+        return fasta_dict[wildcards.sample_id]
+
 else:
-  if config.get("module") == "viral-end-to-end":
-    parse_quiet = True
-  else: 
-    parse_quiet = False
-  samples, assemblies = parse_sample_list(config["samplelist"], datadir, outdir, email, api_key, nowstr, parse_quiet)
-  fastap = relpath(os.path.join("assembly", assembler, "samples/{sample_id}/output/final.contigs.fa"))
-  sample_id = "final.contigs"
-  assembly_ids = assemblies.keys()
+    # Sample list mode
+    if config.get("module") == "viral-end-to-end":
+        parse_quiet = True
+    else:
+        parse_quiet = False
+    samples, assemblies = parse_sample_list(
+        config["samplelist"], datadir, outdir, email, api_key, nowstr, parse_quiet
+    )
+    assembly_ids = list(assemblies.keys())
+    def fastap_func(wildcards):
+        return get_assembly_fasta(wildcards.sample_id)
 
-
-### MASTER RULE 
+# ------------------------------------------------------------
+# MASTER RULE (unchanged, just uses assembly_ids)
+# ------------------------------------------------------------
 rule done_log:
-  name: "viral-benchmark.smk Done. removing tmp files"
-  localrule: True
-  input:
-    expand(relpath("identify/viral/samples/{sample_id}/intermediate/genomad/{sample_id}_filtered_summary/{sample_id}_filtered_virus_summary.tsv"), sample_id=assembly_ids), 
-    expand(relpath("identify/viral/samples/{sample_id}/tmp/splits/{sample_id}_filtered.part_{part}.fa"), sample_id=assembly_ids, part=split_part_ids),
-    expand(relpath("identify/viral/samples/{sample_id}/intermediate/dvf/splits/split-{part}/final_score.txt"), sample_id=assembly_ids, part=split_part_ids),
-    expand(relpath("identify/viral/samples/{sample_id}/intermediate/dvf/final_score.txt"), sample_id=assembly_ids),
-    expand(relpath("identify/viral/samples/{sample_id}/intermediate/phamer/splits/split-{part}/final_prediction/phamer_prediction.tsv"), sample_id=assembly_ids, part=split_part_ids),
-    expand(relpath("identify/viral/samples/{sample_id}/intermediate/phamer/final_prediction/phamer_prediction.tsv"), sample_id=assembly_ids),
-    expand(relpath("identify/viral/samples/{sample_id}/intermediate/virsorter2/splits/split-{part}/final-viral-score.tsv"), sample_id=assembly_ids, part=split_part_ids),
-    expand(relpath("identify/viral/samples/{sample_id}/intermediate/virsorter2/final-viral-score.tsv"), sample_id=assembly_ids),
-    expand(relpath("identify/viral/samples/{sample_id}/intermediate/virfinder/splits/split-{part}/output.tsv"), sample_id=assembly_ids, part=split_part_ids),
-    expand(relpath("identify/viral/samples/{sample_id}/intermediate/virfinder/output.tsv"), sample_id=assembly_ids),
-    expand(relpath("identify/viral/samples/{sample_id}/intermediate/vibrant/splits/split-{part}/VIBRANT_{sample_id}_filtered.part_{part}/VIBRANT_phages_{sample_id}_filtered.part_{part}/{sample_id}_filtered.part_{part}.phages_combined.txt"), sample_id=assembly_ids, part=split_part_ids),
-    expand(relpath("identify/viral/samples/{sample_id}/intermediate/vibrant/VIBRANT_{sample_id}_filtered/VIBRANT_phages_{sample_id}_filtered/{sample_id}_filtered.phages_combined.txt"), sample_id=assembly_ids),
-    expand(relpath("identify/viral/samples/{sample_id}/output/viral_benchmark_summary.tsv"), sample_id=assembly_ids), 
-    relpath("identify/viral/output/viral_benchmark_merged.csv")
-  output:
-    os.path.join(logdir, "done_benchmarks.log")
-  params:
-    filteredcontigs=expand(relpath("identify/viral/samples/{sample_id}/tmp"), sample_id=assembly_ids),
-    tmpdir=tmpd
-  log: os.path.join(logdir, "done_benchmarks.log")
-  shell:
-    """
-    rm -rf {params.tmpdir}/*
-    touch {output}
-    """
+    name: "viral-benchmark.smk Done. removing tmp files"
+    localrule: True
+    input:
+        expand(relpath("identify/viral/samples/{sample_id}/intermediate/genomad/{sample_id}_filtered_summary/{sample_id}_filtered_virus_summary.tsv"), sample_id=assembly_ids),
+        expand(relpath("identify/viral/samples/{sample_id}/tmp/splits/{sample_id}_filtered.part_{part}.fa"), sample_id=assembly_ids, part=split_part_ids),
+        expand(relpath("identify/viral/samples/{sample_id}/intermediate/dvf/splits/split-{part}/final_score.txt"), sample_id=assembly_ids, part=split_part_ids),
+        expand(relpath("identify/viral/samples/{sample_id}/intermediate/dvf/final_score.txt"), sample_id=assembly_ids),
+        expand(relpath("identify/viral/samples/{sample_id}/intermediate/phamer/splits/split-{part}/final_prediction/phamer_prediction.tsv"), sample_id=assembly_ids, part=split_part_ids),
+        expand(relpath("identify/viral/samples/{sample_id}/intermediate/phamer/final_prediction/phamer_prediction.tsv"), sample_id=assembly_ids),
+        expand(relpath("identify/viral/samples/{sample_id}/intermediate/virsorter2/splits/split-{part}/final-viral-score.tsv"), sample_id=assembly_ids, part=split_part_ids),
+        expand(relpath("identify/viral/samples/{sample_id}/intermediate/virsorter2/final-viral-score.tsv"), sample_id=assembly_ids),
+        expand(relpath("identify/viral/samples/{sample_id}/intermediate/virfinder/splits/split-{part}/output.tsv"), sample_id=assembly_ids, part=split_part_ids),
+        expand(relpath("identify/viral/samples/{sample_id}/intermediate/virfinder/output.tsv"), sample_id=assembly_ids),
+        expand(relpath("identify/viral/samples/{sample_id}/intermediate/vibrant/splits/split-{part}/VIBRANT_{sample_id}_filtered.part_{part}/VIBRANT_phages_{sample_id}_filtered.part_{part}/{sample_id}_filtered.part_{part}.phages_combined.txt"), sample_id=assembly_ids, part=split_part_ids),
+        expand(relpath("identify/viral/samples/{sample_id}/intermediate/vibrant/VIBRANT_{sample_id}_filtered/VIBRANT_phages_{sample_id}_filtered/{sample_id}_filtered.phages_combined.txt"), sample_id=assembly_ids),
+        expand(relpath("identify/viral/samples/{sample_id}/output/viral_benchmark_summary.tsv"), sample_id=assembly_ids),
+        relpath("identify/viral/output/viral_benchmark_merged.csv")
+    output:
+        os.path.join(logdir, "done_benchmarks.log")
+    params:
+        filteredcontigs=expand(relpath("identify/viral/samples/{sample_id}/tmp"), sample_id=assembly_ids),
+        tmpdir=tmpd
+    log: os.path.join(logdir, "done_benchmarks.log")
+    shell:
+        """
+        rm -rf {params.tmpdir}/*
+        touch {output}
+        """
 
-
-### RULES
 
 rule filter_contigs:
-  name: "viral-benchmark.smk filter short contigs"
-  localrule: True
-  input:
-    fastap
-  output:
-    relpath("identify/viral/samples/{sample_id}/tmp/{sample_id}_filtered.fa")
-  params:
-    minlen=config['contig-min-len'],
-    outdir=relpath("identify/viral/samples/{sample_id}/tmp"),
-    tmpdir=os.path.join(tmpd, "contigs/{sample_id}")
-  log: os.path.join(logdir, "filtercontig_{sample_id}.log")
-  conda: "../envs/seqkit-biopython.yml"
-  threads: 1
-  shell:
-    """
-    rm -rf {params.tmpdir}/* {params.outdir}
-    mkdir -p {params.tmpdir} {params.outdir}
-    
-    seqkit seq {input} --min-len {params.minlen} > {params.tmpdir}/tmp.fa
+    name: "viral-benchmark.smk filter short contigs"
+    localrule: True
+    input:
+        fastap_func
+    output:
+        relpath("identify/viral/samples/{sample_id}/tmp/{sample_id}_filtered.fa")
+    params:
+        minlen=config['contig-min-len'],
+        outdir=relpath("identify/viral/samples/{sample_id}/tmp"),
+        tmpdir=os.path.join(tmpd, "contigs/{sample_id}")
+    log: os.path.join(logdir, "filtercontig_{sample_id}.log")
+    conda: "../envs/seqkit-biopython.yml"
+    threads: 1
+    shell:
+        """
+        rm -rf {params.tmpdir}/* {params.outdir}
+        mkdir -p {params.tmpdir} {params.outdir}
 
-    mv {params.tmpdir}/tmp.fa {output}
-    """
+        seqkit seq {input} --min-len {params.minlen} > {params.tmpdir}/tmp.fa
+
+        mv {params.tmpdir}/tmp.fa {output}
+        """
 
 rule split_contigs:
   name: "viral-benchmark.smk split filtered contigs"
