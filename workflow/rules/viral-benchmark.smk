@@ -26,54 +26,24 @@ split_part = list(range(1, config["contig-splits"] + 2))
 split_part_ids = [f"{i:03d}" for i in range(1, config["contig-splits"] + 2)]  # matches seqkit
 
 # ------------------------------------------------------------
-# Helper to get assembly FASTA path based on read_type
-# ------------------------------------------------------------
-def get_assembly_fasta(sample_id):
-    """Return the path to the final contigs FASTA for a given sample/assembly."""
-    if config['fasta'] != "" or config['fastadir'] != "":
-        return None 
-    rt = assemblies[sample_id]['read_type']
-    if rt in ["paired", "single"]:
-        assembler = short_read_assembler
-    elif rt == "pacbio":
-        assembler = "metamdbg"
-    elif rt == "nanopore":
-        assembler = "nanomdbg"
-    else:
-        assembler = short_read_assembler  # fallback
-    return relpath(os.path.join("assembly", assembler, "samples", sample_id, "output", "final.contigs.fa"))
-
-# ------------------------------------------------------------
 # Read input (fasta, fastadir, or sample list)
 # ------------------------------------------------------------
 if config['fasta'] != "":
     fastap = readfasta(config['fasta'])
     sample_id = config["sample-name"]
     assembly_ids = [sample_id]
-    # For fasta input, we just pass the single file
-    def fastap_func(wildcards):
-        return fastap
 
 elif config['fastadir'] != "":
-    fasta_files = readfastadir(config['fastadir'])
+    fastap = readfastadir(config['fastadir'])
     assembly_ids = config["assembly-ids"]
-    # Build mapping from sample_id (basename) to full path
-    fasta_dict = dict(zip(assembly_ids, fasta_files))
-    def fastap_func(wildcards):
-        return fasta_dict[wildcards.sample_id]
-
 else:
-    # Sample list mode
     if config.get("module") == "viral-end-to-end":
         parse_quiet = True
     else:
         parse_quiet = False
-    samples, assemblies = parse_sample_list(
-        config["samplelist"], datadir, outdir, email, api_key, nowstr, parse_quiet
-    )
+    samples, assemblies = parse_sample_list(...)
+    fastap = relpath("assembly/samples/{sample_id}/output/final.contigs.fa")
     assembly_ids = list(assemblies.keys())
-    def fastap_func(wildcards):
-        return get_assembly_fasta(wildcards.sample_id)
 
 # ------------------------------------------------------------
 # MASTER RULE (unchanged, just uses assembly_ids)
@@ -108,12 +78,14 @@ rule done_log:
         touch {output}
         """
 
-
+# ------------------------------------------------------------
+# RULES – filter_contigs now uses fastap_func
+# ------------------------------------------------------------
 rule filter_contigs:
     name: "viral-benchmark.smk filter short contigs"
     localrule: True
     input:
-        fastap_func
+        fastap
     output:
         relpath("identify/viral/samples/{sample_id}/tmp/{sample_id}_filtered.fa")
     params:

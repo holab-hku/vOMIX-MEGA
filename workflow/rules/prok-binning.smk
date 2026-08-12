@@ -42,7 +42,6 @@ if long_read_samples:
         )
     )
     sys.exit(1)
-short_read_assembler = config['short-read-assembler']
 
 
 
@@ -104,7 +103,7 @@ rule strobealign:
   input:
     R1=relpath("preprocess/samples/{sample_id}/output/{sample_id}_R1_cut.trim.filt.fastq.gz"),
     R2=relpath("preprocess/samples/{sample_id}/output/{sample_id}_R2_cut.trim.filt.fastq.gz"),
-    fasta=lambda wildcards: relpath(os.path.join("assembly", short_read_assembler, "samples", samples[wildcards.sample_id]["assembly"], "output/final.contigs.fa")),
+    fasta=lambda wildcards: relpath(os.path.join("assembly", "samples", samples[wildcards.sample_id]["assembly"], "output/final.contigs.fa")),
   output:
     bam=relpath("binning/prok/samples/{sample_id}/strobealign/{sample_id}.sorted.bam")
   params:
@@ -188,7 +187,7 @@ rule binprep:
 rule vamb:
   name: "prok-binning.smk VAMB binning"
   input: 
-    fasta=relpath(os.path.join("assembly", short_read_assembler, "samples/{assembly_id}/output/final.contigs.fa")),
+    fasta=relpath(os.path.join("assembly","samples/{assembly_id}/output/final.contigs.fa")),
     txt=relpath("binning/prok/assemblies/{assembly_id}/MetaBAT2/depthfile.txt")
   output:
    relpath("binning/prok/assemblies/{assembly_id}/VAMB/vae_clusters_metadata.tsv")
@@ -246,7 +245,7 @@ rule metabat2maxbin:
 rule metabat2:
   name: "prok-binning.smk MetaBAT2 binning"
   input:
-    fasta=relpath(os.path.join("assembly", short_read_assembler, "samples/{assembly_id}/output/final.contigs.fa")),
+    fasta=relpath(os.path.join("assembly","samples/{assembly_id}/output/final.contigs.fa")),
     txt=relpath("binning/prok/assemblies/{assembly_id}/MetaBAT2/depthfile.txt")
   output:
     relpath("binning/prok/assemblies/{assembly_id}/MetaBAT2/bins/metabat2.unbinned.fa")
@@ -280,7 +279,7 @@ rule maxbin2:
   name: "prok-binning.smk MaxBin2 binning"
   input:
     jgi=relpath("binning/prok/assemblies/{assembly_id}/MaxBin2/depthfile.txt"),
-    fasta=relpath(os.path.join("assembly", short_read_assembler, "samples/{assembly_id}/output/final.contigs.fa"))
+    fasta=relpath(os.path.join("assembly","samples/{assembly_id}/output/final.contigs.fa"))
   output:
     relpath("binning/prok/assemblies/{assembly_id}/MaxBin2/bins/maxbin2.summary")
   params:
@@ -315,7 +314,7 @@ rule concoctprep:
         sample_id = assemblies[wildcards.assembly_id]["sample_id"]),
     bams=lambda wildcards: expand(relpath("binning/prok/samples/{sample_id}/strobealign/{sample_id}.sorted.bam"),
         sample_id = assemblies[wildcards.assembly_id]["sample_id"]),
-    fasta=relpath(os.path.join("assembly", short_read_assembler, "samples/{assembly_id}/output/final.contigs.fa"))
+    fasta=relpath(os.path.join("assembly","samples/{assembly_id}/output/final.contigs.fa"))
   output:
     bed=relpath("binning/prok/assemblies/{assembly_id}/CONCOCT/final.contigs.10k.bed"),
     fa=relpath("binning/prok/assemblies/{assembly_id}/CONCOCT/final.contigs.10k.fa"), 
@@ -353,7 +352,7 @@ rule concoctprep:
 rule concoct:
   name: "prok-binning.smk CONCOCT binning"
   input:
-    fasta=relpath(os.path.join("assembly", short_read_assembler, "samples/{assembly_id}/output/final.contigs.fa")),
+    fasta=relpath(os.path.join("assembly","samples/{assembly_id}/output/final.contigs.fa")),
     bed=relpath("binning/prok/assemblies/{assembly_id}/CONCOCT/final.contigs.10k.bed"),
     fa=relpath("binning/prok/assemblies/{assembly_id}/CONCOCT/final.contigs.10k.fa"),       
     tsv=relpath("binning/prok/assemblies/{assembly_id}/CONCOCT/depth.tsv"),
@@ -423,7 +422,7 @@ rule contigs2bin:
 rule dastool:
   name: "prok-binning.smk DAS Tool consensus binning"
   input:
-    fasta=relpath(os.path.join("assembly", short_read_assembler, "samples/{assembly_id}/output/final.contigs.fa")),
+    fasta=relpath(os.path.join("assembly","samples/{assembly_id}/output/final.contigs.fa")),
     MetaBAT2=relpath("binning/prok/assemblies/{assembly_id}/MetaBAT2/contigs2bin.tsv"),
     MaxBin2=relpath("binning/prok/assemblies/{assembly_id}/MaxBin2/contigs2bin.tsv"),
     CONCOCT=relpath("binning/prok/assemblies/{assembly_id}/CONCOCT/contigs2bin.tsv")
@@ -478,9 +477,12 @@ rule movemags:
     mkdir -p {params.outdir}/ids {params.outdir}/unbinned
     echo -e "ids\tDASTool_id" > {output.tsv}
 
-    [ -f {params.indir}/unbinned* ] && mv {params.indir}/unbinned* {output.unbinned} || {{ touch {output.unbinned}; }}
-
-    [ -f {params.indir}/unbinned*] && mv -f {params.indir}/unbinned* {output.unbinned}
+    # Handle unbinned file if it exists; otherwise create empty file
+    if [ -f {params.indir}/unbinned* ]; then
+        mv {params.indir}/unbinned* {output.unbinned}
+    else
+        touch {output.unbinned}
+    fi
 
     ls -v {params.indir} | grep -v "unbinned" | cat -n | \
         while read n f; do \
@@ -488,7 +490,6 @@ rule movemags:
         cp "{params.indir}/$f" "{params.outdir}/{wildcards.assembly_id}_$n.fasta"; \
         done 2> {log}
     """
-
 
 # REST OF ANALYSIS
 

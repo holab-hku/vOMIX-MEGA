@@ -1,4 +1,4 @@
-import os
+import os 
 import sys
 from rich.console import Console
 from rich.panel import Panel
@@ -19,8 +19,6 @@ os.makedirs(logdir, exist_ok=True)
 os.makedirs(benchmarks, exist_ok=True)
 os.makedirs(tmpd, exist_ok=True)
 
-short_read_assembler = config.get('short-read-assembler', 'megahit')
-
 # ------------------------------------------------------------
 # Read input (fasta, fastadir, or sample list)
 # ------------------------------------------------------------
@@ -28,49 +26,28 @@ if config['fasta'] != "":
     fastap = readfasta(config['fasta'])
     sample_id = config["sample-name"]
     assembly_ids = [sample_id]
-    # fastap is a string (single file)
-    def get_fasta_input(wildcards):
-        return fastap
-    fastap_func = get_fasta_input
 
 elif config['fastadir'] != "":
-    fasta_files = readfastadir(config['fastadir'])
+    fastap = readfastadir(config['fastadir'])
     assembly_ids = config["assembly-ids"]
-    # Build mapping from sample_id (basename) to full path
-    # We assume the order matches
-    fasta_dict = dict(zip(assembly_ids, fasta_files))
-    def get_fasta_input(wildcards):
-        return fasta_dict[wildcards.sample_id]
-    fastap_func = get_fasta_input
-
 else:
     if config.get("module") == "viral-end-to-end":
         parse_quiet = True
     else:
         parse_quiet = False
+    verbose = config.get("verbose", False)
     samples, assemblies = parse_sample_list(
-        config["samplelist"], datadir, outdir, email, api_key, nowstr, parse_quiet
+        config["samplelist"],
+        datadir,
+        outdir,
+        email,
+        api_key,
+        nowstr,
+        parse_quiet, 
+        verbose
     )
-    assembly_ids = list(assemblies.keys())
-
-    # Function to get assembly path based on read_type
-    def get_assembly_path(sample_id):
-        rt = assemblies[sample_id]['read_type']
-        if rt in ["paired", "single"]:
-            assembler = short_read_assembler
-        elif rt == "pacbio":
-            assembler = "metamdbg"
-        elif rt == "nanopore":
-            assembler = "nanomdbg"
-        else:
-            # fallback
-            assembler = short_read_assembler
-        return relpath(os.path.join("assembly", assembler, "samples", sample_id, "output", "final.contigs.fa"))
-
-    def get_fasta_input(wildcards):
-        return get_assembly_path(wildcards.sample_id)
-
-    fastap_func = get_fasta_input
+    fastap = relpath("assembly/samples/{sample_id}/output/final.contigs.fa")
+    assembly_ids = list(assemblies.keys())  
 
 # ------------------------------------------------------------
 # MASTER RULE
@@ -98,7 +75,7 @@ rule filter_contigs:
     name: "viral-identify.smk filter contigs [length]"
     localrule: True
     input:
-        fastap_func
+        fastap
     output:
         relpath("identify/viral/samples/{sample_id}/tmp/final.contigs.filtered.fa")
     params:

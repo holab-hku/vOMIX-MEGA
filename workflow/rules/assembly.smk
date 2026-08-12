@@ -1,4 +1,5 @@
 import sys
+import os
 from rich.console import Console
 from rich.panel import Panel
 
@@ -36,9 +37,8 @@ samples, assemblies = parse_sample_list(
 )
 
 # ----------------------------------------------------------------------
-# Mapping: read_type -> assembler name and parameters
+# Mapping: read_type -> assembler name
 # ----------------------------------------------------------------------
-# Define which assembler to use for each read type
 assembler_map = {
     "paired": short_assembler,
     "single": short_assembler,
@@ -66,14 +66,18 @@ def get_assembler(assembly_id):
     rt = assemblies[assembly_id]["read_type"]
     return assembler_map.get(rt, short_assembler)
 
-def get_output_dir(assembly_id):
-    """Return the output directory for a given assembly."""
+def get_assembler_specific_path(assembly_id):
+    """Return the assembler-specific final contigs FASTA path."""
     assembler = get_assembler(assembly_id)
-    return relpath(os.path.join("assembly", assembler, "samples", assembly_id, "output"))
+    return relpath(os.path.join("assembly", assembler, "samples", assembly_id, "output", "final.contigs.fa"))
 
-def get_fasta(assembly_id):
-    """Return the final contigs FASTA path."""
-    return os.path.join(get_output_dir(assembly_id), "final.contigs.fa")
+def get_common_output_dir(assembly_id):
+    """Return the common output directory (final symlink/copy location)."""
+    return relpath(os.path.join("assembly", "samples", assembly_id, "output"))
+
+def get_common_fasta(assembly_id):
+    """Return the final contigs FASTA path in the common directory."""
+    return os.path.join(get_common_output_dir(assembly_id), "final.contigs.fa")
 
 # ----------------------------------------------------------------------
 # MASTER RULE
@@ -82,12 +86,12 @@ rule done:
     name: "assembly.smk Done. removing tmp files"
     localrule: True
     input:
-        # All final contigs
-        [get_fasta(aid) for aid in assemblies.keys()],
-        # Reports (we'll gather from all assembler dirs)
         expand(
-            relpath(os.path.join("assembly", "{assembler}", "reports", "{summary_type}.tsv")),
-            assembler=set(assembler_map.values()),
+            relpath("assembly/samples/{assembly_id}/output/final.contigs.fa"),
+            assembly_id=assemblies.keys()
+        ),
+        expand(
+            relpath(os.path.join("assembly", "reports", "{summary_type}.tsv")),
             summary_type=["assemblystats", "assembly_size_dist"],
         ),
     output:
@@ -294,62 +298,32 @@ rule nanomdbg:
         mv {params.tmpdir}/assembly/* {params.outdir}
         """
 
-# ---- 5. Dispatcher rule that selects the correct assembler based on read_type ----
-# We'll create a rule that uses a `run:` or a `shell` with conditional,
-# but Snakemake prefers deterministic rules. We'll use a rule that checks read_type
-# and then depends on the appropriate rule via input functions.
-# We'll use a dummy rule that has a conditional input based on read_type.
-# This is better because it allows Snakemake to know the actual dependencies.
-
-# We can use a rule that has a `input` function that returns the appropriate input
-# and output, and then uses a `shell` that echoes a message, but we need to actually
-# run the assembler. Better: we'll use a rule that has multiple possible outputs,
-# but that's tricky. Easiest: have the "assemble" rule call the specific assembler
-# via a `run:` block using Python to execute subprocess. But that loses Snakemake's
-# resource management. I'll instead create a rule that uses a `input` function to
-# determine which assembler's output to track, and then a `shell` that does nothing
-# (but the real work is done by the individual assembler rules). Actually, we can
-# have the individual assembler rules produce the final output, and then we don't
-# need a dispatcher; we just need to ensure that the done rule's input includes
-# all possible assembler outputs. But how to trigger the right one? The done rule
-# will have all final contigs as input; Snakemake will resolve them by finding
-# the rule that can produce each. Since each rule produces a different path
-# (e.g., megahit produces assembly/megahit/...), Snakemake will automatically
-# choose the rule that produces the required path. We just need to list all
-# possible outputs in the done rule. So we don't need a dispatcher rule.
-
-# However, we need to make sure that for each assembly, the correct assembler
-# rule is triggered. That will happen automatically because the done rule lists
-# the specific path for that assembly (e.g., if assembly_id uses megahit, the
-# path is assembly/megahit/...; only the megahit rule can produce that).
-# So we can just list all final contigs in the done rule using the get_fasta()
-# function.
-
-# But the done rule currently uses a list comprehension that computes the path
-# for each assembly. That's fine. The assemble rules are separate. The done rule
-# will require those paths, and Snakemake will find the right rule to produce
-# each.
-
-# So we don't need a separate assembler rule; the individual rules are enough.
+# ---- 5. Finalize: copy correct assembler output to common location ----
+rule finalize_assembly:
+    name: "assembly.smk finalize assembly output"
+    localrule: True
+    input:
+        lambda wildcards: get_assembler_specific_path(wildcards.assembly_id)
+    output:
+        get_common_fasta("{assembly_id}")
+    params:
+        outdir = lambda wildcards: get_common_output_dir(wildcards.assembly_id)
+    shell:
+        """
+        mkdir -p {params.outdir}
+        cp {input} {output}
+        """
 
 # ----------------------------------------------------------------------
 # ASSEMBLY STATS (aggregate reports)
 # ----------------------------------------------------------------------
-# We need to gather reports from all assemblers. The reports are in
-# assembly/{assembler}/reports/. We'll run assembly_stats once per assembler? Actually,
-# we want to combine stats from all assemblies into one report. The current
-# assembly_stats rule takes all final contigs as input and produces a single
-# stats file. That works if we pass all contigs from all assemblers.
-
 rule assembly_stats:
     name: "assembly.smk aggregate assembly statistics"
     localrule: False
     input:
-        # Collect all final contigs from all assemblers
         expand(
-            relpath(os.path.join("assembly", "{assembler}", "samples", "{assembly_id}", "output", "final.contigs.fa")),
-            assembler=set(assembler_map.values()),
-            assembly_id=assemblies.keys(),
+            relpath("assembly/samples/{assembly_id}/output/final.contigs.fa"),
+            assembly_id=assemblies.keys()
         )
     output:
         stats=relpath(os.path.join("assembly", "reports", "assemblystats.tsv")),
@@ -362,7 +336,7 @@ rule assembly_stats:
     conda: "../envs/seqkit-biopython.yml"
     threads: 1
     resources:
-        mem_mb=lambda wildcards, attempt, threads, input: sum(i.size_mb for i in input) + 2000
+        mem_mb=lambda wildcards, attempt, threads, input: 8000 * attempt
     shell:
         """
         rm -rf {params.tmpdir} {params.outdir}/*
