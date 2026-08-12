@@ -23,7 +23,7 @@ nowstr = config["latest-run"]
 outdir = config["outdir"]
 datadir = config["datadir"]
 
-parse_quiet = config.get("module") == "viral-end-to-end"
+parse_quiet = config.get("module") in ["viral-end-to-end", "run-all"]
 parse_verbose = config.get("verbose", False)
 samples, assemblies = parse_sample_list(
     config["samplelist"],
@@ -72,12 +72,19 @@ def get_assembler_specific_path(assembly_id):
     return relpath(os.path.join("assembly", assembler, "samples", assembly_id, "output", "final.contigs.fa"))
 
 def get_common_output_dir(assembly_id):
-    """Return the common output directory (final symlink/copy location)."""
+    """Return the common output directory (final copy location)."""
     return relpath(os.path.join("assembly", "samples", assembly_id, "output"))
 
 def get_common_fasta(assembly_id):
     """Return the final contigs FASTA path in the common directory."""
     return os.path.join(get_common_output_dir(assembly_id), "final.contigs.fa")
+
+def get_sample_ids(assembly_id):
+    """Return a list of sample IDs belonging to the assembly."""
+    ids = assemblies[assembly_id]["sample_id"]
+    if isinstance(ids, str):
+        return [ids]
+    return list(ids)
 
 # ----------------------------------------------------------------------
 # MASTER RULE
@@ -111,11 +118,11 @@ rule megahit:
     input:
         R1s=lambda wildcards: expand(
             relpath("preprocess/samples/{sample_id}/output/{sample_id}_R1_cut.trim.filt.fastq.gz"),
-            sample_id=assemblies[wildcards.assembly_id]["sample_id"]
+            sample_id=get_sample_ids(wildcards.assembly_id)
         ),
         R2s=lambda wildcards: expand(
             relpath("preprocess/samples/{sample_id}/output/{sample_id}_R2_cut.trim.filt.fastq.gz"),
-            sample_id=assemblies[wildcards.assembly_id]["sample_id"]
+            sample_id=get_sample_ids(wildcards.assembly_id)
         ),
     output:
         fasta=relpath("assembly/megahit/samples/{assembly_id}/output/final.contigs.fa"),
@@ -165,11 +172,11 @@ rule spades:
     input:
         R1s=lambda wildcards: expand(
             relpath("preprocess/samples/{sample_id}/output/{sample_id}_R1_cut.trim.filt.fastq.gz"),
-            sample_id=assemblies[wildcards.assembly_id]["sample_id"]
+            sample_id=get_sample_ids(wildcards.assembly_id)
         ),
         R2s=lambda wildcards: expand(
             relpath("preprocess/samples/{sample_id}/output/{sample_id}_R2_cut.trim.filt.fastq.gz"),
-            sample_id=assemblies[wildcards.assembly_id]["sample_id"]
+            sample_id=get_sample_ids(wildcards.assembly_id)
         ),
     output:
         fasta=relpath("assembly/spades/samples/{assembly_id}/output/final.contigs.fa"),
@@ -218,7 +225,7 @@ rule metamdbg:
     input:
         reads=lambda wildcards: expand(
             relpath("preprocess/samples/{sample_id}/output/{sample_id}_R1_cut.trim.filt.fastq.gz"),
-            sample_id=assemblies[wildcards.assembly_id]["sample_id"]
+            sample_id=get_sample_ids(wildcards.assembly_id)
         ),
     output:
         fasta=relpath("assembly/metamdbg/samples/{assembly_id}/output/final.contigs.fa"),
@@ -262,7 +269,7 @@ rule nanomdbg:
     input:
         reads=lambda wildcards: expand(
             relpath("preprocess/samples/{sample_id}/output/{sample_id}_R1_cut.trim.filt.fastq.gz"),
-            sample_id=assemblies[wildcards.assembly_id]["sample_id"]
+            sample_id=get_sample_ids(wildcards.assembly_id)
         ),
     output:
         fasta=relpath("assembly/nanomdbg/samples/{assembly_id}/output/final.contigs.fa"),

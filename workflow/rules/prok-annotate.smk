@@ -146,9 +146,9 @@ rule humann3:
 rule humann_merge:
   name: "prok-annotate.smk HUMAnN3 merge results"
   input:
-    gene=expand(relpath("annotate/prok/samples/{sample_id}/{sample_id}_genefamilies.tsv"), sample_id = assemblies.keys()),
-    abund=expand(relpath("annotate/prok/samples/{sample_id}/{sample_id}_pathabundance.tsv"), sample_id = assemblies.keys()),
-    cov=expand(relpath("annotate/prok/samples/{sample_id}/{sample_id}_pathcoverage.tsv"), sample_id = assemblies.keys())
+    gene=expand(relpath("annotate/prok/samples/{sample_id}/{sample_id}_genefamilies.tsv"), sample_id = samples.keys()),
+    abund=expand(relpath("annotate/prok/samples/{sample_id}/{sample_id}_pathabundance.tsv"), sample_id = samples.keys()),
+    cov=expand(relpath("annotate/prok/samples/{sample_id}/{sample_id}_pathcoverage.tsv"), sample_id = samples.keys())
   output:
     gene=relpath("annotate/prok/output/primary/genefamilies_merged.tsv"),
     abund=relpath("annotate/prok/output/primary/pathabundance_merged.tsv"),
@@ -179,7 +179,7 @@ rule humann_merge:
     humann_join_tables --input {params.tmpdir} --output {output.cov} &>> {log}
     rm {params.tmpdir}/*
     """
-
+    
 rule humann_normalize:
   name: "prok-annotate.smk HUMAnN3 normalize results"
   input:

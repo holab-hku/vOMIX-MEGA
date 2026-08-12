@@ -41,9 +41,19 @@ else:
         parse_quiet = True
     else:
         parse_quiet = False
-    samples, assemblies = parse_sample_list(...)
+    verbose = config.get("verbose", False)
+    samples, assemblies = parse_sample_list(
+        config["samplelist"],
+        datadir,
+        outdir,
+        email,
+        api_key,
+        nowstr,
+        parse_quiet, 
+        verbose
+    )
     fastap = relpath("assembly/samples/{sample_id}/output/final.contigs.fa")
-    assembly_ids = list(assemblies.keys())
+    assembly_ids = list(assemblies.keys())  
 
 # ------------------------------------------------------------
 # MASTER RULE (unchanged, just uses assembly_ids)
