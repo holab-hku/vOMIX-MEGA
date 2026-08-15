@@ -7,26 +7,6 @@ import time
 from rich.logging import RichHandler
 from rich.console import Console
 
-from vomix.snakemakeFlags import SnakemakeFlags
-from vomix.vomix_actions import vomix_actions
-from vomix.modules import (
-    PreProcessingModule,
-    AssemblyCoAssemblyModule,
-    ViralIdentifyModule,
-    ViralBenchmarkModule,
-    ViralTaxonomyModule,
-    ViralHostModule,
-    ViralCommunityModule,
-    ViralAnnotateModule,
-    ProkaryoticCommunityModule,
-    ProkaryoticBinningModule,
-    ProkaryoticAnnotateModule,
-    ViralEndToEndModule,
-    ClusterFastModule,
-    CheckVPyHMMERModule,
-    SetupDatabaseModule,
-)
-
 # ---------------------------------------------------------
 # Rich Logging Configuration
 # ---------------------------------------------------------
@@ -187,8 +167,8 @@ def setOptions(module_obj, kwargs):
 
 def create_snakemake_flags(kwargs):
     """Generates the SnakemakeFlags object automatically from kwargs."""
-    # Careful that click automatically returns the longest argument as the default name
-    # hence you need to do software_deployment_method rather than sdm
+    from vomix.snakemakeFlags import SnakemakeFlags
+
     return SnakemakeFlags(
         kwargs.get("dry_run"),
         kwargs.get("forceall"),
@@ -426,13 +406,13 @@ def snakemake_options(function):
         help="Print out the shell commands that will be executed. (default: False)",
     )(function)
     function = click.option(
-            "--list-conda-envs",
-            is_flag=True,
-            flag_value=True,
-            required=False,
-            default=None,
-            help="List all conda environments and their location on disk. (default: False)",
-        )(function)
+        "--list-conda-envs",
+        is_flag=True,
+        flag_value=True,
+        required=False,
+        default=None,
+        help="List all conda environments and their location on disk. (default: False)",
+    )(function)
     function = click.option(
         "--quiet",
         "-q",
@@ -532,6 +512,10 @@ def cli():
 )
 @snakemake_options
 def run_preprocess(**kwargs):
+    from vomix.snakemakeFlags import SnakemakeFlags
+    from vomix.vomix_actions import vomix_actions
+    from vomix.modules import PreProcessingModule
+
     log_system_info("preprocess")
 
     module_obj = setOptions(PreProcessingModule(), kwargs)
@@ -596,6 +580,10 @@ def run_preprocess(**kwargs):
 )
 @snakemake_options
 def run_assembly(**kwargs):
+    from vomix.snakemakeFlags import SnakemakeFlags
+    from vomix.vomix_actions import vomix_actions
+    from vomix.modules import AssemblyCoAssemblyModule
+
     log_system_info("assembly")
 
     module_obj = setOptions(AssemblyCoAssemblyModule(), kwargs)
@@ -731,6 +719,10 @@ def run_assembly(**kwargs):
 )
 @snakemake_options
 def run_viral_identify(**kwargs):
+    from vomix.snakemakeFlags import SnakemakeFlags
+    from vomix.vomix_actions import vomix_actions
+    from vomix.modules import ViralIdentifyModule
+
     log_system_info("viral-identify")
 
     module_obj = setOptions(ViralIdentifyModule(), kwargs)
@@ -1012,6 +1004,10 @@ def run_viral_identify(**kwargs):
 )
 @snakemake_options
 def run_viral_benchmark(**kwargs):
+    from vomix.snakemakeFlags import SnakemakeFlags
+    from vomix.vomix_actions import vomix_actions
+    from vomix.modules import ViralBenchmarkModule
+
     log_system_info("viral-benchmark")
 
     module_obj = setOptions(ViralBenchmarkModule(), kwargs)
@@ -1105,6 +1101,10 @@ def run_viral_benchmark(**kwargs):
 )
 @snakemake_options
 def run_viral_taxonomy(**kwargs):
+    from vomix.snakemakeFlags import SnakemakeFlags
+    from vomix.vomix_actions import vomix_actions
+    from vomix.modules import ViralTaxonomyModule
+
     log_system_info("viral-taxonomy")
 
     module_obj = setOptions(ViralTaxonomyModule(), kwargs)
@@ -1206,6 +1206,10 @@ def run_viral_taxonomy(**kwargs):
 )
 @snakemake_options
 def run_viral_host(**kwargs):
+    from vomix.snakemakeFlags import SnakemakeFlags
+    from vomix.vomix_actions import vomix_actions
+    from vomix.modules import ViralHostModule
+
     log_system_info("viral-host")
 
     module_obj = setOptions(ViralHostModule(), kwargs)
@@ -1253,6 +1257,10 @@ def run_viral_host(**kwargs):
 )
 @snakemake_options
 def run_viral_community(**kwargs):
+    from vomix.snakemakeFlags import SnakemakeFlags
+    from vomix.vomix_actions import vomix_actions
+    from vomix.modules import ViralCommunityModule
+
     log_system_info("viral-community")
 
     module_obj = setOptions(ViralCommunityModule(), kwargs)
@@ -1338,6 +1346,10 @@ def run_viral_community(**kwargs):
 )
 @snakemake_options
 def run_viral_annotate(**kwargs):
+    from vomix.snakemakeFlags import SnakemakeFlags
+    from vomix.vomix_actions import vomix_actions
+    from vomix.modules import ViralAnnotateModule
+
     log_system_info("viral-annotate")
 
     module_obj = setOptions(ViralAnnotateModule(), kwargs)
@@ -1386,6 +1398,10 @@ def run_viral_annotate(**kwargs):
 )
 @snakemake_options
 def run_prok_community(**kwargs):
+    from vomix.snakemakeFlags import SnakemakeFlags
+    from vomix.vomix_actions import vomix_actions
+    from vomix.modules import ProkaryoticCommunityModule
+
     log_system_info("prok-community")
 
     module_obj = setOptions(ProkaryoticCommunityModule(), kwargs)
@@ -1508,6 +1524,10 @@ def run_prok_community(**kwargs):
 )
 @snakemake_options
 def run_prok_binning(**kwargs):
+    from vomix.snakemakeFlags import SnakemakeFlags
+    from vomix.vomix_actions import vomix_actions
+    from vomix.modules import ProkaryoticBinningModule
+
     log_system_info("prok-binning")
 
     module_obj = setOptions(ProkaryoticBinningModule(), kwargs)
@@ -1556,6 +1576,10 @@ def run_prok_binning(**kwargs):
 )
 @snakemake_options
 def run_prok_annotate(**kwargs):
+    from vomix.snakemakeFlags import SnakemakeFlags
+    from vomix.vomix_actions import vomix_actions
+    from vomix.modules import ProkaryoticAnnotateModule
+
     log_system_info("prok-annotate")
 
     module_obj = setOptions(ProkaryoticAnnotateModule(), kwargs)
@@ -1905,6 +1929,10 @@ def run_prok_annotate(**kwargs):
 )
 @snakemake_options
 def run_viral_end_to_end(**kwargs):
+    from vomix.snakemakeFlags import SnakemakeFlags
+    from vomix.vomix_actions import vomix_actions
+    from vomix.modules import ViralEndToEndModule
+
     log_system_info("viral-end-to-end")
 
     module_obj = setOptions(ViralEndToEndModule(), kwargs)
@@ -2021,6 +2049,10 @@ def run_viral_end_to_end(**kwargs):
 )
 @snakemake_options
 def run_cluster_fast(**kwargs):
+    from vomix.snakemakeFlags import SnakemakeFlags
+    from vomix.vomix_actions import vomix_actions
+    from vomix.modules import ClusterFastModule
+
     log_system_info("cluster-fast")
 
     module_obj = setOptions(ClusterFastModule(), kwargs)
@@ -2079,6 +2111,10 @@ def run_cluster_fast(**kwargs):
 )
 @snakemake_options
 def run_checkv_pyhmmer(**kwargs):
+    from vomix.snakemakeFlags import SnakemakeFlags
+    from vomix.vomix_actions import vomix_actions
+    from vomix.modules import CheckVPyHMMERModule
+
     log_system_info("checkv-pyhmmer")
 
     module_obj = setOptions(CheckVPyHMMERModule(), kwargs)
@@ -2230,6 +2266,10 @@ def run_checkv_pyhmmer(**kwargs):
 )
 @snakemake_options
 def run_setup_database(**kwargs):
+    from vomix.snakemakeFlags import SnakemakeFlags
+    from vomix.vomix_actions import vomix_actions
+    from vomix.modules import SetupDatabaseModule
+
     log_system_info("setup-database")
 
     module_obj = setOptions(SetupDatabaseModule(), kwargs)
