@@ -6,10 +6,10 @@ import platform
 import time
 from importlib.metadata import version
 from rich.logging import RichHandler
-from rich.console import Console
+from importlib.metadata import version, metadata
 
 try:
-    __version__ = version("vomix")
+    __version__ = version("vcluster")
 except Exception:
     __version__ = "unknown (development)"
 

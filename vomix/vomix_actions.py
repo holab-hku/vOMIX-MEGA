@@ -12,8 +12,15 @@ from inspect import getsourcefile
 from os.path import abspath
 import inspect
 import re
+from importlib.metadata import version, metadata
 from rich.logging import RichHandler
 from rich.console import Console
+
+try:
+    __version__ = version("vcluster")
+except Exception:
+    __version__ = "unknown (development)"
+
 
 # ---------------------------------------------------------
 # Rich Logging Configuration (Matching vomix.py)
@@ -27,13 +34,14 @@ logging.basicConfig(
 
 log = logging.getLogger("rich")
 console = Console()
+meta_data = metadata("vcluster")
 
 
 class vomix_actions:
     def __init__(self):
         self.name = "vomix"
-        self.version = "1.0.0"
-        self.description = "vomix is a tool for viral metagenomics analysis."
+        self.version = __version__
+        self.description = meta_data["description"]
 
     def __repr__(self):
         return f"vomix(name={self.name}, version={self.version}, description={self.description})"
