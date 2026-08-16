@@ -1,8 +1,8 @@
 # Installation
 
-## Conda & Mamba
+## Conda, Mamba, & Pip
 
-You can install vOMIX-MEGA in you computer using general-purpose package managers ( `Mamba`, `Conda`), or run it via an [`Apptainer`](#apptainer-installation) image via `pip`.
+You can install **vOMIX‑MEGA** using general‑purpose package managers like **Conda** or **Mamba**, a Python‑only dependency manager like **pip**, or a fully containerised approach via **Apptainer**. We provide a **Bioconda** package for stable releases, while the latest development version can be installed directly from GitHub.
 
 ::::{tab-set}
 
@@ -10,18 +10,9 @@ You can install vOMIX-MEGA in you computer using general-purpose package manager
 [Conda](https://docs.conda.io/projects/conda/en/stable/) is a package manager that handles all your dependencies for you. To install vOMIX-MEGA using Conda, you can create the environment from the repository environment file.
 
 ```bash
-# Download GitHub directory
-git clone https://github.com/holab-hku/vOMIX-MEGA.git
-cd vOMIX-MEGA
-
-# Install base environment
-conda env create -f environment.yml
-
-# Activate environment
+# Install via Bioconda
+conda create -n vomix -c bioconda vomix-mega
 conda activate vomix
-
-# Install using pip
-pip install .
 
 # Verify Installation
 vomix -h
@@ -30,21 +21,12 @@ vomix -h
 :::
 
 :::{tab-item} Mamba
-[Mamba](https://mamba.readthedocs.io/en/latest/) is a package manager that handles all your dependencies for you. To install vOMIX-MEGA using Mamba, you can create the environment directly from the repository environment file.
+[Mamba](https://mamba.readthedocs.io/en/latest/index.html) is a re‑implementation of Conda that uses a faster, more robust dependency solver. The commands are almost identical:
 
 ```bash
-# Download GitHub directory
-git clone https://github.com/holab-hku/vOMIX-MEGA.git
-cd vOMIX-MEGA
-
-# Install base environment
-mamba env create -f environment.yml
-
-# Activate environment
+# Install via Bioconda
+mamba create -n vomix -c bioconda vomix-mega
 mamba activate vomix
-
-# Install using pip
-pip install .
 
 # Verify Installation
 vomix -h
@@ -52,8 +34,8 @@ vomix -h
 
 :::
 
-:::{tab-item} Conda Lock
-[Conda Lock](https://github.com/conda/conda-lock) provides a pinned dependency lock file that is often the most reliable fallback when other installation methods fail.
+:::{tab-item} Conda Lock (Source)
+[Conda‑Lock](https://github.com/conda/conda-lock) installs from a lock file with fully pinned dependencies. This is often the most reliable fallback if the standard conda/mamba installation fails.
 
 ```bash
 # Download GitHub directory
@@ -69,6 +51,34 @@ conda activate conda-lock
 conda-lock install --name vomix conda-lock.yml
 conda deactivate # deactive conda-lock environment
 conda activate vomix # activate vomix environment
+
+# Install using pip
+pip install .
+
+# Verify Installation
+vomix -h
+```
+
+:::
+
+:::{tab-item} pip (Source)
+[Pip](https://pypi.org/project/pip/) is a package manager written in Python and is used to install and manage software packages. The Python Software Foundation recommends using pip to install Python applications and its dependencies during deployment.
+
+```{admonition} Pip Installation
+:class: attention
+Although  base dependcies of `vOMIX-MEGA` are all pip-installable, underlying module tools rely on non-python dependencies such as `megahit`, `geNomad`, and more. Running specific modules ultimately requires either `conda` or `apptainer` installed. 
+```
+
+```bash
+# Download GitHub directory
+git clone https://github.com/holab-hku/vOMIX-MEGA.git
+cd vOMIX-MEGA
+
+# Install base environment
+conda create -n vomix
+
+# Activate environment
+conda activate vomix
 
 # Install using pip
 pip install .

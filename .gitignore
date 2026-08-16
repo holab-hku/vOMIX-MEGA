@@ -14,6 +14,10 @@
 !CHANGELOG.md
 !sample/sample_list.csv
 
+# explicitly ignore build artifacts (override later inclusions)
+docs/_build/
+docs/_build/**
+
 # but not these subdirectories 
 !config/
 !config/depracated/*
@@ -36,6 +40,8 @@
 !workflow/software/DeepVirFinder
 !vomix/
 !sample/contigs
+!.github/
+!.github/**
 
 # keep these subdirectories though
 workflow/database/*

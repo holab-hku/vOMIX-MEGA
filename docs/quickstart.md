@@ -21,10 +21,7 @@ conda activate vomix
 # Dry run (check jobs)
 vomix viral-identify --sdm conda --fasta sample/contigs/contigs_simulated_viral_nonviral.fasta --outdir quick-run/results --contig-splits 0 --checkv-splits 0 -j 64 --latency-wait 20 -n
 
-# Use more memory (22 GB) but run faster (~10 mins)
-vomix viral-identify --sdm conda --fasta sample/contigs/contigs_simulated_viral_nonviral.fasta --outdir quick-run/results --contig-splits 0 --checkv-splits 0 -j 64 --latency-wait 20
-
-# Use less memory (8 GB) but run slower (~40 mins)
+# Run task using conda
 vomix viral-identify --sdm conda --fasta sample/contigs/contigs_simulated_viral_nonviral.fasta --outdir quick-run/results --contig-splits 7 --checkv-splits 7 -j 64 --latency-wait 20
 
 # Quick look at results
@@ -41,10 +38,7 @@ conda activate vomix
 # Dry run (check jobs)
 vomix viral-identify --sdm apptainer --fasta sample/contigs/contigs_simulated_viral_nonviral.fasta --outdir quick-run/results --contig-splits 0 --checkv-splits 0 -j 64 --latency-wait 20 -n
 
-# Use more memory (22 GB) but run faster (~10 mins)
-vomix viral-identify --sdm conda --sdm apptainer --fasta sample/contigs/contigs_simulated_viral_nonviral.fasta --outdir quick-run/results --contig-splits 0 --checkv-splits 0 -j 64 --latency-wait 20
-
-# Use less memory (8 GB) but run slower (~40 mins)
+# Run task using apptainer
 vomix viral-identify --sdm conda --sdm apptainer --fasta sample/contigs/contigs_simulated_viral_nonviral.fasta --outdir quick-run/results --contig-splits 7 --checkv-splits 7 -j 64 --latency-wait 20
 
 # Quick look at results
