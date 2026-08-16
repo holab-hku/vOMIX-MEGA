@@ -4,8 +4,14 @@ import logging
 import os
 import platform
 import time
+from importlib.metadata import version
 from rich.logging import RichHandler
 from rich.console import Console
+
+try:
+    __version__ = version("vomix")
+except Exception:
+    __version__ = "unknown (development)"
 
 # ---------------------------------------------------------
 # Rich Logging Configuration
@@ -138,7 +144,7 @@ for cmd in modules_list + ["cluster-fast", "viral-end-to-end"]:
 
 def log_system_info(module_name):
     """Logs system and execution environment info for robust provenance."""
-    log.info("vOMIX-MEGA initialized.")
+    log.info(f"vOMIX-MEGA v{__version__} initialized.")
     log.info(f"Starting Module: {module_name}")
     log.info(f"System: {platform.system()} {platform.release()} ({platform.machine()})")
     log.info(f"Python: {platform.python_version()}")
