@@ -7,66 +7,60 @@ assignees: ''
 type: Bug
 ---
 
-**Before Submitting**
+### **Before Submitting**
 
 - [ ] I have searched existing issues and this is not a duplicate.
 - [ ] I have read the [documentation](https://vomix-mega.readthedocs.io/).
 - [ ] I have checked the [FAQ](https://vomix-mega.readthedocs.io/en/latest/troubleshoot.html#faq-common-issues) for common solutions.
 
+### **Required Diagnostic Information**
+
+📖 **For detailed instructions on how to collect each of the diagnostic items below, please see our [Troubleshooting Guide](https://vomix-snakemake.readthedocs.io/en/latest/troubleshoot.html).** It walks you through every step, including how to find log files, generate the environment listing, and capture the full terminal output.
+
 ---
 
-**Brief Issue Description**
+**`1. Brief Issue Description`**
+
 A clear and concise description of what the bug is.
 
 ---
 
-**Version Information**
+**`1. Version Information`**
 
-- **vOMIX-MEGA version**: (e.g., v0.1.0) – logged at startup: `INFO     vOMIX-MEGA v X.Y.Z initialized.`
-- **Snakemake version**: (run `snakemake --version`)
-
----
-
-**Wrapper‑Generated Snakemake Script**
-Paste the **entire** content of the `.sh` script that the vOMIX wrapper generated.  
-Location: `${OUTDIR}/.vomix/log/<timestamp>/snakemake.sh` (as logged in the vOMIX output, e.g., `Running Script: /path/to/.../snakemake.sh`).
-
-```
-
-[Paste your .sh script here]
-
-```
+- **`vOMIX-MEGA version`**: (e.g., v0.1.0) – logged at startup
+- **`Snakemake version`**: (run `snakemake --version`)
 
 ---
 
-**Full Terminal Output**
-Paste the **complete stdout/stderr** from your terminal (including the initial vOMIX logs and the Snakemake output).  
-Use the `--verbose` flag to increase verbosity.
+**`2. Full Terminal Output`** 
+
+(use `vomix --verbose`) Includes your system information and working paths. Recommend to hide your personal information and user paths. 
 
 ```
-
-[Paste terminal output here]
-
+[Paste the complete stdout/stderr here]
 ```
 
 ---
 
-**Metadata JSON Files**
-Attach or paste the contents of the three JSON files found in `${OUTDIR}/.vomix/log/<timestamp>/`:
+**`3. Wrapper-Generated .sh Script`** 
 
-- `config.json`
-- `assemblies.json`
-- `samples.json`
+Location  printed on start up as `Running Script: ${OUTDIR}/.vomix/log/<timestamp>/snakemake.sh`
 
-If you can provide them as separate files, that is ideal. Otherwise, paste their content here.
+```
+[Paste the entire snakemake.sh script here]
+```
+
+---
+
+**`4. Metadata JSON Files`**  
+
+Found in `${OUTDIR}/.vomix/log/<timestamp>/`
 
 <details>
 <summary>config.json</summary>
 
 ```
-
-[Paste config.json content]
-
+[Paste config.json here]
 ```
 
 </details>
@@ -75,9 +69,7 @@ If you can provide them as separate files, that is ideal. Otherwise, paste their
 <summary>assemblies.json</summary>
 
 ```
-
-[Paste assemblies.json content]
-
+[Paste assemblies.json here]
 ```
 
 </details>
@@ -86,48 +78,26 @@ If you can provide them as separate files, that is ideal. Otherwise, paste their
 <summary>samples.json</summary>
 
 ```
-
-[Paste samples.json content]
-
+[Paste samples.json here]
 ```
 
 </details>
 
 ---
 
-**Rule‑Specific Logs (if a rule fails)**
-When a rule fails, Snakemake prints a block like:
+**`4. Rule-Specific Logs`** 
+
+Found under Snakemake output `log: ${OUTDIR}path/to/log` if a specific rule fails.
 
 ```
-
-[date]
-rule <rule_name>:
-    output: /path/to/output
-    log: /path/to/rule.log
-    jobid: N
-    ...
-
-```
-
-Attach the log file mentioned (e.g., `rule.log`) and any benchmark files from `results/<module>/benchmarks/`.  
-If you can, paste the relevant log content here.
-
-```
-
-[Paste rule log content]
-
+[Paste the rule log file mentioned in the Snakemake output here]
 ```
 
 ---
 
-**Conda Environment Listing**
-Run your command with `--list-conda-envs` to list all Conda environments used:
+**`5. Conda Environment Details`**
 
-```bash
-vomix <module> --list-conda-envs ...
-```
-
-Paste the output table below, and for the failing rule, activate its environment (location from the table) and run `conda list`. Provide the list here.
+Run `vomix <module> --list-conda-envs ...` and paste the output table below.  Then activate the environment for the rule that is failing using `conda activate path/to/envs/<full SHA>` and run `conda list`.
 
 <details>
 <summary>--list-conda-envs output</summary>
@@ -142,42 +112,59 @@ Paste the output table below, and for the failing rule, activate its environment
 <summary>conda list for the failing rule</summary>
 
 ```
-[Paste conda list output]
+[Paste conda list output here]
 ```
 
 </details>
 
 ---
 
-**Input Files**
+**`6. Input Files`**
+
 List your input files (samplesheet, FASTQ paths, etc.). Provide a minimal subset or a public link if possible.
 
+```
+[Paste or describe input files here]
+```
+
 ---
 
-**Faulty Output Files**
+**`7. Faulty Output Files`**
+
 Describe or paste snippets from missing/corrupted output files.
 
----
-
-**Cluster / HPC Information (if applicable)**
-
-- Scheduler type (SLURM, SGE, PBS, etc.)
-- Job submission command used
-- Scheduler logs (e.g., `.out`/`.err` files, `sacct` output)
-
 ```
-[Paste relevant cluster logs]
+[Paste or describe faulty outputs here]
 ```
 
 ---
 
-**Additional Context**
-Any custom modifications to the configuration, environment variables, system‑specific details (e.g., filesystem type, network mounts), or steps you have already tried.
+**`8. Cluster / HPC Logs`** (if applicable)
+
+Include scheduler type, submission command, and any `.out`/`.err` logs.
+
+```
+[Paste cluster logs here]
+```
 
 ---
 
-**Important Note on Network & Database Issues**
+**`9. Additional Context`**
+
+Any custom modifications, environment variables, system-specific details, or steps you have already tried.
+
+```
+[Paste any extra context here]
+```
+
+---
+
+### **📝 Important Note on Network & Database Issues**
 
 If this issue involves downloading databases, connecting to remote servers, or network timeouts, please be aware that this is most likely due to your institution's HPC firewall, proxy settings, or internet restrictions.
 
 vOMIX‑MEGA **cannot override your system administration policies**. Please contact your local IT support or sysadmin to resolve connectivity issues (e.g., whitelisting domains, setting up proxies) **before** reporting network‑related errors here.
+
+---
+
+### **👾 Thank you for submitting an issue to vOMIX-MEGA! It helps us imporove the pipeline for our community.**
