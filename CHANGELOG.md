@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - **Bioconda-only installatoin** added with documentation updates.
+- **Updated pyproject.toml and environment.yml** files to speed up dependency resolution and make more robust build.
 - **Support for multiple clustering algorithms** under vCLUSTER and the vCLUSTREE aglorithm in `cluster-fast` module:
   - VClust, Linclust, Viridic, VSearch, DNAClust, and a new "all" option to run multiple methods
 - **Long‑read and single‑end (SE) read support** across all modules where feasible, with graceful error handling where not supported
