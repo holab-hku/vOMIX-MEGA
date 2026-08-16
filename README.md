@@ -48,7 +48,18 @@ vOMIX-MEGA structures complex viral and prokaryotic metagenomic workflows into d
 
 vOMIX-MEGA can be installed via **Conda / Mamba** or run using an **Apptainer / Singularity** container.
 
-### Option 1: Conda or Mamba (Recommended)
+### Option 1: Conda or Mamba (Latest Stable Release)
+
+```bash
+conda env create -f environment.yml   # Or: mamba env create -f environment.yml
+conda activate vomix
+
+# 4. Verify installation
+vomix -h
+
+```
+
+### Option 2: Conda or Mamba (Latest Release)
 
 ```bash
 # 1. Clone the repository

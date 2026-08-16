@@ -73,7 +73,7 @@ Learn how to run vOMIX-MEGA on a sample dataset.
 If you use vOMIX-MEGA in your work, please consider citing its pre-print manuscript:
 
 :::{card}
-:link: <https://vomix-mega.readthedocs.io/en/latest/>
+:link: <https://www.biorxiv.org/content/10.64898/2026.07.28.741255v1.full>
 
 **vOMIX-MEGA: A critical speed enhancement for end-to-end viral metagenomics**
 ^^^
