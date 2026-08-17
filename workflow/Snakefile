@@ -1,306 +1,70 @@
 containerized: "oras://ghcr.io/erfanshekarriz/vomix:v0.1.0-beta.1"
 
 import os
-import glob
 import sys
-import platform
-import pandas as pd
-import snakemake
 import json
 import datetime
 from typing import Union, List
 
-from scripts.sample_list_parse import parse_sample_list
-
-from rich.console import Console
-from rich.progress import Progress
-from rich.layout import Layout
-from rich.panel import Panel
+sys.path.insert(0, os.path.join(workflow.basedir, "scripts"))
+import vomix_utils
+import vomix_modules
+from vomix_utils import cleanpath, relpath, fullpath
+from vomix_parse_samples import parse_sample_list
 
 from snakemake.utils import validate
 
-console = Console()
-
 configfile: "config/config.yml"
 workdir: config["workdir"]
-config["basedir"] =  workflow.basedir
+config["basedir"] = workflow.basedir
 
-#print(f"The current Snakefile is located at: {workflow.snakefile}")
-#print(f"The base directory of the workflow is: {workflow.basedir}")
-
-# Relatavise all database directories to basedir
-# WARNING: For wrapper script, ONLY perform this IF the database directories are default. 
-
-db_list = [key for key in config if key.endswith("db")]
-
-for db_dir in db_list:
-  config[db_dir] = os.path.join(config["basedir"], config[db_dir])
-
-# Validate config file using schema
+# Validate config
 validate(config, "../config/config.schema.yml")
 
-# Important utility functions
+# Set global context for vomix_utils
+vomix_utils.config = config
+vomix_outdir = config["outdir"]
+vomix_utils.outdir = vomix_outdir
 
-def cleanpath(f):
-  """Function to clean the backlash at the end of directory path.
-  Makes sure that all 'os.path.join's are consistent"""
-  if f.endswith(os.sep):
-    fi = f.rstrip(os.sep)
-    return fi 
-  else:
-    return f 
+# Set database paths absolute relative to basedir
+db_list = [key for key in config if key.endswith("db")]
+vomix_utils.update_db_paths(db_list)
 
-def relpath(f):
-  """Function to redirect all output to a relative path.
-  This allows the snakemake to be flexible and process 
-  multiple datasets at once without locking.""" 
-  p = os.path.join(outdir, f)
-  return p
+# Clean directory paths for basic inputs
+vomix_utils.clean_config_paths(["samplelist", "datadir", "outdir", "fasta", "fastadir"])
 
-def fullpath(input_path: str) -> str:
-    # Expand '~' first, then get the absolute path
-    expanded_path = os.path.expanduser(input_path)
-    return os.path.abspath(expanded_path)
+# Setup the output directory and its .vomix subdirectory
+vomix_utils.setup_output_dir(vomix_outdir)
 
-def readfasta(f):
-  """Function to read fasta files for different input purposes"""
-  fastap = f
-  _, extension = os.path.splitext(fastap)
-  console.print(f"\n[dim]The config['fasta'] parameter is not empty, using '{fastap}' as input.")
-  if extension.lower() not in ['.fa', '.fasta', '.fna']:
-    console.print(Panel.fit("File path does not end with .fa, .fasta, or .fna", title = "Error", subtitle="Input not fasta file"))
-    sys.exit(1)
-  #fasta_path = os.path.join(config["workdir"], fastap)
-  fasta_path = fastap
-  if not os.path.exists(fasta_path):
-    console.print(Panel.fit("[dim]The fasta file path provided does not exist.", title="Error", subtitle="Fasta File Path"))
-    sys.exit(1)
-  if config['sample-name'] == "":
-    sample_id = os.path.splitext(os.path.basename(fastap))[0]
-    console.print(Panel.fit(f"[dim]config['sample-name'] not provided, using base name {sample_id} for output naming.", title="Warning", subtitle="Sample Name"))
-    config['sample-name'] = sample_id
-  else:
-    sample_id = config['sample-name']
-    config['sample-name'] = sample_id
-  return fasta_path
+# Ensure only one input provided to break ambiguity (samplelist | fasta | fastadird)
+vomix_utils.validate_input_count(config)
 
-def readfastadir(f):
-  """Function to read directory filled with fasta files for different input purposes"""
-  fastadir = cleanpath(f)
-  #fastadirp = os.path.join(os.getcwd(), fastadir)
-  fastadirp = fastadir
-  if not os.path.exists(fastadirp):
-    console.print(Panel.fit(f"The input file path '{fastadirp}' does not exist.", title="Error", subtitle="Fasta Directory Not Found."))
-  fastafs = [f for f in os.listdir(fastadirp) if (f.endswith('.fa') or f.endswith('.fasta') or f.endswith('.fna'))]
-  if len(fastafs) == 0:
-    console.print(Panel.fit(f"There are no files ending with .fa, .fasta, or .fna in '{fastadirp}'.", title="Error", subtitle="No Fasta Files"))
-    sys.exit(1)
-  assembly_ids = [os.path.basename(fastaf).rsplit(".", 1)[0] for fastaf in fastafs]
-  fastafs_str = '\n'.join(fastafs)
-  console.print(Panel.fit(f"Notice:[dim] Reading input as fasta files from config['fastadir'], the following files have been parsed correctly.\n{fastafs_str}", title="Notice", subtitle="Reading Fasta Directory"))
-  config['assembly-ids'] = assembly_ids
-  fasta_path = [os.path.join(fastadirp, fastaf) for fastaf in fastafs]
-  return fasta_path
+# Save configuration file
+vomix_utils.save_config_file(config, vomix_outdir)
 
-# Clean directory paths & add back to config.yml file
-for configkey in ["samplelist", "datadir", "outdir", "fasta", "fastadir"]:
-    if configkey in config and config[configkey] != "":        
-        full_path = fullpath(cleanpath(config[configkey]))
-        config[configkey] = full_path  
-
+# Set final post-validated variables
 samplelist = config.get("samplelist")
-datadir    = config.get("datadir")
-outdir     = config.get("outdir")
-fasta      = config.get("fasta")
-fastadir   = config.get("fastadir")
+datadir = config.get("datadir")
+outdir = config.get("outdir")
+fasta = config.get("fasta")
+fastadir = config.get("fastadir")
 
-# Create & format relative output directory
-if not (os.path.exists(outdir) and os.path.exists(os.path.join(outdir, ".vomix"))):
-  os.makedirs(os.path.join(outdir, ".vomix"), exist_ok=True)
-
-
-### Set temporary dir
-#if not os.getenv("TMPDIR"):
-#  os.environ["TMPDIR"] = "tmp"
-#  os.makedirs(os.environ["TMPDIR"], exist_ok=True)
-
-
-### Set wildcard constraints
+# Set wildcard constraints
 wildcard_constraints:
-  sample_id = "[A-Za-z0-9_-]+"
+    sample_id = "[A-Za-z0-9_-]+"
 
+# ----------------------------------------------------------------------
+# Include modules and collect targets
+# ----------------------------------------------------------------------
+for vomix_module in vomix_modules.ALL_MODULES:
+    if vomix_module.should_run(config):
+        vomix_module.setup(config, outdir)
+        for smk_file in vomix_module.snakemake_files:
+            include: smk_file
+        vomix_module.add_targets()
 
-inputkeys = ["fasta", "samplelist", "fastadir"]
-emptykeys = sum(1 for key in inputkeys if config.get(key, "") != "")
-
-if emptykeys != 1 and (config["module"] not in ["setup-database","containerize"]): 
-  console.print(Panel.fit(f"[dim] Multiple or no inputs detected. You can EITHER provide config['samplelist'] OR config['fastadir'] OR config['fasta']. You must provide at least one input format. Please read more about the permitted inputs on our wiki page.", title="Error", subtitle="Multiple Input Formats"))
-  sys.exit(1)
-
-
-### Save configuration file [WARNING: THIS DECTION IS DIFFERENT BETWEEN THE SNAKEMAKE BACKEND AND WRAPPER SOFTWARES]
-now = datetime.datetime.now()
-nowstr = now.strftime("%Y%m%d_%H%M%S")
-config["latest-run"] = nowstr
-
-logdir = relpath(".vomix/log/vomix" + nowstr)
-os.makedirs(logdir, exist_ok=True)
-with open(os.path.join(logdir,  "config.json"), "w") as configf:
-  json.dump(config, configf)
-
-
-
-#########################################
-# Delete log files if module is "reset" #
-#########################################
-
-def set_module_target(logfiles: Union[str, List[str]]) -> list:
-    """Accepts a single logfile path or a list of logfile paths.
-    
-    Deletes files if config['reset'] is True and appends them to the global targets list.
-    """
-    global targets, console
-
-    # Normalize input to always be a list of strings
-    logfile_list = [logfiles] if isinstance(logfiles, str) else logfiles
-
-    if config.get("reset"):
-        module_name = config.get("module", "")
-
-        for logfile in logfile_list:
-            if not os.path.exists(logfile):
-                console.print()
-                console.print(Panel.fit(
-                    f"[bold yellow]Warning[/bold yellow]: [cyan]config['reset'] = True[/cyan] "
-                    f"for module [bold]{module_name}[/bold], but no done.log file "
-                    f"was found at [dim]{logfile}[/dim]. No action taken.",
-                    title=f"Warning: {module_name}",
-                    subtitle="No Modules to Reset",
-                    border_style="yellow"
-                ))
-            else:
-                try:
-                    os.remove(logfile)
-                    console.print()
-                    console.print(Panel.fit(
-                        f"[bold red]Warning[/bold red]: [cyan]config['reset'] = True[/cyan] "
-                        f"for module [bold]{module_name}[/bold]. The done.log file "
-                        f"at [dim]{logfile}[/dim] has been successfully deleted.",
-                        title=f"Warning: {module_name}",
-                        subtitle="Module Reset",
-                        border_style="red"
-                    ))
-                except OSError as e:
-                    console.print(f"[bold red]Error[/bold red]: Could not delete {logfile}. Reason: {e}")
-
-    # Append all logfiles incrementally to the global list
-    targets.extend(logfile_list)
-    return targets
-
-
-####################################
-# Include & Add Targets Per Module #
-####################################
-
-targets = []
-
-# setup-database
-if config["setup-database"] or config["module"] == "setup-database" or config["module"] == "run-all":
-    include: "rules/setup-database.smk"
-    if config["module"] == "setup-database":
-        set_module_target(os.path.join(config["basedir"], "database/.benchmarks/done.log"))
-
-# cluster-benchmark
-if config["module"] == "cluster-benchmark":
-    include: "rules/cluster-benchmark.smk"
-    set_module_target(relpath("cluster-benchmark/logs/done.log"))
-
-# fix symlink
-if config["module"] == "symlink":
-    include: "rules/symlink.smk"
-    set_module_target(relpath(".vomix/log/symlink_done.log"))
-
-# pre-process
-if config["module"] in ["preprocess", "viral-end-to-end", "run-all"]:
-    include: "rules/preprocess.smk"
-    set_module_target(relpath("preprocess/logs/done.log"))
-
-# assembly 
-if config["module"] in ["assembly", "viral-end-to-end", "run-all"]:
-    include: "rules/assembly.smk"
-    set_module_target(relpath("assembly/logs/done.log"))
-
-# viral-identify
-if config["module"] in ["viral-identify", "viral-end-to-end", "run-all"]:
-    include: "rules/viral-identify.smk"
-    include: "rules/checkv-pyhmmer.smk"
-    include: "rules/cluster-fast.smk"
-    set_module_target(relpath("identify/viral/logs/done.log"))
-
-# viral-benchmark
-if config["module"] in ["viral-benchmark", "run-all"]:
-    include: "rules/viral-benchmark.smk"
-    set_module_target(relpath("identify/viral/logs/done_benchmarks.log"))
-
-# viral-refilter
-if config["module"] in ["viral-refilter"]:
-    include: "rules/refilter-genomad.smk"
-    include: "rules/checkv-pyhmmer.smk"
-    include: "rules/cluster-fast.smk"
-    set_module_target([
-        relpath("identify/viral/logs/done.log"), 
-        relpath("identify/viral/logs/clustering-done.log"), 
-        relpath("identify/viral/logs/checkv-done.log")
-    ])
-
-# checkv-pyhmmer
-if config["module"] in ["checkv-pyhmmer"]:
-    include: "rules/checkv-pyhmmer.smk"
-    set_module_target(relpath("identify/viral/logs/checkv-done.log"))
-
-# cluster-fast
-if config["module"] in ["cluster-fast"]:
-    include: "rules/cluster-fast.smk"
-    set_module_target(relpath("identify/viral/logs/clustering-done.log"))
-
-# viral-taxonomy
-if config["module"] in ["viral-taxonomy", "viral-end-to-end", "run-all"]:
-    include: "rules/viral-taxonomy.smk"
-    set_module_target(relpath("taxonomy/viral/logs/done.log"))
-
-# viral-community
-if config["module"] in ["viral-community", "viral-end-to-end", "run-all"]:
-    include: "rules/viral-community.smk"
-    set_module_target(relpath("community/viral/logs/done.log"))
-
-# prok-binning
-if config["module"] in ["prok-binning", "run-all"]:
-    include: "rules/prok-binning.smk"
-    set_module_target(relpath("binning/prok/logs/done.log"))
-
-# viral-host
-if config["module"] in ["viral-host", "viral-end-to-end", "run-all"]:
-    include: "rules/viral-host.smk"
-    set_module_target(relpath("host/logs/done.log"))
-
-# viral-annotate
-if config["module"] in ["viral-annotate", "viral-end-to-end", "run-all"]:
-    include: "rules/viral-annotate.smk"
-    set_module_target(relpath("annotate/viral/logs/done.log"))
-
-# prok-community
-if config["module"] in ["prok-community", "run-all"]:
-    include: "rules/prok-community.smk"
-    set_module_target(relpath("community/metaphlan/logs/done.log"))
-
-# prok-annotate
-if config["module"] in ["prok-annotate", "run-all"]:
-    include: "rules/prok-annotate.smk"
-    set_module_target(relpath("annotate/prok/logs/done.log"))
-
-
-###############
-# MASTER RULE #
-###############
+# ----------------------------------------------------------------------
+# Master rule
+# ----------------------------------------------------------------------
 rule all:
-  input: targets
+    input: vomix_utils.targets

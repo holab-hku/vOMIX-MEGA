@@ -1,32 +1,24 @@
+# ----------------------------------------------------------------------
+# Configuration & setup
+# ----------------------------------------------------------------------
 import sys
-from rich.console import Console
-from rich.panel import Panel
+console = vomix_utils.console
+Panel = vomix_utils.Panel
 
-console = Console()
+vomix_module = vomix_utils.current_module
+logdir = vomix_module.logdir
+benchmarks = vomix_module.benchmarks
+tmpd = vomix_module.tmpd
+samples = vomix_module.samples
+assemblies = vomix_module.assemblies
+fastap = vomix_module.fastap
+sample_id = vomix_module.sample_id
+assembly_ids = vomix_module.assembly_ids
 
-logdir=relpath("binning/prok/logs")
-benchmarks=relpath("binning/prok/benchmarks")
-tmpd=relpath("binning/prok/tmp")
 
-email = config["NCBI-email"]
-api_key = config["NCBI-API-key"]
-nowstr = config["latest-run"]
-outdir = config["outdir"]
-datadir = config["datadir"]
-
-parse_quiet = config.get("module") in ["viral-end-to-end", "run-all"]
-parse_verbose = config.get("verbose", False)
-samples, assemblies = parse_sample_list(
-    config["samplelist"],
-    datadir,
-    outdir,
-    email,
-    api_key,
-    nowstr,
-    quiet=parse_quiet,
-    verbose=parse_verbose
-)
-
+# ----------------------------------------------------------------------
+# Give error that longread is not supported
+# ----------------------------------------------------------------------
 long_read_samples = [
     s for s, info in samples.items()
     if info.get("read_type") in ["pacbio", "nanopore"]
@@ -34,7 +26,7 @@ long_read_samples = [
 if long_read_samples:
     console.print(
         Panel.fit(
-            f"[bold red]ERROR:[/] Prokaryotic binning does not yet support long reads.\n"
+            f"[bold red]ERROR:[/] Prokaryotic annotation (HUMAnN3) does not support long reads.\n"
             f"Found long‑read samples: {long_read_samples}\n"
             f"Please remove these samples from the sample list for this module, or use a different workflow for long‑read data.",
             title="Long‑Read Not Supported",
@@ -43,11 +35,11 @@ if long_read_samples:
     )
     sys.exit(1)
 
-
-
-### MASTER RULE 
+# ----------------------------------------------------------------------
+# MASTER RULE
+# ----------------------------------------------------------------------
 if config["binning-consensus"]:
-  rule done_log:
+  rule prok_binning_done:
     name: "prok-binning.smk Done. removing tmp files"
     localrule: True
     input:
@@ -73,7 +65,7 @@ if config["binning-consensus"]:
       touch {output}
       """
 else:
-  rule done_log:
+  rule prok_binning_done:
     name: "prok-binning.smk Done. removing tmp files"
     localrule: True
     input:

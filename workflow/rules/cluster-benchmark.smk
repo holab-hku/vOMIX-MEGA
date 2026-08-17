@@ -1,5 +1,6 @@
-import os
-
+# ----------------------------------------------------------------------
+# Configuration & setup
+# ----------------------------------------------------------------------
 logdir     = relpath("cluster-benchmark/logs")
 benchmarks = relpath("cluster-benchmark/benchmarks")
 tmpd       = relpath("cluster-benchmark/tmp")
@@ -49,7 +50,7 @@ def get_resources(dataset):
         return {"mem_mb": 65536, "disk_mb": 128000, "threads": 16}
 
 
-rule done:
+rule cluster_benchmark_done:
     name: "cluster-benchmark.smk Done. removing tmp files"
     localrule: True
     input:

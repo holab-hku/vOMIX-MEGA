@@ -1,3 +1,6 @@
+# ----------------------------------------------------------------------
+# Configuration & setup
+# ----------------------------------------------------------------------
 logdir = relpath("taxonomy/viral/logs")
 tmpd = relpath("taxonomy/viral/tmp")
 benchmarks = relpath("taxonomy/viral/benchmarks")
@@ -29,7 +32,7 @@ else:
 
 ### MASTER RULE 
 
-rule done_log:
+rule viral_taxonomy:
   name: "viral-taxonomy.smk Done. removing tmp files"
   localrule: True
   input:

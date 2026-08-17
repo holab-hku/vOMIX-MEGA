@@ -1,61 +1,28 @@
-import os
-import sys
-from rich.console import Console
-from rich.panel import Panel
+# ----------------------------------------------------------------------
+# Configuration & setup
+# ----------------------------------------------------------------------
+vomix_module = vomix_utils.current_module
+logdir = vomix_module.logdir
+benchmarks = vomix_module.benchmarks
+tmpd = vomix_module.tmpd
+samples = vomix_module.samples
+assemblies = vomix_module.assemblies
+fastap = vomix_module.fastap
+sample_id = vomix_module.sample_id
+assembly_ids = vomix_module.assembly_ids
 
-console = Console()
 
-logdir = relpath("identify/viral/logs")
-benchmarks = relpath("identify/viral/benchmarks")
-tmpd = relpath("identify/viral/tmp")
-
-email = config["NCBI-email"]
-api_key = config["NCBI-API-key"]
-nowstr = config["latest-run"]
-outdir = config["outdir"]
-datadir = config["datadir"]
-
-os.makedirs(logdir, exist_ok=True)
-os.makedirs(benchmarks, exist_ok=True)
-os.makedirs(tmpd, exist_ok=True)
-
-short_read_assembler = config.get('short-read-assembler', 'megahit')
-
-# Split parts for parallelisation
+# ------------------------------------------------------------
+# Setup data splitting functionality
+# ------------------------------------------------------------
 split_part = list(range(1, config["contig-splits"] + 2))
 split_part_ids = [f"{i:03d}" for i in range(1, config["contig-splits"] + 2)]  # matches seqkit
 
-# ------------------------------------------------------------
-# Read input (fasta, fastadir, or sample list)
-# ------------------------------------------------------------
-if config['fasta'] != "":
-    fastap = readfasta(config['fasta'])
-    sample_id = config["sample-name"]
-    assembly_ids = [sample_id]
-
-elif config['fastadir'] != "":
-    fastap = readfastadir(config['fastadir'])
-    assembly_ids = config["assembly-ids"]
-else:
-    parse_quiet = config.get("module") in ["viral-end-to-end", "run-all"]
-    verbose = config.get("verbose", False)
-    samples, assemblies = parse_sample_list(
-        config["samplelist"],
-        datadir,
-        outdir,
-        email,
-        api_key,
-        nowstr,
-        parse_quiet, 
-        verbose
-    )
-    fastap = relpath("assembly/samples/{sample_id}/output/final.contigs.fa")
-    assembly_ids = list(assemblies.keys())  
 
 # ------------------------------------------------------------
-# MASTER RULE (unchanged, just uses assembly_ids)
+# MASTER RULE
 # ------------------------------------------------------------
-rule done_log:
+rule viral_benchmark_done:
     name: "viral-benchmark.smk Done. removing tmp files"
     localrule: True
     input:

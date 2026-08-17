@@ -1,24 +1,20 @@
-logdir = relpath("annotate/viral/logs")
-tmpd = relpath("annotate/viral/tmp")
-benchmarks = relpath("annotate/viral/benchmarks")
+# ----------------------------------------------------------------------
+# Configuration & setup
+# ----------------------------------------------------------------------
+vomix_module = vomix_utils.current_module
+logdir = vomix_module.logdir
+benchmarks = vomix_module.benchmarks
+tmpd = vomix_module.tmpd
+samples = vomix_module.samples
+assemblies = vomix_module.assemblies
+fastap = vomix_module.fastap
+sample_id = vomix_module.sample_id
+assembly_ids = vomix_module.assembly_ids
 
-os.makedirs(logdir, exist_ok=True)
-os.makedirs(tmpd, exist_ok=True)
-os.makedirs(benchmarks, exist_ok=True)
-
-n_cores = config['max-cores']
-
-### Read single fasta file if input
-if config['fasta'] != "":
-  fastap = readfasta(config['fasta'])
-  sample_id = config["sample-name"]
-  assembly_ids = [sample_id]
-else:
-  fastap = relpath("identify/viral/output/combined.final.vOTUs.fa")
-
-
-### MASTER RULE 
-rule done_log:
+# ------------------------------------------------------------
+# MASTER RULE
+# ------------------------------------------------------------
+rule viral_annotate_done:
   name: "viral-annotate.smk Done. removing tmp files"
   localrule: True
   input:

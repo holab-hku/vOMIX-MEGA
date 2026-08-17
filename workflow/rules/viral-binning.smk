@@ -1,5 +1,6 @@
-import os 
-
+# ----------------------------------------------------------------------
+# Configuration & setup
+# ----------------------------------------------------------------------
 logdir = relpath("binning/viral/logs")
 benchmarks = relpath("binning/viral/benchmarks")
 tmpd = relpath("binning/viral/tmp")

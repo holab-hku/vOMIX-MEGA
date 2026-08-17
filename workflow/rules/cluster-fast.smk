@@ -1,34 +1,31 @@
-import math
-import os
+# ----------------------------------------------------------------------
+# Configuration & setup
+# ----------------------------------------------------------------------
+vomix_module = vomix_utils.current_module
+logdir = vomix_module.logdir
+benchmarks = vomix_module.benchmarks
+tmpd = vomix_module.tmpd
+samples = vomix_module.samples
+assemblies = vomix_module.assemblies
+fastap = vomix_module.fastap
+sample_id = vomix_module.sample_id
+assembly_ids = vomix_module.assembly_ids
 
+
+# ------------------------------------------------------------
+# Setup data splitting functionality
+# ------------------------------------------------------------
 wildcard_constraints:
     layer=r"\d+",
     chunk=r"\d+"
-
-logdir = relpath("identify/viral/logs")
-tmpd = relpath("identify/viral/tmp")
-benchmarks=relpath("identify/viral/benchmarks")
-
-os.makedirs(logdir, exist_ok=True)
-os.makedirs(tmpd, exist_ok=True)
-os.makedirs(benchmarks, exist_ok=True)
-
 cluster_method_input = config.get("cluster-method")  # keep original config value
 cluster_iter = config.get("cluster-iter")            # nLayers
 n_chunks_layer_1 =  2 ** (cluster_iter - 1)          # nCluster Chunks for Layer 1
 
-### Read single fasta file if input
-if config.get("fasta", "") != "" and config.get("module", "") == "cluster-fast":
-    fastap = readfasta(config.get("fasta", ""))
-    sample_id = config.get("sample-name", "")
-    assembly_ids = [sample_id]
-else:
-    fastap = relpath("identify/viral/intermediate/scores/combined.viralcontigs.fa")
-    sample_id = "combined.viralcontigs"
-    assembly_ids = [sample_id]
 
-
-# ----- MASTER RULE -----
+# ------------------------------------------------------------
+# MASTER RULE
+# ------------------------------------------------------------
 if cluster_method_input == "all":
     final_targets = [
         relpath("identify/viral/output/derep/checkv-megablast/combined.viralcontigs.derep.fa"),
@@ -52,7 +49,7 @@ else:
         relpath("identify/viral/output/derep/combined.viralcontigs.derep.fa.clstr"),
     ]
 
-rule done_log:
+rule cluster_fast_done:
     name: "clustering.smk Done. removing tmp files"
     localrule: True
     input:

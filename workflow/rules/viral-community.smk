@@ -1,34 +1,23 @@
-import os
-
-logdir = relpath("community/viral/logs")
-tmpd = relpath("community/viral/tmp")
-benchmarks = relpath("community/viral/benchmarks")
-
-os.makedirs(benchmarks, exist_ok=True)
-os.makedirs(logdir, exist_ok=True)
-os.makedirs(tmpd, exist_ok=True)
-
-methodslist = config["coverm-methods"].split()
+# ----------------------------------------------------------------------
+# Configuration & setup
+# ----------------------------------------------------------------------
+vomix_module = vomix_utils.current_module
+logdir = vomix_module.logdir
+benchmarks = vomix_module.benchmarks
+tmpd = vomix_module.tmpd
+samples = vomix_module.samples
+assemblies = vomix_module.assemblies
+fastap = vomix_module.fastap
+sample_id = vomix_module.sample_id
+assembly_ids = vomix_module.assembly_ids
+methodslist = vomix_module.methodslist
 methods_c = ",".join(methodslist)
 
-email = config["NCBI-email"]
-api_key = config["NCBI-API-key"]
-nowstr = config["latest-run"]
-outdir = config["outdir"]
-datadir = config["datadir"]
-
-parse_quiet = config.get("module") in ["viral-end-to-end", "run-all"]
-parse_verbose = config.get("verbose", False)
-
-samples, assemblies = parse_sample_list(
-    config["samplelist"], datadir, outdir, email, api_key, nowstr,
-    quiet=parse_quiet, verbose=parse_verbose
-)
 
 # ----------------------------------------------------------------------
 # MASTER RULE
 # ----------------------------------------------------------------------
-rule done:
+rule viral_community_done:
     name: "viral-community.smk Done. removing tmp files"
     localrule: True
     input:
@@ -64,7 +53,6 @@ rule coverm_endtoend:
         bamdir=os.path.join(tmpd, "coverm/{sample_id}/bam"),
         tmpdir=os.path.join(tmpd, "coverm/{sample_id}"),
         read_type=lambda wildcards: samples[wildcards.sample_id]["read_type"],
-        # Map read_type to the correct CoverM mapper
         mapper=lambda wildcards: {
             "paired": config.get("coverm-sr-mapper", "minimap2-sr"),
             "single": config.get("coverm-sr-mapper", "minimap2-sr"),

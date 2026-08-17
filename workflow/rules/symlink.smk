@@ -1,5 +1,7 @@
+# ----------------------------------------------------------------------
+# Configuration & setup
+# ----------------------------------------------------------------------
 os.makedirs(relpath(".vomix/log"), exist_ok=True)
-
 email=config["NCBI-email"]
 api_key=config["NCBI-API-key"]
 nowstr=config["latest-run"]
@@ -31,7 +33,7 @@ for symlink in symlinklist:
 # REMAKE SYMLINKS #
 ###################
 
-rule done:
+rule symlink_done:
   name: "symlink.py Done. fixed all broken symlinks"
   localrule: True
   input: 

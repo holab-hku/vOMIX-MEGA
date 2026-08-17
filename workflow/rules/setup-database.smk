@@ -1,17 +1,15 @@
-import os
+# ----------------------------------------------------------------------
+# Configuration & setup (from module context)
+# ----------------------------------------------------------------------
+ctx = vomix_utils.current_module
+logdir = ctx.logdir
+benchmarks = ctx.benchmarks
+tmpd = ctx.tmpd
 
-logdir=os.path.join(config['basedir'], "database/.logs")
-benchmarks=os.path.join(config['basedir'], "database/.benchmarks")
-tmpd=os.path.join(config['basedir'], "database/.tmp")
-
-os.makedirs(logdir, exist_ok=True)
-os.makedirs(benchmarks, exist_ok=True)
-os.makedirs(tmpd, exist_ok=True)
-
-n_cores = config['max-cores']
-
-
-rule done:
+# ------------------------------------------------------------
+# MASTER RULE
+# ------------------------------------------------------------
+rule setup_database_done:
   name: "setup-database.smk Done."
   localrule: True
   input:

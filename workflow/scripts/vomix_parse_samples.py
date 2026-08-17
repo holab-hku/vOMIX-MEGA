@@ -460,6 +460,9 @@ def parse_sample_list(
         check_duplicates(df)
 
         if verbose:
+            console.log(
+                f"[cyan]Now parsing sample list with {os.path.basename(__file__)}:[/]"
+            )
             console.log("[cyan]DataFrame after cleaning:[/]")
             console.log(df.to_string())
 

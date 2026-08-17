@@ -1,40 +1,16 @@
-import sys
-import os
-from rich.console import Console
-from rich.panel import Panel
-
-console = Console()
-
 # ----------------------------------------------------------------------
 # Configuration & setup
 # ----------------------------------------------------------------------
-short_assembler = config.get("short-read-assembler", "megahit")
-logdir = relpath(os.path.join("assembly", "logs"))
-tmpd = relpath(os.path.join("assembly", "tmp"))
-benchmarks = relpath(os.path.join("assembly", "benchmarks"))
-
-os.makedirs(logdir, exist_ok=True)
-os.makedirs(benchmarks, exist_ok=True)
-os.makedirs(tmpd, exist_ok=True)
-
-email = config["NCBI-email"]
-api_key = config["NCBI-API-key"]
-nowstr = config["latest-run"]
-outdir = config["outdir"]
-datadir = config["datadir"]
-
-parse_quiet = config.get("module") in ["viral-end-to-end", "run-all"]
-parse_verbose = config.get("verbose", False)
-samples, assemblies = parse_sample_list(
-    config["samplelist"],
-    datadir,
-    outdir,
-    email,
-    api_key,
-    nowstr,
-    quiet=parse_quiet,
-    verbose=parse_verbose
-)
+vomix_module = vomix_utils.current_module
+logdir = vomix_module.logdir
+benchmarks = vomix_module.benchmarks
+tmpd = vomix_module.tmpd
+samples = vomix_module.samples
+assemblies = vomix_module.assemblies
+fastap = vomix_module.fastap
+sample_id = vomix_module.sample_id
+assembly_ids = vomix_module.assembly_ids
+short_assembler = vomix_module.sr_assembler
 
 # ----------------------------------------------------------------------
 # Mapping: read_type -> assembler name
@@ -89,7 +65,7 @@ def get_sample_ids(assembly_id):
 # ----------------------------------------------------------------------
 # MASTER RULE
 # ----------------------------------------------------------------------
-rule done:
+rule assembly_done:
     name: "assembly.smk Done. removing tmp files"
     localrule: True
     input:

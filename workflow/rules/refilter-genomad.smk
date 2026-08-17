@@ -1,3 +1,6 @@
+# ----------------------------------------------------------------------
+# Configuration & setup
+# ----------------------------------------------------------------------
 logdir=relpath("identify/viral/logs")
 benchmarks=relpath("identify/viral/benchmarks")
 tmpd=relpath("identify/viral/tmp")
@@ -67,7 +70,7 @@ for file in files_to_delete:
 
 ### MASTER RULE 
 
-rule done_log:
+rule refilter_genomad_done:
   name: "genomad-refilter.smk Done. removing tmp files"
   localrule: True
   input:

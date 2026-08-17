@@ -1,32 +1,15 @@
-import sys
-from rich.console import Console
-from rich.panel import Panel
-
-console = Console()
-
-logdir = relpath("preprocess/logs")
-benchmarks = relpath("preprocess/benchmarks")
-tmpd = relpath("preprocess/tmp")
-
-email = config["NCBI-email"]
-api_key = config["NCBI-API-key"]
-nowstr = config["latest-run"]
-outdir = config["outdir"]
-datadir = config["datadir"]
-
-parse_quiet = config.get("quiet", False)
-parse_verbose = config.get("verbose", False)
-
-samples, assemblies = parse_sample_list(
-    config["samplelist"],
-    datadir,
-    outdir,
-    email,
-    api_key,
-    nowstr,
-    quiet=parse_quiet,
-    verbose=parse_verbose
-)
+# ----------------------------------------------------------------------
+# Configuration & setup
+# ----------------------------------------------------------------------
+vomix_module = vomix_utils.current_module
+logdir = vomix_module.logdir
+benchmarks = vomix_module.benchmarks
+tmpd = vomix_module.tmpd
+samples = vomix_module.samples
+assemblies = vomix_module.assemblies
+fastap = vomix_module.fastap
+sample_id = vomix_module.sample_id
+assembly_ids = vomix_module.assembly_ids
 
 # ----------------------------------------------------------------------
 # Validation: Bowtie2 cannot handle long reads
@@ -67,41 +50,23 @@ def retrieve_accessions(wildcards):
 # MASTER RULE
 # ----------------------------------------------------------------------
 if config["dwnld-only"]:
-    rule done:
+    rule preprocess_done:
         name: "preprocessing.py download SRA only Done."
         localrule: True
         input:
-            expand(
-                os.path.join(datadir, "{sample_id}_{i}.fastq.gz"),
-                sample_id=samples.keys(),
-                i=[1, 2],
-            )
+            expand(os.path.join(datadir, "{sample_id}_{i}.fastq.gz"), sample_id=samples.keys(),i=[1, 2])
         output:
             os.path.join(logdir, "done.log")
         shell: "touch {output}"
 
 elif config["keep-intermediates"]:
-    rule done:
+    rule preprocess_done:
         name: "preprocessing.py Done. deleting all tmp files"
         localrule: True
         input:
-            expand(
-                relpath("preprocess/samples/{sample_id}/{sample_id}_R{i}.fastq.gz"),
-                sample_id=samples.keys(),
-                i=[1, 2],
-            ),
-            expand(
-                os.path.join(datadir, "{sample_id}_{i}.fastq.gz"),
-                sample_id=samples.keys(),
-                i=[1, 2],
-            ),
-            expand(
-                relpath(
-                    "preprocess/samples/{sample_id}/output/{sample_id}_R{i}_cut.trim.filt.fastq.gz"
-                ),
-                sample_id=samples.keys(),
-                i=[1, 2],
-            ),
+            expand(relpath("preprocess/samples/{sample_id}/{sample_id}_R{i}.fastq.gz"), sample_id=samples.keys(), i=[1, 2]),
+            expand(os.path.join(datadir, "{sample_id}_{i}.fastq.gz"), sample_id=samples.keys(), i=[1, 2]),
+            expand(relpath("preprocess/samples/{sample_id}/output/{sample_id}_R{i}_cut.trim.filt.fastq.gz"), sample_id=samples.keys(), i=[1, 2]),
             relpath("preprocess/reports/preprocess_report.html"),
             relpath("preprocess/reports/library_size_stats.csv"),
         output:
@@ -109,27 +74,13 @@ elif config["keep-intermediates"]:
         shell: "touch {output}"
 
 else:
-    rule done:
+    rule preprocess_done:
         name: "preprocessing.py Done. deleting all tmp and intermediate files."
         localrule: True
         input:
-            expand(
-                relpath("preprocess/samples/{sample_id}/{sample_id}_R{i}.fastq.gz"),
-                sample_id=samples.keys(),
-                i=[1, 2],
-            ),
-            expand(
-                os.path.join(datadir, "{sample_id}_{i}.fastq.gz"),
-                sample_id=samples.keys(),
-                i=[1, 2],
-            ),
-            expand(
-                relpath(
-                    "preprocess/samples/{sample_id}/output/{sample_id}_R{i}_cut.trim.filt.fastq.gz"
-                ),
-                sample_id=samples.keys(),
-                i=[1, 2],
-            ),
+            expand(relpath("preprocess/samples/{sample_id}/{sample_id}_R{i}.fastq.gz"), sample_id=samples.keys(), i=[1, 2],),
+            expand(os.path.join(datadir, "{sample_id}_{i}.fastq.gz"),sample_id=samples.keys(),i=[1, 2],),
+            expand(relpath("preprocess/samples/{sample_id}/output/{sample_id}_R{i}_cut.trim.filt.fastq.gz"),sample_id=samples.keys(),i=[1, 2],),
             relpath("preprocess/reports/preprocess_report.html"),
             relpath("preprocess/reports/library_size_stats.csv"),
         output:

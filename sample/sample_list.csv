@@ -3,9 +3,9 @@ sample_id,accession,assembly,R1,R2,read_type
 ,SRR390728,,,,single
 sample_1,SRR5898936,co_assembly_A,,,paired
 sample_2,SRR5898937,co_assembly_A,,,paired
-,SRR6702609,,,,nanopore
-,SRR12507025,,,,pacbio
-,SRR12507026,,,,pacbio
+#,SRR6702609,,,,nanopore
+#,SRR12507025,,,,pacbio
+#,SRR12507026,,,,pacbio
 # local_paired,,local_assembly,/full/path/to/R1.fastq.gz,/full/path/to/R2.fastq.gz,paired
 # local_single,,local_single_assembly,/full/path/to/single.fastq.gz,,single
 # local_nanopore,,nanopore_assembly,/full/path/to/nanopore.fastq.gz,,nanopore
