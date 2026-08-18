@@ -104,8 +104,8 @@ _common_opts = [
     "--splits",
     "--keep-intermediates",
     "--setup-database",
-    "--max-cores",
     "--NCBI-email",
+    "--NCBI-API-key",
     "--NCBI-API-key",
     "--custom-config",
     "--reset",
@@ -163,9 +163,9 @@ def setOptions(module_obj, kwargs):
     module_obj.latest_run = kwargs.get("latest_run")
     module_obj.keep_intermediates = kwargs.get("keep_intermediates")
     module_obj.setup_database = kwargs.get("setup_database")
-    module_obj.max_cores = kwargs.get("max_cores")
     module_obj.ncbi_email = kwargs.get("ncbi_email")
     module_obj.ncbi_api_key = kwargs.get("ncbi_api_key")
+    module_obj.verbose = kwargs.get("verbose")
     module_obj.custom_config = kwargs.get("custom_config")
     module_obj.reset = kwargs.get("reset")
     return module_obj
@@ -275,12 +275,6 @@ def common_options(function):
         help="Initialize or update databases when executing modules other than 'setup-database'. Existing databases won't be reinstalled unless forced with Snakemake parameters like --forcerun or -F. (default: True)",
     )(function)
     function = click.option(
-        "--max-cores",
-        default=None,
-        required=False,
-        help="Maximum number of CPU cores allocated across parallel Snakemake tasks. Distinct from execution parameters like -j or -n. Currently under development. (default: 4)",
-    )(function)
-    function = click.option(
         "--NCBI-email",
         default=None,
         required=False,
@@ -291,6 +285,14 @@ def common_options(function):
         default=None,
         required=False,
         help="NCBI API key for higher throughput data retrieval. Obtain from NCBI following instructions at https://ncbiinsights.ncbi.nlm.nih.gov/2017/11/02/new-api-keys-for-the-e-utilities. (default: )",
+    )(function)
+    function = click.option(
+        "--verbose",
+        is_flag=True,
+        flag_value=True,
+        default=False,
+        required=False,
+        help="Print out full logs of all scripts running wherever applicable. Use when debugging. (default: False)",
     )(function)
     function = click.option(
         "--custom-config",

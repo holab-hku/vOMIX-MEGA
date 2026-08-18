@@ -13,9 +13,9 @@ class Module:
         latest_run="",
         keep_intermediates=False,
         setup_database=True,
-        max_cores=4,
         ncbi_email="",
         ncbi_api_key="",
+        verbose=False,
         custom_config=None,
         reset=False,
     ):
@@ -31,7 +31,6 @@ class Module:
         self.latest_run = latest_run
         self.keep_intermediates = keep_intermediates
         self.setup_database = setup_database
-        self.max_cores = max_cores
         self.ncbi_email = ncbi_email
         self.ncbi_api_key = ncbi_api_key
         self.custom_config = custom_config

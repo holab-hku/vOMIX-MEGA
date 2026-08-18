@@ -65,7 +65,7 @@ wildcard_constraints:
     sample_id = "[A-Za-z0-9_-]+"
 
 # ----------------------------------------------------------------------
-# Include modules, setup modules, and collect targets
+# Include modules, setup modules, and collect targets (based on global config and outdir)
 # ----------------------------------------------------------------------
 for vomix_module in vomix_modules.ALL_MODULES:
     if vomix_module.should_run():
