@@ -1,28 +1,14 @@
 # ----------------------------------------------------------------------
 # Configuration & setup
 # ----------------------------------------------------------------------
-logdir     = relpath("cluster-benchmark/logs")
-benchmarks = relpath("cluster-benchmark/benchmarks")
-tmpd       = relpath("cluster-benchmark/tmp")
-basedir    = relpath("cluster-benchmark/output")
-datadir    = relpath("cluster-benchmark/data")
+vomix_module = vomix_utils.current_module
+logdir = vomix_module.logdir
+benchmarks = vomix_module.benchmarks
+tmpd = vomix_module.tmpd
 
-os.makedirs(logdir,     exist_ok=True)
-os.makedirs(benchmarks, exist_ok=True)
-os.makedirs(tmpd,       exist_ok=True)
-os.makedirs(basedir,   exist_ok=True)
-
-
-DATASET_PARAMS = {
-    "Mock-10K":          {"size": 10000,  "virus": 0.5,  "prok": 0.3,  "euk": 0.2,  "strain": 0, "species": 10, "seed": config.get("seed", 42)},
-    "Mock-10K-HighVir":  {"size": 10000,  "virus": 1.0,  "prok": 0.0,  "euk": 0.0,  "strain": 0, "species": 10, "seed": config.get("seed", 42)},
-    "Mock-10K-LowVir":   {"size": 10000,  "virus": 0.1,  "prok": 0.5,  "euk": 0.4,  "strain": 0, "species": 10, "seed": config.get("seed", 42)},
-    "Mock-50K":          {"size": 50000,  "virus": 0.5,  "prok": 0.3,  "euk": 0.2,  "strain": 0, "species": 10, "seed": config.get("seed", 42)},
-    "Mock-100K":         {"size": 100000, "virus": 0.5,  "prok": 0.3,  "euk": 0.2,  "strain": 0, "species": 10, "seed": config.get("seed", 42)},
-    "Mock-300K":         {"size": 300000, "virus": 0.5,  "prok": 0.3,  "euk": 0.2,  "strain": 0, "species": 10, "seed": config.get("seed", 42)},
-    "Mock-1000K":        {"size": 1000000,"virus": 0.5,  "prok": 0.3,  "euk": 0.2,  "strain": 0, "species": 10, "seed": config.get("seed", 42)},
-    "Mock-Strain":       {"size": 20000,  "virus": 1.0,  "prok": 0.0,  "euk": 0.0,  "strain": 1, "species": 10, "seed": config.get("seed", 42)},
-}
+# ------------------------------------------------------------
+# Setup mock dataset parameters
+# ------------------------------------------------------------
 
 DATASET_PARAMS = {
     "Mock-10K":          {"size": 10000,  "virus": 0.5,  "prok": 0.3,  "euk": 0.2,  "strain": 0, "species": 10, "seed": config.get("seed", 42)},
@@ -50,6 +36,9 @@ def get_resources(dataset):
         return {"mem_mb": 65536, "disk_mb": 128000, "threads": 16}
 
 
+# ------------------------------------------------------------
+# MASTER RULE
+# ------------------------------------------------------------
 rule cluster_benchmark_done:
     name: "cluster-benchmark.smk Done. removing tmp files"
     localrule: True
@@ -66,6 +55,9 @@ rule cluster_benchmark_done:
         "touch {output}"
 
 
+# ------------------------------------------------------------
+# RULES
+# ------------------------------------------------------------
 rule download_refseq_viral:
     name: "cluster-benchmark.smk downloading viral genomes"
     output:

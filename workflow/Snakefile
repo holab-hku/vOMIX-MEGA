@@ -14,6 +14,9 @@ from vomix_parse_samples import parse_sample_list
 
 from snakemake.utils import validate
 
+from rich.console import Console
+from rich.panel import Panel
+
 configfile: "config/config.yml"
 workdir: config["workdir"]
 config["basedir"] = workflow.basedir
@@ -21,10 +24,13 @@ config["basedir"] = workflow.basedir
 # Validate config
 validate(config, "../config/config.schema.yml")
 
+# Setup logging console
+console = Console()
+
 # Set global context for vomix_utils
 vomix_utils.config = config
-vomix_outdir = config["outdir"]
-vomix_utils.outdir = vomix_outdir
+vomix_utils.outdir = config["outdir"]
+vomix_utils.console = console
 
 # Set database paths absolute relative to basedir
 db_list = [key for key in config if key.endswith("db")]
@@ -34,13 +40,13 @@ vomix_utils.update_db_paths(db_list)
 vomix_utils.clean_config_paths(["samplelist", "datadir", "outdir", "fasta", "fastadir"])
 
 # Setup the output directory and its .vomix subdirectory
-vomix_utils.setup_output_dir(vomix_outdir)
+vomix_utils.setup_output_dir(config["outdir"])
 
 # Ensure only one input provided to break ambiguity (samplelist | fasta | fastadird)
 vomix_utils.validate_input_count(config)
 
 # Save configuration file
-vomix_utils.save_config_file(config, vomix_outdir)
+vomix_utils.save_config_file(config, config["outdir"])
 
 # Set final post-validated variables
 samplelist = config.get("samplelist")
@@ -49,16 +55,21 @@ outdir = config.get("outdir")
 fasta = config.get("fasta")
 fastadir = config.get("fastadir")
 
+# Set global context for vomix_modules (after cleaning by vomix_utils) & before running
+vomix_modules.config = vomix_utils.config
+vomix_modules.outdir = vomix_utils.outdir
+vomix_modules.console = vomix_utils.console
+
 # Set wildcard constraints
 wildcard_constraints:
     sample_id = "[A-Za-z0-9_-]+"
 
 # ----------------------------------------------------------------------
-# Include modules and collect targets
+# Include modules, setup modules, and collect targets
 # ----------------------------------------------------------------------
 for vomix_module in vomix_modules.ALL_MODULES:
-    if vomix_module.should_run(config):
-        vomix_module.setup(config, outdir)
+    if vomix_module.should_run():
+        vomix_module.setup()
         for smk_file in vomix_module.snakemake_files:
             include: smk_file
         vomix_module.add_targets()

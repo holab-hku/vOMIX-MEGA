@@ -24,8 +24,9 @@ rule setup_database_done:
     touch {output}
     """
 
-
-
+# ------------------------------------------------------------
+# RULES
+# ------------------------------------------------------------
 if config['hostile-aligner'] == "minimap2":
   rule hostile_db:
     name: "setup-database.smk Hostile minimap2 index 12.1 G"

@@ -1,7 +1,6 @@
 # ----------------------------------------------------------------------
 # Configuration & setup
 # ----------------------------------------------------------------------
-import sys
 console = vomix_utils.console
 Panel = vomix_utils.Panel
 
@@ -88,8 +87,9 @@ else:
       """
 
 
-### RULES
-
+# ------------------------------------------------------------
+# RULE
+# ------------------------------------------------------------
 rule strobealign:
   name: "prok-binning.smk strobealign SR mapping"
   input:

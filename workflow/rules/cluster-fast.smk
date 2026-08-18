@@ -58,7 +58,9 @@ rule cluster_fast_done:
         os.path.join(logdir, "clustering-done.log")
     shell: "touch {output}"
 
-
+# ------------------------------------------------------------
+# RULES
+# ------------------------------------------------------------
 rule split_input:
     name: "clustering.smk split input fasta"
     localrule: True

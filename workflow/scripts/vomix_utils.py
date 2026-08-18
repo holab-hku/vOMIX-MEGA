@@ -7,13 +7,11 @@ import datetime
 import json
 from typing import List, Union
 
-from rich.console import Console
-from rich.panel import Panel
-
 # ----------------------------------------------------------------------
 # Global objects (set from the Snakefile)
 # ----------------------------------------------------------------------
-console = Console()
+console = None
+Panel = None
 config = None  # set to the Snakemake config dict
 outdir = None  # set to the output directory
 targets = []  # global list of target logfiles

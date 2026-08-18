@@ -11,14 +11,12 @@ fastap = vomix_module.fastap
 sample_id = vomix_module.sample_id
 assembly_ids = vomix_module.assembly_ids
 
-
 # ------------------------------------------------------------
 # Setup data splitting functionality
 # ------------------------------------------------------------
 split_part = list(range(1, config["checkv-splits"] + 2))
 split_part_ids = [f"{i:03d}" for i in range(1, config["checkv-splits"] + 2)] # matches seqkit
 parts=config["checkv-splits"] + 1
-
 
 # ------------------------------------------------------------
 # MASTER RULE
@@ -36,7 +34,9 @@ rule checkv_pyhmmer_done:
   shell: "touch {output}"
 
 
-### RULES
+# ------------------------------------------------------------
+# RULES
+# ------------------------------------------------------------
 rule split_contigs:
   name: "checkv-pyhmmer.smk split dereplicated contigs"
   input: fastap

@@ -1,7 +1,6 @@
 # ----------------------------------------------------------------------
 # Configuration & setup
 # ----------------------------------------------------------------------
-import sys
 console = vomix_utils.console
 Panel = vomix_utils.Panel
 
@@ -61,7 +60,9 @@ rule prok_annotate_done:
     """
 
 
-### RULES
+# ------------------------------------------------------------
+# RULES
+# ------------------------------------------------------------
 rule pair_fastq:
   name: "prok-annotate.smk merge paired files"
   input: 

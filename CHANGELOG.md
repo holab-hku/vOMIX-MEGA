@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Verbose debugging** option added for debugging to back-end and most underlying script.
+- **Snakemake back-end improvements** to optimize modularization.
 - **Bioconda-only installatoin** added with documentation updates.
 - **Updated pyproject.toml and environment.yml** files to speed up dependency resolution and make more robust build.
 - **Support for multiple clustering algorithms** under vCLUSTER and the vCLUSTREE aglorithm in `cluster-fast` module:
@@ -42,11 +44,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-## [0.1.0-beta.2]
+## [v0.2.0]
 
 ---
 
-## [0.1.0-beta.1] – 2026-08-15
+## [v0.1.0-beta.1] – 2026-08-15
 
 ### Added
 

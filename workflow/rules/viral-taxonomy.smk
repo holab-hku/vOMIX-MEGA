@@ -1,19 +1,20 @@
 # ----------------------------------------------------------------------
 # Configuration & setup
 # ----------------------------------------------------------------------
-logdir = relpath("taxonomy/viral/logs")
-tmpd = relpath("taxonomy/viral/tmp")
-benchmarks = relpath("taxonomy/viral/benchmarks")
-outdir_p = relpath("taxonomy/viral/output/")
+vomix_module = vomix_utils.current_module
+logdir = vomix_module.logdir
+benchmarks = vomix_module.benchmarks
+tmpd = vomix_module.tmpd
+samples = vomix_module.samples
+assemblies = vomix_module.assemblies
+fastap = vomix_module.fastap
+sample_id = vomix_module.sample_id
+assembly_ids = vomix_module.assembly_ids
 
-os.makedirs(logdir, exist_ok=True)
-os.makedirs(tmpd, exist_ok=True)
-os.makedirs(benchmarks, exist_ok=True)
 
-n_cores = config['max-cores']
-
-
-### Check if geNomad is run already 
+# ------------------------------------------------------------
+# check if geNomad is already run
+# ------------------------------------------------------------
 if os.path.exists(relpath("identify/viral/output/classification_summary_vOTUs.csv")):
   genomad_out = relpath("identify/viral/output/classification_summary_vOTUs.csv")
   genomad_f = False
@@ -22,16 +23,10 @@ else:
   genomad_out = relpath("taxonomy/viral/intermediate/genomad/taxonomy.tsv")
   genomad_f = True
 
-### Read single fasta file if input
-if config['fasta'] != "":
-  fastap = readfasta(config['fasta'])
-  sample_id = config["sample-name"]
-  assembly_ids = [sample_id]
-else:
-  fastap = relpath("identify/viral/output/combined.final.vOTUs.fa")
 
-### MASTER RULE 
-
+# ------------------------------------------------------------
+# MASTER RULE
+# ------------------------------------------------------------
 rule viral_taxonomy:
   name: "viral-taxonomy.smk Done. removing tmp files"
   localrule: True
@@ -48,8 +43,10 @@ rule viral_taxonomy:
     touch {output}
     """
 
-### RULES
 
+# ------------------------------------------------------------
+# RULES
+# ------------------------------------------------------------
 if genomad_f:
   rule genomad_classify:
     name: "viral-taxonomy.smk geNomad classify"

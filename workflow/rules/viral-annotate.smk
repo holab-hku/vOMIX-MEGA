@@ -41,7 +41,9 @@ rule viral_annotate_done:
     """
 
 
-### RULES
+# ------------------------------------------------------------
+# RULES
+# ------------------------------------------------------------
 rule prodigalgv_taxonomy:
   name: "viral-annotate.smk prodigal-gv vTOUs [parallelized]"
   input:
