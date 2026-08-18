@@ -273,31 +273,7 @@ vomix viral-benchmark --sdm conda --fasta sample/contigs/contigs_simulated_viral
 Cloud execution requires additional setup (credentials, compute environments, and storage) that varies by provider. For detailed configuration, see the [Snakemake Cloud Plugin Documentation](https://snakemake.github.io/snakemake-plugin-catalog/plugins/executor) and the specific plugin page for your chosen executor.
 ```
 
----
-
-### {octicon}`light-bulb;0.85em` Finding the Right Executor Plugin
-
-| Provider | Executor Name | Plugin Package | Documentation |
-| ---------- | --------------- | ---------------- | --------------- |
-| SLURM / PBS / SGE / LSF | `cluster-generic` | `snakemake-executor-plugin-cluster-generic` | [Cluster Generic Plugin](https://snakemake.github.io/snakemake-plugin-catalog/plugins/executor/cluster-generic.html) |
-| AWS Batch | `aws-batch` | `snakemake-executor-plugin-aws-batch` | [AWS Batch Plugin](https://snakemake.github.io/snakemake-plugin-catalog/plugins/executor/aws-batch.html) |
-| Google Cloud Life Sciences | `google-life-sciences` | `snakemake-executor-plugin-google-life-sciences` | [Google Life Sciences Plugin](https://snakemake.github.io/snakemake-plugin-catalog/plugins/executor/google-life-sciences.html) |
-| Azure Batch | `azure-batch` | `snakemake-executor-plugin-azure-batch` | [Azure Batch Plugin](https://snakemake.github.io/snakemake-plugin-catalog/plugins/executor/azure-batch.html) |
-| Kubernetes | `kubernetes` | `snakemake-executor-plugin-kubernetes` | [Kubernetes Plugin](https://snakemake.github.io/snakemake-plugin-catalog/plugins/executor/kubernetes.html) |
-| Google Batch | `google-batch` | `snakemake-executor-plugin-googlebatch` | [Google Batch Plugin](https://snakemake.github.io/snakemake-plugin-catalog/plugins/executor/google-batch.html) |
-
-```{admonition} Always check version compatibility!
-:class: warning
-Before installing any executor plugin, always:
-1. Check your Snakemake version: `snakemake --version`
-2. Visit the plugin's page in the [Snakemake Plugin Catalog](https://snakemake.github.io/snakemake-plugin-catalog/plugins/executor)
-3. Verify the required Snakemake version (most plugins require `>=8.6`)
-4. Read the plugin's specific configuration options, environment variables, and permission requirements
-```
-
----
-
-### {octicon}`light-bulb;0.85em` General Tips for Cluster Execution
+## {octicon}`light-bulb;0.85em` General Tips for Cloud & Cluster Execution
 
 | Tip | Description |
 | ----- | ------------- |

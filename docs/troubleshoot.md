@@ -41,7 +41,6 @@ If your run fails or behaves unexpectedly, follow these steps in order. This hel
 8. **Prepare to submit a bug report** - After you've done all the tests, you can submit a bug report to our [{octicon}`mark-github;0.95em` GitHub repository](https://github.com/holab-hku/vomix-snakemake/issues/new).  Here is a quick guide on how to collect the diagnostic data:
 
 :::{dropdown} Full Guide to Collecting Diagnostic Data for Bug Reports
-:open: false
 
 When you encounter an error and need to report it, please gather the following information. This will help us resolve the issue much faster.
 
@@ -161,7 +160,6 @@ If you are using a cluster executor, scheduler logs (e.g., `qstat`, `squeue`, `q
 ## FAQ & Common Issues
 
 :::{dropdown} Conda / environment creation fails
-:open: false
 
 - Ensure you activated the correct environment: `conda activate vomix`.
 - If Snakemake cannot create environments, verify that `conda`, `mamba`, or your container engine is installed and available.
@@ -170,7 +168,6 @@ If you are using a cluster executor, scheduler logs (e.g., `qstat`, `squeue`, `q
 :::
 
 :::{dropdown} CreateCondaEnvironmentException: Conda version too old
-:open: false
 
 Snakemake 8+ enforces a minimum conda version (24.7.1) for security and reproducibility. If your system has an older version (e.g., 4.10.3), you have several options:
 
@@ -191,7 +188,6 @@ Snakemake 8+ enforces a minimum conda version (24.7.1) for security and reproduc
 :::
 
 :::{dropdown} Rule fails with cryptic error
-:open: false
 
 - Examine the rule‑specific log file (path is printed in the Snakemake output).
 - Run the rule interactively: copy the command from `snakemake.sh` and execute it manually with `--dry-run` or `--printshellcmds` to see the exact shell commands.
