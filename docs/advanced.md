@@ -290,9 +290,88 @@ Cloud execution requires additional setup (credentials, compute environments, an
 If you're unsure about the correct submission command for your cluster, check your system's documentation or contact your system administrator. The `{rule}`, `{threads}`, and `{resources.mem_mb}` placeholders are the most commonly used variables in job submission commands.
 ```
 
+## Retreiving vOMIX-MEGA Underlying Tool Subcommands
+
+<!-- markdownlint-disable MD029 -->
+
+vOMIX-MEGA allows you to provide additional parameters to virtually any underlying tools using either the `config.yml` file or directly via the vomix CLI. Some parameters are natively supported (e.g. `--megahit-min-len`), but others can be configured with configurations  (e.g. `--megahit-params`); You can see them both via `vomix {module} -h`.  
+
+Now if you'd like to see directly ****which* extra parameters are available*** (e.g. which parameters can I finetune *within* MEGAHIT), you can follow the following steps:
+
+1. **Setup your vomix command**
+
+First make sure you have your vomix command you want to run ready, for example:
+
+```bash
+vomix assembly --sdm conda --samplelist sample/sample_list.csv --datadir quick-run/fastq --outdir quick-run/results -j 64 --latency-wait 20 -n
+```
+
+2. **Build all Conda environments**
+
+Make sure that all your conda environts are built (if they haven't been already) using the `--conda-create-envs-only` command between quotation marks in the `--snakemake-args` command:
+
+```bash
+vomix assembly ... --snakemake-args "--conda-create-envs-only"
+```
+
+```{admonition} Using --snakemake-args to pass extra Snakemake arguemnts to your vOMIX-MEGA command
+:class: tip
+When running `vomix {module}`, you can use the `-h` to list out all Snakemake parameters directly alterable via the vomix CLI. Worry not, you can add any **additional Snakemake parameters** using the `--snakemake-args "{insert parameters here}"` directive. Make sure to include quotation marks !
+```
+
+3. **List location of all Conda environments**
+
+Now that you have your environments installed, you can list them as following:
+
+```bash
+vomix viral-identify ... --list-conda-envs
+```
+
+which will output a list like this:
+
+```bash
+environment     container       location
+workflow/envs/seqkit-biopython.yml              .snakemake/conda/fb3e1873380ce74f0377e3d4c2d2c353_
+workflow/envs/sratools-pigz.yml         .snakemake/conda/dcff7a426661cf19d45e3ae892bb2bbf_
+workflow/envs/fastp.yml         .snakemake/conda/ce190bc3edbd55c22d527e22afcf1437_
+workflow/envs/multiqc.yml               .snakemake/conda/191b7b153b88b8b51e206baafe0f1bfe_
+workflow/envs/megahit.yml               .snakemake/conda/191b7b153b99b8b51e206baafe0f1bfe_
+```
+
+```{admonition} Natively supported snakemake flags
+:class: note
+Unlike `--conda-create-envs-only`, the `--list-conda-envs` flag is natively supported on the vomix CLI, since we use it quite often !
+```
+
+4. **Active the specific environment**
+
+You can activate that specific environment using (this specifically will activate the `megahit.yml` environment):
+
+```bash
+conda activate  .snakemake/conda/191b7b153b99b8b51e206baafe0f1bfe_
+```
+
+5. **Run the specific software `--help` command**
+
+```bash
+megahit --help
+```
+
+6. **Pass the command to your original vomix command***
+
+You are almost done! You can pass the specific parameters that you'd like back into your original command.
+
+```bash
+vomix assembly ... --megahit-params "--prune-level 7 --presets meta-large --cleaning-rounds 3"
+```
+
+That is all!
+
+<!-- markdownlint-enable MD029 -->
+
 ## Quick Updating vOMIX-MEGA
 
-While we're developing a stable version of vOMIX‑MEGA, we've made it easy to update the development version to facilitate quick bug fixes for your analysis.
+While we're developing a stable version of vOMIX‑MEGA, we've made it easy to update the development version to facilitate quick bug fixes for your analysis. If you'd like to see exactly which options are available to you, you can follow these steps!
 
 ```bash
 # 1) Enter your vOMIX‑MEGA directory
