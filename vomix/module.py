@@ -18,6 +18,7 @@ class Module:
         verbose=False,
         custom_config=None,
         reset=False,
+        seed=None,
     ):
         self.module = module
         self.workdir = workdir
@@ -33,5 +34,7 @@ class Module:
         self.setup_database = setup_database
         self.ncbi_email = ncbi_email
         self.ncbi_api_key = ncbi_api_key
+        self.verbose = verbose
         self.custom_config = custom_config
         self.reset = reset
+        self.seed = seed

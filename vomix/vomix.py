@@ -106,9 +106,10 @@ _common_opts = [
     "--setup-database",
     "--NCBI-email",
     "--NCBI-API-key",
-    "--NCBI-API-key",
+    "--verbose",
     "--custom-config",
     "--reset",
+    "--sed"
 ]
 _smk_opts = [
     "--dry-run",
@@ -168,6 +169,7 @@ def setOptions(module_obj, kwargs):
     module_obj.verbose = kwargs.get("verbose")
     module_obj.custom_config = kwargs.get("custom_config")
     module_obj.reset = kwargs.get("reset")
+    module_obj.seed = kwargs.get("seed")
     return module_obj
 
 
@@ -307,6 +309,12 @@ def common_options(function):
         default=False,
         required=False,
         help="Delete the log files to reset previously completed module run and its metadata, allowing module to be run again. (default: False)",
+    )(function)
+    function = click.option(
+        "--seed",
+        default=None,
+        required=False,
+        help="Set seed for random processes such as tournament-style clustering to allow reproducibility. (default: 42)",
     )(function)
     return function
 
