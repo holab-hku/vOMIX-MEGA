@@ -142,7 +142,7 @@ class ViralCommunityModule(BaseModule):
         "coverm_pacbio_mapper": None,
         "coverm_nanopore_mapper": None,
         "coverm_params": None,
-        "coverm_methods": None
+        "coverm_methods": None,
     }
 
 
@@ -264,12 +264,12 @@ class ClusterFastModule(BaseModule):
         "vclust_align_params": None,
         "vclust_cluster_algorithm": None,
         "vclust_cluster_params": None,
-        "dnaclust_similarity": None, 
-        "dnaclust_params": None, 
-        "vsearch_identity": None, 
+        "dnaclust_similarity": None,
+        "dnaclust_params": None,
+        "vsearch_identity": None,
         "vsearch_params": None,
-        "viridic_threshold": None, 
-        "viridic_params": None
+        "viridic_threshold": None,
+        "viridic_params": None,
     }
 
 

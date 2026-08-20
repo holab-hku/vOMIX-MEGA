@@ -14,7 +14,6 @@ latest-run: ''
 contig-splits: 0
 keep-intermediates: False
 setup-database: True
-max-cores: 4
 verbose: False
 NCBI-email: 'vomixtest@gmail.com'
 NCBI-API-key: ''
@@ -49,7 +48,6 @@ hostile-index-name: 'human-t2t-hla'
 decontam-host: False
 hostile-aligner: 'minimap2'
 hostile-aligner-params: ''
-assembler: 'megahit'
 short-read-assembler: 'megahit'
 metamdbg-params: ''
 nanomdbg-params: ''
@@ -66,12 +64,8 @@ checkv-original: False
 checkv-params: ''
 checkv-splits: 0
 cluster-method: 'checkv-megablast'
-clustering-fast: True
 cluster-iter: 1
 cdhit-params: '-c 0.95 -aS 0.85 -d 400 -M 0 -n 5'
-vOTU-ani: 95
-vOTU-targetcov: 85
-vOTU-querycov: 0
 checkv-megablast-ani: 95
 checkv-megablast-targetcov: 85
 checkv-megablast-querycov: 0

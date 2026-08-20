@@ -108,11 +108,6 @@ properties:
     description: "Initialize or update databases when executing modules other than 'setup-database'. Existing databases won't be reinstalled unless forced with Snakemake parameters like --forcerun or -F."
     default: True
 
-  max-cores:
-    type: integer
-    description: "Maximum number of CPU cores allocated across parallel Snakemake tasks. Distinct from execution parameters like -j or -n. Currently under development."
-    default: 4
-
   verbose:
     type: boolean
     description: "Print out full logs of all scripts running wherever applicable. Use when debugging."
@@ -764,6 +759,8 @@ properties:
 
 required:
   - module
+  - reset
+  - seed
   - workdir
   - basedir
   - outdir
@@ -775,11 +772,8 @@ required:
   - assembly-ids
   - latest-run
   - contig-splits
-  - checkv-splits
-  - cluster-iter
   - keep-intermediates
   - setup-database
-  - max-cores
   - verbose
   - NCBI-email
   - NCBI-API-key
@@ -816,7 +810,9 @@ required:
   - decontam-host
   - hostile-aligner
   - hostile-aligner-params
-  - assembler
+  - short-read-assembler
+  - metamdbg-params
+  - nanomdbg-params
   - megahit-min-len
   - megahit-params
   - spades-params
@@ -828,11 +824,23 @@ required:
   - genomad-cutoff-s
   - checkv-original
   - checkv-params
-  - clustering-fast
+  - checkv-splits
+  - cluster-method
+  - cluster-iter
   - cdhit-params
-  - vOTU-ani
-  - vOTU-targetcov
-  - vOTU-querycov
+  - checkv-megablast-ani
+  - checkv-megablast-targetcov
+  - checkv-megablast-querycov
+  - vclust-prefilter-params
+  - vclust-align-params
+  - vclust-cluster-algorithm
+  - vclust-cluster-params
+  - dnaclust-similarity
+  - dnaclust-params
+  - vsearch-identity
+  - vsearch-params
+  - viridic-threshold
+  - viridic-params
   - dvf-min-len
   - phamer-min-len
   - dvf-params
@@ -854,6 +862,9 @@ required:
   - phagcn-min-len
   - phagcn-params
   - genomad-params-tax
+  - coverm-sr-mapper
+  - coverm-pacbio-mapper
+  - coverm-nanopore-mapper
   - coverm-params
   - coverm-methods
   - iphop-host
