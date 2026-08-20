@@ -442,7 +442,7 @@ properties:
 
   dnaclust-similarity:
     type: number
-    description: "Sequence identity threshold for DNACLUST clustering (fraction, 0.0-1.0). Default 0.95 (95% identity)."
+    description: "Sequence identity threshold for DNACLUST clustering (fraction, 0.0-1.0)."
     default: 0.95
     minimum: 0.0
     maximum: 1.0

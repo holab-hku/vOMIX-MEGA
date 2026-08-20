@@ -1,10 +1,10 @@
-import rich_click as click
 import sys
 import logging
 import os
 import platform
 import time
 from importlib.metadata import version
+import rich_click as click
 from rich.logging import RichHandler
 from rich.console import Console
 
@@ -28,27 +28,24 @@ console = Console()
 
 modules_list = [
     "assembly",
-    "checkv-pyhmmer",
-    "checkv",
-    "clustering-fast",
-    "clustering-sensitive",
-    "host-cherry",
-    "host",
     "preprocess",
-    "prok-annotate",
-    "prok-binning",
-    "prok-community",
-    "refilter-genomad",
-    "setup-database",
-    "symlink",
+    "viral-identify",
     "viral-annotate",
     "viral-benchmark",
     "viral-binning",
     "viral-community",
     "viral-host",
-    "viral-identify",
     "viral-refilter",
     "viral-taxonomy",
+    "viral-end-to-end",
+    "prok-annotate",
+    "prok-binning",
+    "prok-community",
+    "checkv-pyhmmer",
+    "cluster-fast",
+    "cluster-benchmark",
+    "setup-database",
+    "symlink",
 ]
 
 END_MODULE_RUN_LOG = "Module (or dry-run) execution completed successfully."
@@ -109,7 +106,7 @@ _common_opts = [
     "--verbose",
     "--custom-config",
     "--reset",
-    "--sed"
+    "--seed",
 ]
 _smk_opts = [
     "--dry-run",
@@ -132,7 +129,7 @@ _smk_opts = [
 ]
 
 click.rich_click.OPTION_GROUPS = {}
-for cmd in modules_list + ["cluster-fast", "viral-end-to-end"]:
+for cmd in modules_list:
     click.rich_click.OPTION_GROUPS[f"vomix {cmd}"] = [
         {"name": "Core Pipeline Options", "options": _common_opts},
         {"name": "Snakemake Backend Options", "options": _smk_opts},
@@ -565,10 +562,22 @@ def run_preprocess(**kwargs):
 )
 @common_options
 @click.option(
-    "--assembler",
+    "--short-read-assembler",
     default=None,
     required=False,
-    help="Assembly engine for metagenome assembly. Currently supports MEGAHIT (recommended) and SPAdes (in development). (default: megahit)",
+    help="Short-read assembly engine for metagenome assembly. Currently supports MEGAHIT (recommended) and SPAdes (in development). For long-reads, only metaMDBG (for PacBio HiFi) and nanoMDBG (for Oxford Nanopore Technologies) are supported. (default: megahit)",
+)
+@click.option(
+    "--metamdbg-params",
+    default=None,
+    required=False,
+    help="Additional parameters for metaMDBG assembler (PacBio). See metaMDBG documentation for available options. (default: '')",
+)
+@click.option(
+    "--nanomdbg-params",
+    default=None,
+    required=False,
+    help="Additional parameters for nanoMDBG assembler (PacBio). See metaMDBG documentation for available options. (default: '')",
 )
 @click.option(
     "--megahit-min-len",
@@ -609,7 +618,9 @@ def run_assembly(**kwargs):
         module_obj,
         kwargs,
         {
-            "assembler": "assembler",
+            "short_read_assembler": "short_read_assembler",
+            "metamdbg_params": "metamdbg_params",
+            "nanomdbg_params": "nanomdbg_params",
             "megahit_min_len": "megahit_min_len",
             "megahit_params": "megahit_params",
             "spades_params": "spades_params",
@@ -759,12 +770,22 @@ def run_viral_identify(**kwargs):
             "checkv_splits": "checkv_splits",
             "checkv_params": "checkv_params",
             "checkv_database": "checkv_database",
-            "clustering_fast": "clustering_fast",
+            "cluster_method": "checkv_database",
             "cluster_iter": "cluster_iter",
             "cdhit_params": "cdhit_params",
-            "vOTU_ani": "votu_ani",
-            "vOTU_targetcov": "votu_targetcov",
-            "vOTU_querycov": "votu_querycov",
+            "checkv_megablast_ani": "checkv_megablast_ani",
+            "checkv_megablast_targetcov": "checkv_megablast_targetcov",
+            "checkv_megablast_querycov": "checkv_megablast_querycov",
+            "vclust_prefilter_params": "vclust_prefilter_params",
+            "vclust_align_params": "vclust_align_params",
+            "vclust_cluster_algorithm": "vclust_cluster_algorithm",
+            "vclust_cluster_params": "vclust_cluster_params",
+            "dnaclust_similarity": "dnaclust_similarity", 
+            "dnaclust_params": "dnaclust_params", 
+            "vsearch_identity": "vsearch_identity", 
+            "vsearch_params": "vsearch_params",
+            "viridic_threshold": "viridic_threshold", 
+            "viridic_params": "viridic_params",
         },
     )
 
@@ -1260,10 +1281,28 @@ def run_viral_host(**kwargs):
 )
 @common_options
 @click.option(
+    "--coverm-sr-mapper",
+    required=False,
+    default=None,
+    help="CoverM mapper for short reads (paired/single). (default: minimap2-sr)",
+)
+@click.option(
+    "--coverm-pacbio-mapper",
+    required=False,
+    default=None,
+    help="CoverM mapper for PacBio reads. (default: minimap2-hifi)",
+)
+@click.option(
+    "--coverm-nanopore-mapper",
+    required=False,
+    default=None,
+    help="CoverM mapper for Nanopore reads. (default: minimap2-ont)",
+)
+@click.option(
     "--coverm-params",
     required=False,
     default=None,
-    help="Additional parameters for CoverM read mapping and coverage calculation. Customize mapping sensitivity and coverage metrics. (default: --mapper minimap2-sr --min-read-percent-identity 95 --min-read-aligned-percent 75 --trim-min 10 --trim-max 90)",
+    help="Additional CoverM parameters (excluding --mapper). (default: '--min-read-percent-identity 95 --min-read-aligned-percent 75 --trim-min 10 --trim-max 90')",
 )
 @click.option(
     "--coverm-methods",
@@ -1285,7 +1324,13 @@ def run_viral_community(**kwargs):
     apply_module_options(
         module_obj,
         kwargs,
-        {"coverm_params": "coverm_params", "coverm_methods": "coverm_methods"},
+        {
+            "coverm_sr_mapper": "coverm_sr_mapper",
+            "coverm_pacbio_mapper": "coverm_pacbio_mapper",
+            "coverm_nanopore_mapper": "coverm_nanopore_mapper",
+            "coverm_params": "coverm_params",
+            "coverm_methods": "coverm_methods",
+         },
     )
 
     vomix_actions().run_module(
@@ -1680,10 +1725,22 @@ def run_prok_annotate(**kwargs):
     help="Path to Hostile database directory for host decontamination. Database will be downloaded automatically if not present. (default: database/hostile)",
 )
 @click.option(
-    "--assembler",
+    "--short-read-assembler",
     default=None,
     required=False,
-    help="Assembly engine for metagenome assembly. Currently supports MEGAHIT (recommended) and SPAdes (in development). (default: megahit)",
+    help="Short-read assembly engine for metagenome assembly. Currently supports MEGAHIT (recommended) and SPAdes (in development). For long-reads, only metaMDBG (for PacBio HiFi) and nanoMDBG (for Oxford Nanopore Technologies) are supported. (default: megahit)",
+)
+@click.option(
+    "--metamdbg-params",
+    default=None,
+    required=False,
+    help="Additional parameters for metaMDBG assembler (PacBio). See metaMDBG documentation for available options. (default: '')",
+)
+@click.option(
+    "--nanomdbg-params",
+    default=None,
+    required=False,
+    help="Additional parameters for nanoMDBG assembler (PacBio). See metaMDBG documentation for available options. (default: '')",
 )
 @click.option(
     "--megahit-min-len",
@@ -1968,7 +2025,9 @@ def run_viral_end_to_end(**kwargs):
             "aligner_params": "hostile_aligner_params",
             "hostile_index_name": "hostile_index_name",
             "hostile_index_db": "hostile_index_db",
-            "assembler": "assembler",
+            "short_read_assembler": "short_read_assembler",
+            "metamdbg_params": "metamdbg_params",
+            "nanomdbg_params": "nanomdbg_params",
             "megahit_min_len": "megahit_min_len",
             "megahit_params": "megahit_params",
             "spades_params": "spades_params",
@@ -1984,12 +2043,22 @@ def run_viral_end_to_end(**kwargs):
             "checkv_splits": "checkv_splits",
             "checkv_params": "checkv_params",
             "checkv_database": "checkv_database",
-            "clustering_fast": "clustering_fast",
+            "cluster_method": "checkv_database",
             "cluster_iter": "cluster_iter",
             "cdhit_params": "cdhit_params",
-            "vOTU_ani": "votu_ani",
-            "vOTU_targetcov": "votu_targetcov",
-            "vOTU_querycov": "votu_querycov",
+            "checkv_megablast_ani": "checkv_megablast_ani",
+            "checkv_megablast_targetcov": "checkv_megablast_targetcov",
+            "checkv_megablast_querycov": "checkv_megablast_querycov",
+            "vclust_prefilter_params": "vclust_prefilter_params",
+            "vclust_align_params": "vclust_align_params",
+            "vclust_cluster_algorithm": "vclust_cluster_algorithm",
+            "vclust_cluster_params": "vclust_cluster_params",
+            "dnaclust_similarity": "dnaclust_similarity", 
+            "dnaclust_params": "dnaclust_params", 
+            "vsearch_identity": "vsearch_identity", 
+            "vsearch_params": "vsearch_params",
+            "viridic_threshold": "viridic_threshold", 
+            "viridic_params": "viridic_params",
             "phagcn_min_len": "phagcn_min_len",
             "phagcn_params": "phagcn_params",
             "genomad_params_tax": "genomad_params_tax",
@@ -2008,6 +2077,9 @@ def run_viral_end_to_end(**kwargs):
             "iphop_db_version": "iphop_db_version",
             "iphop_db_basename": "iphop_db_basename",
             "iphop_params": "iphop_params",
+            "coverm_sr_mapper": "coverm_sr_mapper",
+            "coverm_pacbio_mapper": "coverm_pacbio_mapper",
+            "coverm_nanopore_mapper": "coverm_nanopore_mapper",
             "coverm_params": "coverm_params",
             "coverm_methods": "coverm_methods",
         },
@@ -2026,12 +2098,22 @@ def run_viral_end_to_end(**kwargs):
 )
 @common_options
 @click.option(
-    "--clustering-fast/--clustering-cdhit",
-    is_flag=True,
-    flag_value=True,
+    "--cluster-method",
     required=False,
     default=None,
-    help="Use MEGABLAST-based fast clustering for viral operational taxonomic units (vOTUs). Disable to use CD-HIT (slower but sometimes more precise). (default: True)",
+    help="Choose your clustering method for the clustering-fast module. (default: checkv-megablast)",
+    type=click.Choice(
+        [
+            "cd-hit-est",
+            "checkv-megablast",
+            "vclust",
+            "linclust",
+            "viridic",
+            "vsearch",
+            "dnaclust",
+            "all",
+        ]
+    ),
 )
 @click.option(
     "--cluster-iter",
@@ -2046,22 +2128,85 @@ def run_viral_end_to_end(**kwargs):
     help="Additional parameters for CD-HIT clustering. Used when clustering-fast is disabled. (default: -c 0.95 -aS 0.85 -d 400 -M 0 -n 5)",
 )
 @click.option(
-    "--vOTU-ani",
+    "--checkv-megablast-ani",
     required=False,
     default=None,
     help="Average Nucleotide Identity (ANI) threshold for vOTU clustering (default 95% per MIUViG guidelines). (default: 95)",
 )
 @click.option(
-    "--vOTU-targetcov",
+    "--checkv-megablast-targetcov",
     required=False,
     default=None,
     help="Minimum target coverage percentage for vOTU clustering (default 85% per MIUViG guidelines). (default: 85)",
 )
 @click.option(
-    "--vOTU-querycov",
+    "--checkv-megablast-querycov",
     required=False,
     default=None,
     help="Minimum query coverage percentage for vOTU clustering. Adjust for more permissive or stringent clustering. (default: 0)",
+)
+@click.option(
+    "--vclust-prefilter-params",
+    required=False,
+    default=None,
+    help="Additional parameters to add to vclust prefilter command. (default: '')",
+)
+@click.option(
+    "--vclust-align-params",
+    required=False,
+    default=None,
+    help="Additional parameters to add to vclust align command. (default: '')",
+)
+@click.option(
+    "--vclust-cluster-algorithm",
+    required=False,
+    default=None,
+    help="Algorithm to use for the vclust cluster command (single, complete, uclust, cd-hit, set-cover, leiden). Make sure to use compatible vlucster-cluster-params for your algorithm. (default: leiden)",
+    type=click.Choice(
+        ["single", "complete", "uclust", "cd-hit", "set-cover", "leiden"]
+    ),
+)
+@click.option(
+    "--vclust-cluster-params",
+    required=False,
+    default=None,
+    help="Additional parameters to add to vclust cluster command. (default: '')",
+)
+@click.option(
+    "--dnaclust-similarity",
+    required=False,
+    default=None,
+    help="Sequence identity threshold for DNACLUST clustering (fraction, 0.0-1.0). Default 0.95 (95% identity). (default: 0.95)",
+)
+@click.option(
+    "--dnaclust-params",
+    required=False,
+    default=None,
+    help="Additional command-line parameters to pass to DNACLUST. (default: '')",
+)
+@click.option(
+    "--vsearch-identity",
+    required=False,
+    default=None,
+    help="lobal identity threshold for VSEARCH clustering (fraction, 0.0-1.0). (default: 0.95)",
+)
+@click.option(
+    "--vsearch-params",
+    required=False,
+    default=None,
+    help="Additional command-line parameters to pass to VSEARCH. (default: '')",
+)
+@click.option(
+    "--viridic-threshold",
+    required=False,
+    default=None,
+    help="ANI threshold for VIRIDIC clustering (fraction, 0.0-1.0). (default: 0.95)",
+)
+@click.option(
+    "--viridic-params",
+    required=False,
+    default=None,
+    help="Additional command-line parameters to pass to VIRIDIC. (default: '')",
 )
 @snakemake_options
 def run_cluster_fast(**kwargs):
@@ -2078,12 +2223,22 @@ def run_cluster_fast(**kwargs):
         module_obj,
         kwargs,
         {
-            "clustering_fast": "clustering_fast",
+            "cluster_method": "checkv_database",
             "cluster_iter": "cluster_iter",
             "cdhit_params": "cdhit_params",
-            "vOTU_ani": "votu_ani",
-            "vOTU_targetcov": "votu_targetcov",
-            "vOTU_querycov": "votu_querycov",
+            "checkv_megablast_ani": "checkv_megablast_ani",
+            "checkv_megablast_targetcov": "checkv_megablast_targetcov",
+            "checkv_megablast_querycov": "checkv_megablast_querycov",
+            "vclust_prefilter_params": "vclust_prefilter_params",
+            "vclust_align_params": "vclust_align_params",
+            "vclust_cluster_algorithm": "vclust_cluster_algorithm",
+            "vclust_cluster_params": "vclust_cluster_params",
+            "dnaclust_similarity": "dnaclust_similarity", 
+            "dnaclust_params": "dnaclust_params", 
+            "vsearch_identity": "vsearch_identity", 
+            "vsearch_params": "vsearch_params",
+            "viridic_threshold": "viridic_threshold", 
+            "viridic_params": "viridic_params",
         },
     )
 

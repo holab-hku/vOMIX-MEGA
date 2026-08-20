@@ -36,10 +36,12 @@ class PreProcessingModule(BaseModule):
 class AssemblyCoAssemblyModule(BaseModule):
     name = "assembly"
     DEFAULTS = {
+        "short_read_assembler": None,
+        "metamdbg_params": None,
+        "nanomdbg_params": None,
         "megahit_min_len": None,
         "megahit_params": None,
         "spades_params": None,
-        "assembler": None,
         "spades_memory": None,
     }
 
@@ -136,8 +138,11 @@ class ViralHostModule(BaseModule):
 class ViralCommunityModule(BaseModule):
     name = "viral-community"
     DEFAULTS = {
+        "coverm_sr_mapper": None,
+        "coverm_pacbio_mapper": None,
+        "coverm_nanopore_mapper": None,
         "coverm_params": None,
-        "coverm_methods": None,
+        "coverm_methods": None
     }
 
 
@@ -249,12 +254,22 @@ class ViralEndToEndModule(BaseModule):
 class ClusterFastModule(BaseModule):
     name = "cluster-fast"
     DEFAULTS = {
-        "clustering_fast": None,
+        "cluster_method": None,
         "cluster_iter": None,
         "cdhit_params": None,
-        "vOTU_ani": None,
-        "vOTU_targetcov": None,
-        "vOTU_querycov": None,
+        "checkv_megablast_ani": None,
+        "checkv_megablast_targetcov": None,
+        "checkv_megablast_querycov": None,
+        "vclust_prefilter_params": None,
+        "vclust_align_params": None,
+        "vclust_cluster_algorithm": None,
+        "vclust_cluster_params": None,
+        "dnaclust_similarity": None, 
+        "dnaclust_params": None, 
+        "vsearch_identity": None, 
+        "vsearch_params": None,
+        "viridic_threshold": None, 
+        "viridic_params": None
     }
 
 
