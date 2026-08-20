@@ -28,7 +28,6 @@ properties:
         "setup-database",
         "symlink",
         "run-all",
-        "reset",
       ]
 
   reset:
@@ -290,12 +289,6 @@ properties:
     default: ""
 
   # Assembly Module Options
-  assembler:
-    type: string
-    description: "(DEPRACATED) Assembly engine for metagenome assembly. Currently supports MEGAHIT (recommended) and SPAdes (in development)."
-    default: "megahit"
-    enum: ["megahit", "spades"]
-
   short-read-assembler:
     type: string
     description: "Short-read assembly engine for metagenome assembly. Currently supports MEGAHIT (recommended) and SPAdes (in development). For long-reads, only metaMDBG (for PacBio HiFi) and nanoMDBG (for Oxford Nanopore Technologies) are supported."
@@ -358,6 +351,8 @@ properties:
     description: "Secondary filtering confidence threshold for geNomad. Set to 0 to disable secondary filtering."
     default: 0
 
+  # checkvpyhmmer.smk
+
   checkv-original:
     type: boolean
     description: "Use original CheckV implementation instead of the faster CheckV-PyHMMER version. CheckV-PyHMMER is recommended for large datasets."
@@ -374,6 +369,7 @@ properties:
     default: 0
     minimum: 0
 
+  # cluster-fast.smk
   cluster-method:
     type: string
     description: "Choose your clustering method for the clustering-fast module."
@@ -390,11 +386,6 @@ properties:
         "all",
       ]
 
-  clustering-fast:
-    type: boolean
-    description: "Use MEGABLAST-based fast clustering for viral operational taxonomic units (vOTUs). Disable to use CD-HIT (slower but sometimes more precise)."
-    default: True
-
   cluster-iter:
     type: integer
     description: "Number of clustering and pooling iterations (L) for vOTU clustering. Initially splits data into 2^(L-1) partitions for memory efficiency. Set to 1 to disable partitioning."
@@ -406,27 +397,6 @@ properties:
     type: string
     description: "Additional parameters for CD-HIT clustering. Used when clustering-fast is disabled."
     default: "-c 0.95 -aS 0.85 -d 400 -M 0 -n 5"
-
-  vOTU-ani:
-    type: number
-    description: "Average Nucleotide Identity (ANI) threshold for vOTU clustering (default 95% per MIUViG guidelines)."
-    default: 95
-    minimum: 0
-    maximum: 100
-
-  vOTU-targetcov:
-    type: number
-    description: "Minimum target coverage percentage for vOTU clustering (default 85% per MIUViG guidelines)."
-    default: 85
-    minimum: 0
-    maximum: 100
-
-  vOTU-querycov:
-    type: number
-    description: "Minimum query coverage percentage for vOTU clustering. Adjust for more permissive or stringent clustering."
-    default: 0
-    minimum: 0
-    maximum: 100
 
   checkv-megablast-ani:
     type: number
