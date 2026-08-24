@@ -17,7 +17,7 @@ from rich.logging import RichHandler
 from rich.console import Console
 
 try:
-    __version__ = version("vcluster")
+    __version__ = version("vomix")
 except Exception:
     __version__ = "unknown (development)"
 
