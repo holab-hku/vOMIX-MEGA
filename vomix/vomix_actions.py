@@ -15,6 +15,12 @@ import re
 from rich.logging import RichHandler
 from rich.console import Console
 
+try:
+    __version__ = version("vomix")
+except Exception:
+    __version__ = "unknown (development)"
+
+
 # ---------------------------------------------------------
 # Rich Logging Configuration (Matching vomix.py)
 # ---------------------------------------------------------
@@ -32,7 +38,7 @@ console = Console()
 class vomix_actions:
     def __init__(self):
         self.name = "vomix"
-        self.version = "1.0.0"
+        self.version = __version__
         self.description = "vomix is a tool for viral metagenomics analysis."
 
     def __repr__(self):
