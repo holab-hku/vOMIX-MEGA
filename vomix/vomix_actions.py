@@ -12,6 +12,7 @@ from inspect import getsourcefile
 from os.path import abspath
 import inspect
 import re
+from importlib.metadata import version, metadata
 from rich.logging import RichHandler
 from rich.console import Console
 
@@ -33,6 +34,14 @@ logging.basicConfig(
 
 log = logging.getLogger("rich")
 console = Console()
+meta_data = metadata("vomix")
+
+
+class vomix_actions:
+    def __init__(self):
+        self.name = "vomix"
+        self.version = __version__
+        self.description = meta_data["description"]
 
 
 class vomix_actions:
