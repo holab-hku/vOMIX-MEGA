@@ -1,6 +1,6 @@
 [project]
 name = "vomix"
-version = "0.1.0.beta.1"
+version = "0.1.0"
 description = "An ultra-fast & modular end-to-end pipeline for terabyte-scale viral metagenomics analysis."
 authors = [
     { name="Erfan SHEKARRIZ", email="eshekar@connect.hku.hk" }
