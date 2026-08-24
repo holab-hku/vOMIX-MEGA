@@ -1,15 +1,17 @@
-import rich_click as click
 import sys
 import logging
 import os
 import platform
 import time
 from importlib.metadata import version
-from rich.logging import RichHandler
 from importlib.metadata import version, metadata
 
+import rich_click as click
+from rich.logging import RichHandler
+from rich.console import Console
+
 try:
-    __version__ = version("vcluster")
+    __version__ = version("vomix")
 except Exception:
     __version__ = "unknown (development)"
 

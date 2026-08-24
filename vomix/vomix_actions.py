@@ -34,7 +34,7 @@ logging.basicConfig(
 
 log = logging.getLogger("rich")
 console = Console()
-meta_data = metadata("vcluster")
+meta_data = metadata("vomix")
 
 
 class vomix_actions:
