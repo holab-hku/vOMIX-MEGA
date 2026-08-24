@@ -53,3 +53,5 @@ workflow/scripts/__pycache__/sample_list_parse.cpython-312.pyc
 # except these files within them
 !workflow/database/.gitkeep
 
+# ignore files with these endings
+*.pyc
