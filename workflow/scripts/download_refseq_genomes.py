@@ -57,8 +57,6 @@ VIRAL_CATEGORIES = {
         "Vaccinia virus",
         "Acanthamoeba polyphaga mimivirus",
         "Human herpesvirus 1",
-        "Adenovirus C",
-        "Bacillus subtilis phage SPP1",
         "Pseudomonas phage PAK_P1",
     ],
     "ssDNA": [
