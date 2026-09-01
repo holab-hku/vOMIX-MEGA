@@ -70,6 +70,8 @@ rule download_refseq_viral:
         outdir   = datadir,
         tmpdir   = os.path.join(tmpd, "genomes", "viral"),
     conda: "../envs/seqkit-biopython.yml"
+    resources:
+        mem_mb=lambda wildcards, attempt, input: 4 * 10**3 * attempt
     shell:
         """
         rm -rf {params.tmpdir} {output.fna}
@@ -100,6 +102,8 @@ rule download_prok_contaminants:
         outdir   = datadir,
         tmpdir   = os.path.join(tmpd, "genomes", "euk"),
     conda: "../envs/seqkit-biopython.yml"
+    resources:
+        mem_mb=lambda wildcards, attempt, input: 4 * 10**3 * attempt
     shell:
         """
         rm -rf {params.tmpdir}
@@ -130,6 +134,8 @@ rule download_euk_contaminants:
         outdir   = datadir,
         tmpdir   = os.path.join(tmpd, "genomes", "euk"),
     conda: "../envs/seqkit-biopython.yml"
+    resources:
+        mem_mb=lambda wildcards, attempt, input: 4 * 10**3 * attempt
     shell:
         """
         rm -rf {params.tmpdir}
