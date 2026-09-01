@@ -43,13 +43,6 @@ class vomix_actions:
         self.version = __version__
         self.description = meta_data["description"]
 
-
-class vomix_actions:
-    def __init__(self):
-        self.name = "vomix"
-        self.version = __version__
-        self.description = "vomix is a tool for viral metagenomics analysis."
-
     def __repr__(self):
         return f"vomix(name={self.name}, version={self.version}, description={self.description})"
 

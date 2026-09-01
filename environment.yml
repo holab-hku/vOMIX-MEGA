@@ -1,4 +1,4 @@
-name: vomix
+name: vomix-mega
 channels:
   - conda-forge
   - bioconda
@@ -9,10 +9,10 @@ platforms:
   - osx-64
   - osx-arm64
 dependencies:
-  - python>=3.12,<3.14
+  - python>=3.10
   - pip
-  - click>=8,<9
-  - rich-click>=1.5,<2
-  - snakemake>=9.23.1,<10
+  - click>=8
+  - rich-click>=1.5
+  - snakemake>=9.23.1
   - biopython>=1.84
-  - snakemake-executor-plugin-cluster-generic>=1.0.9,<2
+  - snakemake-executor-plugin-cluster-generic>=1.0.9
