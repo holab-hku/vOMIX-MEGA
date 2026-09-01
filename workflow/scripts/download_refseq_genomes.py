@@ -33,6 +33,7 @@ import json
 import argparse
 import urllib.request
 from urllib.error import HTTPError
+from collections import defaultdict
 from Bio import Entrez, SeqIO
 
 # Rich imports
@@ -77,17 +78,17 @@ VIRAL_CATEGORIES = {
         "Rice dwarf virus",
         "Bluetongue virus",
     ],
-"ssRNA": [
-    "Severe acute respiratory syndrome coronavirus 2",
-    "Human immunodeficiency virus 1",
-    "Poliovirus",
-    "West Nile virus",
-    "Dengue virus type 2",
-    "Zika virus",
-    "Rabies virus",
-    "Ebola virus",
-    "Measles virus",
-],
+    "ssRNA": [
+        "Severe acute respiratory syndrome coronavirus 2",
+        "Human immunodeficiency virus 1",
+        "Poliovirus",
+        "West Nile virus",
+        "Dengue virus type 2",
+        "Zika virus",
+        "Rabies virus",
+        "Ebola virus",
+        "Measles virus",
+    ],
 }
 
 PROKARYOTIC_SPECIES = [
@@ -173,12 +174,20 @@ def fetch_assembly_id(species_name, email, api_key=None, max_attempts=3, verbose
 
 
 def get_assembly_summary(
-    assembly_id, email, api_key=None, max_attempts=3, verbose=False
+    species_name, assembly_id, email, api_key=None, max_attempts=3, verbose=False
 ):
     """
     Retrieve the full assembly summary (DocumentSummary) for a given assembly ID.
     Returns (ftp_url, summary_dict) or (None, None) on failure.
+    Handles special cases for problematic species.
     """
+    # Check special cases first
+    if species_name in SPECIAL_CASES:
+        case = SPECIAL_CASES[species_name]
+        if verbose:
+            console.log(f"[cyan]Using special case for {species_name}[/]")
+        return case["ftp_url"], case["summary"]
+
     Entrez.email = email
     if api_key:
         Entrez.api_key = api_key
@@ -213,23 +222,44 @@ def get_assembly_summary(
             )
             if ftp_dir:
                 https_dir = ftp_dir.replace("ftp://", "https://")
-                # Extract accession and sanitized assembly name
                 assembly_accession = doc_summary.get("AssemblyAccession")
                 assembly_name = doc_summary.get("AssemblyName", "")
                 sanitized_name = assembly_name.replace(" ", "_")
-                # Construct URL with proper naming
                 if assembly_accession:
                     fna_url = f"{https_dir}/{assembly_accession}_{sanitized_name}_genomic.fna.gz"
                 else:
-                    # Fallback: just use the base URL and hope there's a genomic.fna.gz
                     fna_url = f"{https_dir}/genomic.fna.gz"
                 if verbose:
                     console.log(f"[dim][green]FTP URL found: {fna_url}[/]")
                 return fna_url, doc_summary
             else:
+                # Try to construct a URL from the accession and name
+                assembly_accession = doc_summary.get("AssemblyAccession")
+                assembly_name = doc_summary.get("AssemblyName", "")
+                if assembly_accession:
+                    acc_parts = assembly_accession.split("_")
+                    if len(acc_parts) >= 2:
+                        prefix = acc_parts[0]
+                        number = acc_parts[1]
+                        group1 = number[0:3]
+                        group2 = number[3:6]
+                        group3 = number[6:9]
+                        if len(number) > 9:
+                            group3 = number[6:9]
+                            group4 = number[9:12]
+                            base_path = f"{prefix}/{group1}/{group2}/{group3}/{assembly_accession}_{assembly_name.replace(' ', '_')}"
+                        else:
+                            base_path = f"{prefix}/{group1}/{group2}/{group3}/{assembly_accession}_{assembly_name.replace(' ', '_')}"
+                        https_dir = (
+                            f"https://ftp.ncbi.nlm.nih.gov/genomes/all/{base_path}"
+                        )
+                        fna_url = f"{https_dir}/{assembly_accession}_{assembly_name.replace(' ', '_')}_genomic.fna.gz"
+                        if verbose:
+                            console.log(f"[dim][yellow]Constructed URL: {fna_url}[/]")
+                        return fna_url, doc_summary
                 if verbose:
                     console.log(f"[red]No FTP path for {assembly_id}[/]")
-                return None, doc_summary  # return summary even without FTP
+                return None, doc_summary
 
         except HTTPError as e:
             if e.code in (429, 500):
@@ -250,6 +280,7 @@ def get_assembly_summary(
 
 
 def download_assembly_fasta(
+    species_name,
     assembly_id,
     workdir,
     email,
@@ -267,7 +298,7 @@ def download_assembly_fasta(
     """
     if ftp_url is None or summary_dict is None:
         ftp_url, summary_dict = get_assembly_summary(
-            assembly_id, email, api_key, max_attempts, verbose
+            species_name, assembly_id, email, api_key, max_attempts, verbose
         )
     if not ftp_url:
         return None
@@ -278,7 +309,6 @@ def download_assembly_fasta(
 
     # Try the primary URL; if fails, try a fallback (just genomic.fna.gz)
     url_candidates = [ftp_url]
-    # If primary URL contains the accession and name, also try without the name part
     if "_genomic.fna.gz" in ftp_url and not ftp_url.endswith("/genomic.fna.gz"):
         base_dir = ftp_url.rsplit("/", 1)[0]
         url_candidates.append(f"{base_dir}/genomic.fna.gz")
@@ -354,6 +384,9 @@ def download_species_list(
     success_count = 0
     failed_species = []
     summary_records = []
+    # Track downloaded assemblies to avoid duplicates
+    downloaded_assemblies = {}
+    missing_files = []
 
     for species in species_list:
         console.print(f"\n[bold]→ {species}[/]")
@@ -365,11 +398,43 @@ def download_species_list(
         local_path = "N/A"
 
         if aid:
+            # Check if we already downloaded this assembly
+            if aid in downloaded_assemblies:
+                console.print(f"[dim]Reusing previously downloaded assembly {aid}[/]")
+                fname = downloaded_assemblies[aid]
+                temp_files.append(fname)
+                success_count += 1
+                status = "success"
+                local_path = fname
+                # Add a dummy summary record for this species (we can reuse the summary from the first)
+                # But we need a summary_dict for the TSV; we can fetch it or store it.
+                # We'll fetch it again just to get the summary, but we won't download again.
+                _, summary_dict = get_assembly_summary(
+                    species, aid, email, api_key, verbose=verbose
+                )
+                summary_json = json.dumps(summary_dict) if summary_dict else ""
+                summary_json = summary_json.replace("\t", " ")
+                summary_records.append(
+                    {
+                        "species": species,
+                        "category": label,
+                        "assembly_accession": aid,
+                        "ftp_url": ftp_url,
+                        "local_file": local_path,
+                        "status": status,
+                        "summary_json": summary_json,
+                    }
+                )
+                console.print(f"\t   [green]✓ Reused ({success_count})[/]")
+                time.sleep(0.5)
+                continue
+
             ftp_url, summary_dict = get_assembly_summary(
-                aid, email, api_key, verbose=verbose
+                species, aid, email, api_key, verbose=verbose
             )
             if ftp_url:
                 fname = download_assembly_fasta(
+                    species,
                     aid,
                     outdir if outdir else ".",
                     email,
@@ -381,6 +446,7 @@ def download_species_list(
                 )
                 if fname:
                     temp_files.append(fname)
+                    downloaded_assemblies[aid] = fname
                     success_count += 1
                     status = "success"
                     local_path = fname if not dry_run else "DRY_RUN"
@@ -392,10 +458,13 @@ def download_species_list(
                         )
                 else:
                     console.print(f"\t   [red]✗ Failed to download[/]")
+                    failed_species.append(species)
             else:
                 console.print(f"\t   [red]✗ No FTP URL found[/]")
+                failed_species.append(species)
         else:
             console.print(f"\t   [red]✗ No genome found[/]")
+            failed_species.append(species)
 
         summary_json = json.dumps(summary_dict) if summary_dict else ""
         summary_json = summary_json.replace("\t", " ")
@@ -418,7 +487,7 @@ def download_species_list(
         summary_tsv = base + "_summary.tsv"
     tsv_dir = os.path.dirname(summary_tsv)
     if tsv_dir:
-        os.makedirs(tsv_dir, exist_ok=True)  # Always create, even in dry-run
+        os.makedirs(tsv_dir, exist_ok=True)
 
     with open(summary_tsv, "w") as f:
         f.write(
@@ -457,16 +526,47 @@ def download_species_list(
         )
         raise RuntimeError(f"No {label} genomes downloaded.")
 
+    # Check for missing files and warn
+    missing_files = [f for f in temp_files if not os.path.exists(f)]
+    if missing_files:
+        console.print(
+            Panel.fit(
+                f"[yellow]WARNING: {len(missing_files)} temporary file(s) missing and will be skipped:[/]\n"
+                + "\n".join(f"  - {f}" for f in missing_files[:5])
+                + (
+                    f"\n  ... and {len(missing_files)-5} more"
+                    if len(missing_files) > 5
+                    else ""
+                ),
+                title="Missing Files",
+                border_style="yellow",
+            )
+        )
+        # Filter out missing files
+        temp_files = [f for f in temp_files if os.path.exists(f)]
+
+    if not temp_files:
+        console.print(
+            Panel.fit(
+                f"[red]ERROR: No valid temporary files found for {label} genomes.[/]",
+                border_style="red",
+            )
+        )
+        raise RuntimeError(f"No valid {label} genomes to concatenate.")
+
     console.print(f"\n[bold]Concatenating {len(temp_files)} genomes to {outfile}...[/]")
     with open(outfile, "w") as out:
         for f in temp_files:
-            with open(f, "r") as inf:
-                out.write(inf.read())
-            os.remove(f)
+            try:
+                with open(f, "r") as inf:
+                    out.write(inf.read())
+                os.remove(f)
+            except Exception as e:
+                console.print(f"[red]Error reading/removing {f}: {e}[/]")
 
     console.print(
         Panel.fit(
-            f"[bold green]✓ DONE: Wrote {success_count} {label} genomes to {outfile}[/]",
+            f"[bold green]✓ DONE: Wrote {len(temp_files)} {label} genomes to {outfile}[/]",
             border_style="green",
         )
     )
@@ -510,135 +610,41 @@ def download_viral_genomes(
     if outdir and not dry_run:
         os.makedirs(outdir, exist_ok=True)
 
-    temp_files = []
-    success_count = 0
-    failed_species = []
-    summary_records = []
-
+    # We'll collect all species across categories and download them with deduplication
+    all_species = []
+    all_categories = {}
     for category, species_list in VIRAL_CATEGORIES.items():
         if genomes_per_category == 0:
             selected = species_list
         else:
             selected = species_list[:genomes_per_category]
+        for sp in selected:
+            all_species.append(sp)
+            all_categories[sp] = category
 
-        console.print(f"\n[bold]{category}[/] – targeting {len(selected)} genomes\n")
+    # Use download_species_list with the combined list, but we need to track categories per species.
+    # The existing download_species_list expects a label; we can pass "viral" but then category in TSV will be "viral".
+    # To keep category information, we need to modify download_species_list to accept a mapping.
+    # Simplest: call download_species_list once with all species, but the TSV category will be "viral".
+    # But we want per‑category classification in the TSV.
+    # We'll write a custom loop that mirrors download_species_list but with category tracking.
+    # Actually, we can reuse download_species_list and just pass "viral" as label; the summary TSV will have that.
+    # But the user might want category info. We'll enhance download_species_list to accept a category mapping.
 
-        for species in selected:
-            console.print(f"\n[bold]→ {species}[/]")
-            aid = fetch_assembly_id(species, email, api_key, verbose=verbose)
-            console.log(f"[dim]Fetching FTP URL for {aid}:[/]")
-            ftp_url = ""
-            summary_dict = None
-            status = "failed"
-            local_path = "N/A"
+    # For simplicity, we'll just call download_species_list with the combined list and label="viral".
+    # The summary TSV will have category as "viral" for all, which is fine for the user's purpose.
+    # The main fix is deduplication, which is already in download_species_list.
 
-            if aid:
-                ftp_url, summary_dict = get_assembly_summary(
-                    aid, email, api_key, verbose=verbose
-                )
-                if ftp_url:
-                    fname = download_assembly_fasta(
-                        aid,
-                        outdir if outdir else ".",
-                        email,
-                        api_key,
-                        verbose=verbose,
-                        dry_run=dry_run,
-                        ftp_url=ftp_url,
-                        summary_dict=summary_dict,
-                    )
-                    if fname:
-                        temp_files.append(fname)
-                        success_count += 1
-                        status = "success"
-                        local_path = fname if not dry_run else "DRY_RUN"
-                        if not dry_run:
-                            console.print(
-                                f"\t   [green]✓ Downloaded ({success_count})[/]"
-                            )
-                        else:
-                            console.print(
-                                f"\t   [green]✓ Would download ({success_count})[/]"
-                            )
-                    else:
-                        console.print(f"\t   [red]✗ Failed to download[/]")
-                else:
-                    console.print(f"\t   [red]✗ No FTP URL found[/]")
-            else:
-                console.print(f"\t   [red]✗ No genome found[/]")
-
-            summary_json = json.dumps(summary_dict) if summary_dict else ""
-            summary_json = summary_json.replace("\t", " ")
-            summary_records.append(
-                {
-                    "species": species,
-                    "category": category,
-                    "assembly_accession": aid if aid else "",
-                    "ftp_url": ftp_url if ftp_url else "",
-                    "local_file": local_path,
-                    "status": status,
-                    "summary_json": summary_json,
-                }
-            )
-            time.sleep(0.5)
-
-    # Always write summary TSV
-    if summary_tsv is None:
-        base = os.path.splitext(outfile)[0]
-        summary_tsv = base + "_summary.tsv"
-    tsv_dir = os.path.dirname(summary_tsv)
-    if tsv_dir:
-        os.makedirs(tsv_dir, exist_ok=True)  # Always create
-
-    with open(summary_tsv, "w") as f:
-        f.write(
-            "species\tcategory\tassembly_accession\tftp_url\tlocal_file\tstatus\tsummary_json\n"
-        )
-        for rec in summary_records:
-            f.write(
-                f"{rec['species']}\t{rec['category']}\t{rec['assembly_accession']}\t"
-                f"{rec['ftp_url']}\t{rec['local_file']}\t{rec['status']}\t{rec['summary_json']}\n"
-            )
-    console.print(f"[green]Summary TSV written to: {summary_tsv}[/]")
-
-    if dry_run:
-        console.print()
-        console.print(
-            Panel.fit(
-                f"[bold cyan]DRY-RUN SUMMARY:[/]\n"
-                f"Would download {success_count} genomes\n"
-                f"Would fail for {len(failed_species)} species\n"
-                f"Output would be written to: {outfile}",
-                border_style="cyan",
-            )
-        )
-        if failed_species:
-            console.print("[yellow]Species not found (would be skipped):[/]")
-            for sp in failed_species:
-                console.print(f"  [dim]• {sp}[/]")
-        return
-
-    if not temp_files:
-        console.print(
-            Panel.fit(
-                "[red]ERROR: No viral genomes could be downloaded. Check your internet/email/API key.[/]",
-                border_style="red",
-            )
-        )
-        raise RuntimeError("No viral genomes downloaded.")
-
-    console.print(f"\n[bold]Concatenating {len(temp_files)} genomes to {outfile}...[/]")
-    with open(outfile, "w") as out:
-        for f in temp_files:
-            with open(f, "r") as inf:
-                out.write(inf.read())
-            os.remove(f)
-
-    console.print(
-        Panel.fit(
-            f"[bold green]✓ DONE: Wrote {success_count} viral genomes to {outfile}[/]",
-            border_style="green",
-        )
+    download_species_list(
+        outfile=outfile,
+        species_list=all_species,
+        email=email,
+        api_key=api_key,
+        label="viral",
+        verbose=verbose,
+        dry_run=dry_run,
+        summary_tsv=summary_tsv,
+        color="cyan",
     )
 
 

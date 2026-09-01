@@ -478,7 +478,7 @@ class ProkCommunityModule(Module):
 
     def parse_inputs(self) -> None:
         if self.verbose_log_bool:
-            console.log("Parsing sample list for {self.name}...")
+            console.log(f"Parsing sample list for {self.name}...")
         parse_quiet = config.get("module") in ["viral-end-to-end", "run-all"]
         parse_verbose = config.get("verbose", False)
         self.samples, self.assemblies = parse_sample_list(
@@ -511,7 +511,7 @@ class ProkAnnotateModule(Module):
 
     def parse_inputs(self) -> None:
         if self.verbose_log_bool:
-            console.log("Parsing sample list for {self.name}...")
+            console.log(f"Parsing sample list for {self.name}...")
         parse_quiet = config.get("module") in ["viral-end-to-end", "run-all"]
         parse_verbose = config.get("verbose", False)
         self.samples, self.assemblies = parse_sample_list(
