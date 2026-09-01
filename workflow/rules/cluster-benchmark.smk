@@ -48,7 +48,6 @@ rule cluster_benchmark_done:
         os.path.join(datadir, "mock-data", "genomes", "refseq_euk.fna"),
         expand(os.path.join(datadir, "mock-data", "{dataset}.fna"), dataset=DATASET_PARAMS.keys()),
         expand(os.path.join(datadir, "mock-data", "{dataset}.ground_truth.tsv"), dataset=DATASET_PARAMS.keys()),
-        # os.path.join(basedir, "cami_marine", "README.txt"),
     output:
         os.path.join(logdir, "done.log")
     shell:
@@ -67,15 +66,15 @@ rule download_refseq_viral:
         email    = config.get("NCBI-email", ""),
         api_key  = config.get("NCBI-API-key", ""),
         script   = "workflow/scripts/download_refseq_genomes.py",
-        outdir   = datadir,
         tmpdir   = os.path.join(tmpd, "genomes", "viral"),
+        outdir   = os.path.join(datadir, "mock-data", "genomes"),
     log: os.path.join(logdir, "download_refseq_viral.log")
     conda: "../envs/seqkit-biopython.yml"
     resources:
         mem_mb=lambda wildcards, attempt, input: 4 * 10**3 * attempt
     shell:
         """
-        rm -rf {params.tmpdir} {output.fna}
+        rm -rf {params.tmpdir}
         mkdir -p {params.tmpdir} {params.outdir}
 
         python {params.script} \
@@ -101,8 +100,8 @@ rule download_prok_contaminants:
         email    = config.get("NCBI-email", ""),
         api_key  = config.get("NCBI-API-key", ""),
         script   = "workflow/scripts/download_refseq_genomes.py",
-        outdir   = datadir,
-        tmpdir   = os.path.join(tmpd, "genomes", "euk"),
+        tmpdir   = os.path.join(tmpd, "genomes", "prok"),
+        outdir   = os.path.join(datadir, "mock-data", "genomes"),
     log: os.path.join(logdir, "download_refseq_prok.log")
     conda: "../envs/seqkit-biopython.yml"
     resources:
@@ -110,7 +109,7 @@ rule download_prok_contaminants:
     shell:
         """
         rm -rf {params.tmpdir}
-        mkdir -p {params.tmpdir}
+        mkdir -p {params.tmpdir} {params.outdir}
 
         python {params.script} \
             --outfile {params.tmpdir}/tmp.fna \
@@ -134,8 +133,8 @@ rule download_euk_contaminants:
         email    = config.get("NCBI-email", ""),
         api_key  = config.get("NCBI-API-key", ""),
         script   = "workflow/scripts/download_refseq_genomes.py",
-        outdir   = datadir,
         tmpdir   = os.path.join(tmpd, "genomes", "euk"),
+        outdir   = os.path.join(datadir, "mock-data", "genomes"),
     log: os.path.join(logdir, "download_refseq_euk.log")
     conda: "../envs/seqkit-biopython.yml"
     resources:
@@ -143,7 +142,7 @@ rule download_euk_contaminants:
     shell:
         """
         rm -rf {params.tmpdir}
-        mkdir -p {params.tmpdir}
+        mkdir -p {params.tmpdir} {params.outdir}
 
         python {params.script} \
             --outfile {params.tmpdir}/tmp.fna \
@@ -159,6 +158,11 @@ rule download_euk_contaminants:
         """
 
 
+# ------------------------------------------------------------
+# Mock dataset generation
+# ------------------------------------------------------------
+
+# ----- Mock-10K -----
 rule mock_Mock_10K:
     name: "cluster-benchmark.smk Mock-10K dataset"
     output:
@@ -179,6 +183,7 @@ rule mock_Mock_10K:
         species = DATASET_PARAMS["Mock-10K"]["species"],
         seed   = DATASET_PARAMS["Mock-10K"]["seed"],
         script = "workflow/scripts/generate_mock_clust_data.py",
+        outdir = os.path.join(datadir, "mock-data"),
     conda: "../envs/seqkit-biopython.yml"
     log: os.path.join(logdir, "mock_Mock-10K.log")
     benchmark: os.path.join(benchmarks, "mock_Mock-10K.benchmark")
@@ -190,12 +195,13 @@ rule mock_Mock_10K:
         """
         set -euo pipefail
         rm -rf {params.tmpdir}
-        mkdir -p {params.tmpdir}
+        mkdir -p {params.tmpdir} {params.outdir}
 
         python {params.script} \
             --name {params.name} \
             --num-sequences {params.num} \
-            --outdir {datadir}/mock-data \
+            --outdir {params.outdir} \
+            --tmpdir {params.tmpdir} \
             --viral-seq {input.vir} \
             --prokaryotic-seq {input.prok} \
             --eukaryotic-seq {input.euk} \
@@ -209,10 +215,9 @@ rule mock_Mock_10K:
             --seed {params.seed} \
             --force \
             &> {log}
-
-        touch {output.fna} {output.gt}
         """
 
+# ----- Mock-10K-HighVir -----
 rule mock_Mock_10K_HighVir:
     name: "cluster-benchmark.smk Mock-10K-HighVir dataset"
     output:
@@ -233,6 +238,7 @@ rule mock_Mock_10K_HighVir:
         species = DATASET_PARAMS["Mock-10K-HighVir"]["species"],
         seed   = DATASET_PARAMS["Mock-10K-HighVir"]["seed"],
         script = "workflow/scripts/generate_mock_clust_data.py",
+        outdir = os.path.join(datadir, "mock-data"),
     conda: "../envs/seqkit-biopython.yml"
     log: os.path.join(logdir, "mock_Mock-10K-HighVir.log")
     benchmark: os.path.join(benchmarks, "mock_Mock-10K-HighVir.benchmark")
@@ -244,12 +250,12 @@ rule mock_Mock_10K_HighVir:
         """
         set -euo pipefail
         rm -rf {params.tmpdir}
-        mkdir -p {params.tmpdir}
+        mkdir -p {params.tmpdir} {params.outdir}
 
         python {params.script} \
             --name {params.name} \
             --num-sequences {params.num} \
-            --outdir {datadir}/mock-data \
+            --outdir {params.outdir} \
             --tmpdir {params.tmpdir} \
             --viral-seq {input.vir} \
             --prokaryotic-seq {input.prok} \
@@ -264,10 +270,9 @@ rule mock_Mock_10K_HighVir:
             --seed {params.seed} \
             --force \
             &> {log}
-
-        touch {output.fna} {output.gt}
         """
 
+# ----- Mock-10K-LowVir -----
 rule mock_Mock_10K_LowVir:
     name: "cluster-benchmark.smk Mock-10K-LowVir dataset"
     output:
@@ -288,6 +293,7 @@ rule mock_Mock_10K_LowVir:
         species = DATASET_PARAMS["Mock-10K-LowVir"]["species"],
         seed   = DATASET_PARAMS["Mock-10K-LowVir"]["seed"],
         script = "workflow/scripts/generate_mock_clust_data.py",
+        outdir = os.path.join(datadir, "mock-data"),
     conda: "../envs/seqkit-biopython.yml"
     log: os.path.join(logdir, "mock_Mock-10K-LowVir.log")
     benchmark: os.path.join(benchmarks, "mock_Mock-10K-LowVir.benchmark")
@@ -299,12 +305,12 @@ rule mock_Mock_10K_LowVir:
         """
         set -euo pipefail
         rm -rf {params.tmpdir}
-        mkdir -p {params.tmpdir}
+        mkdir -p {params.tmpdir} {params.outdir}
 
         python {params.script} \
             --name {params.name} \
             --num-sequences {params.num} \
-            --outdir {datadir}/mock-data \
+            --outdir {params.outdir} \
             --tmpdir {params.tmpdir} \
             --viral-seq {input.vir} \
             --prokaryotic-seq {input.prok} \
@@ -319,10 +325,9 @@ rule mock_Mock_10K_LowVir:
             --seed {params.seed} \
             --force \
             &> {log}
-
-        touch {output.fna} {output.gt}
         """
 
+# ----- Mock-50K -----
 rule mock_Mock_50K:
     name: "cluster-benchmark.smk Mock-50K dataset"
     output:
@@ -343,6 +348,7 @@ rule mock_Mock_50K:
         species = DATASET_PARAMS["Mock-50K"]["species"],
         seed   = DATASET_PARAMS["Mock-50K"]["seed"],
         script = "workflow/scripts/generate_mock_clust_data.py",
+        outdir = os.path.join(datadir, "mock-data"),
     conda: "../envs/seqkit-biopython.yml"
     log: os.path.join(logdir, "mock_Mock-50K.log")
     benchmark: os.path.join(benchmarks, "mock_Mock-50K.benchmark")
@@ -354,12 +360,12 @@ rule mock_Mock_50K:
         """
         set -euo pipefail
         rm -rf {params.tmpdir}
-        mkdir -p {params.tmpdir}
+        mkdir -p {params.tmpdir} {params.outdir}
 
         python {params.script} \
             --name {params.name} \
             --num-sequences {params.num} \
-            --outdir {datadir}/mock-data \
+            --outdir {params.outdir} \
             --tmpdir {params.tmpdir} \
             --viral-seq {input.vir} \
             --prokaryotic-seq {input.prok} \
@@ -374,10 +380,9 @@ rule mock_Mock_50K:
             --seed {params.seed} \
             --force \
             &> {log}
-
-        touch {output.fna} {output.gt}
         """
 
+# ----- Mock-100K -----
 rule mock_Mock_100K:
     name: "cluster-benchmark.smk Mock-100K dataset"
     output:
@@ -398,6 +403,7 @@ rule mock_Mock_100K:
         species = DATASET_PARAMS["Mock-100K"]["species"],
         seed   = DATASET_PARAMS["Mock-100K"]["seed"],
         script = "workflow/scripts/generate_mock_clust_data.py",
+        outdir = os.path.join(datadir, "mock-data"),
     conda: "../envs/seqkit-biopython.yml"
     log: os.path.join(logdir, "mock_Mock-100K.log")
     benchmark: os.path.join(benchmarks, "mock_Mock-100K.benchmark")
@@ -409,12 +415,12 @@ rule mock_Mock_100K:
         """
         set -euo pipefail
         rm -rf {params.tmpdir}
-        mkdir -p {params.tmpdir}
+        mkdir -p {params.tmpdir} {params.outdir}
 
         python {params.script} \
             --name {params.name} \
             --num-sequences {params.num} \
-            --outdir {datadir}/mock-data \
+            --outdir {params.outdir} \
             --tmpdir {params.tmpdir} \
             --viral-seq {input.vir} \
             --prokaryotic-seq {input.prok} \
@@ -429,10 +435,9 @@ rule mock_Mock_100K:
             --seed {params.seed} \
             --force \
             &> {log}
-
-        touch {output.fna} {output.gt}
         """
 
+# ----- Mock-300K -----
 rule mock_Mock_300K:
     name: "cluster-benchmark.smk Mock-300K dataset"
     output:
@@ -453,6 +458,7 @@ rule mock_Mock_300K:
         species = DATASET_PARAMS["Mock-300K"]["species"],
         seed   = DATASET_PARAMS["Mock-300K"]["seed"],
         script = "workflow/scripts/generate_mock_clust_data.py",
+        outdir = os.path.join(datadir, "mock-data"),
     conda: "../envs/seqkit-biopython.yml"
     log: os.path.join(logdir, "mock_Mock-300K.log")
     benchmark: os.path.join(benchmarks, "mock_Mock-300K.benchmark")
@@ -464,12 +470,12 @@ rule mock_Mock_300K:
         """
         set -euo pipefail
         rm -rf {params.tmpdir}
-        mkdir -p {params.tmpdir}
+        mkdir -p {params.tmpdir} {params.outdir}
 
         python {params.script} \
             --name {params.name} \
             --num-sequences {params.num} \
-            --outdir {datadir}/mock-data \
+            --outdir {params.outdir} \
             --tmpdir {params.tmpdir} \
             --viral-seq {input.vir} \
             --prokaryotic-seq {input.prok} \
@@ -484,10 +490,9 @@ rule mock_Mock_300K:
             --seed {params.seed} \
             --force \
             &> {log}
-
-        touch {output.fna} {output.gt}
         """
 
+# ----- Mock-1000K -----
 rule mock_Mock_1000K:
     name: "cluster-benchmark.smk Mock-1000K dataset"
     output:
@@ -508,6 +513,7 @@ rule mock_Mock_1000K:
         species = DATASET_PARAMS["Mock-1000K"]["species"],
         seed   = DATASET_PARAMS["Mock-1000K"]["seed"],
         script = "workflow/scripts/generate_mock_clust_data.py",
+        outdir = os.path.join(datadir, "mock-data"),
     conda: "../envs/seqkit-biopython.yml"
     log: os.path.join(logdir, "mock_Mock-1000K.log")
     benchmark: os.path.join(benchmarks, "mock_Mock-1000K.benchmark")
@@ -519,12 +525,12 @@ rule mock_Mock_1000K:
         """
         set -euo pipefail
         rm -rf {params.tmpdir}
-        mkdir -p {params.tmpdir}
+        mkdir -p {params.tmpdir} {params.outdir}
 
         python {params.script} \
             --name {params.name} \
             --num-sequences {params.num} \
-            --outdir {datadir}/mock-data \
+            --outdir {params.outdir} \
             --tmpdir {params.tmpdir} \
             --viral-seq {input.vir} \
             --prokaryotic-seq {input.prok} \
@@ -539,10 +545,9 @@ rule mock_Mock_1000K:
             --seed {params.seed} \
             --force \
             &> {log}
-
-        touch {output.fna} {output.gt}
         """
 
+# ----- Mock-Strain -----
 rule mock_Mock_Strain:
     name: "cluster-benchmark.smk Mock-Strain dataset"
     output:
@@ -563,6 +568,7 @@ rule mock_Mock_Strain:
         species = DATASET_PARAMS["Mock-Strain"]["species"],
         seed   = DATASET_PARAMS["Mock-Strain"]["seed"],
         script = "workflow/scripts/generate_mock_clust_data.py",
+        outdir = os.path.join(datadir, "mock-data"),
     conda: "../envs/seqkit-biopython.yml"
     log: os.path.join(logdir, "mock_Mock-Strain.log")
     benchmark: os.path.join(benchmarks, "mock_Mock-Strain.benchmark")
@@ -574,12 +580,12 @@ rule mock_Mock_Strain:
         """
         set -euo pipefail
         rm -rf {params.tmpdir}
-        mkdir -p {params.tmpdir}
+        mkdir -p {params.tmpdir} {params.outdir}
 
         python {params.script} \
             --name {params.name} \
             --num-sequences {params.num} \
-            --outdir {datadir}/mock-data \
+            --outdir {params.outdir} \
             --tmpdir {params.tmpdir} \
             --viral-seq {input.vir} \
             --prokaryotic-seq {input.prok} \
@@ -594,8 +600,6 @@ rule mock_Mock_Strain:
             --seed {params.seed} \
             --force \
             &> {log}
-
-        touch {output.fna} {output.gt}
         """
 
 # rule generate_mock:

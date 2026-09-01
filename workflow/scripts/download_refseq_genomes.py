@@ -142,7 +142,7 @@ def fetch_assembly_id(species_name, email, api_key=None, verbose=False):
             handle.close()
             if record["IdList"]:
                 if verbose:
-                    console.log(f"[dim]   ✓ Found ID: {record['IdList'][0]}[/]")
+                    console.log(f"[dim]✓ Found ID: {record['IdList'][0]}[/]")
                 return record["IdList"][0]
             else:
                 if verbose and attempt == 1:
