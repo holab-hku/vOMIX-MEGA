@@ -77,18 +77,17 @@ VIRAL_CATEGORIES = {
         "Rice dwarf virus",
         "Bluetongue virus",
     ],
-    "ssRNA": [
-        "Influenza A virus",
-        "Human immunodeficiency virus 1",
-        "Severe acute respiratory syndrome coronavirus 2",
-        "Poliovirus",
-        "West Nile virus",
-        "Dengue virus type 2",
-        "Zika virus",
-        "Rabies virus",
-        "Ebola virus",
-        "Measles virus",
-    ],
+"ssRNA": [
+    "Severe acute respiratory syndrome coronavirus 2",
+    "Human immunodeficiency virus 1",
+    "Poliovirus",
+    "West Nile virus",
+    "Dengue virus type 2",
+    "Zika virus",
+    "Rabies virus",
+    "Ebola virus",
+    "Measles virus",
+],
 }
 
 PROKARYOTIC_SPECIES = [

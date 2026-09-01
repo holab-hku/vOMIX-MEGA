@@ -85,6 +85,7 @@ rule download_refseq_viral:
             --api-key "{params.api_key}" \
             --mode viral \
             --genomes-per-category 0 \
+            --verbose \
             &> {log}
 
         mv {params.tmpdir}/tmp.fna {output.fna}
