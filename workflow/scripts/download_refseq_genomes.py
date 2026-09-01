@@ -214,8 +214,16 @@ def get_assembly_summary(
             )
             if ftp_dir:
                 https_dir = ftp_dir.replace("ftp://", "https://")
-                assembly_name = doc_summary["AssemblyName"]
-                fna_url = f"{https_dir}/{assembly_id}_{assembly_name}_genomic.fna.gz"
+                # Extract accession and sanitized assembly name
+                assembly_accession = doc_summary.get("AssemblyAccession")
+                assembly_name = doc_summary.get("AssemblyName", "")
+                sanitized_name = assembly_name.replace(" ", "_")
+                # Construct URL with proper naming
+                if assembly_accession:
+                    fna_url = f"{https_dir}/{assembly_accession}_{sanitized_name}_genomic.fna.gz"
+                else:
+                    # Fallback: just use the base URL and hope there's a genomic.fna.gz
+                    fna_url = f"{https_dir}/genomic.fna.gz"
                 if verbose:
                     console.log(f"[dim][green]FTP URL found: {fna_url}[/]")
                 return fna_url, doc_summary
@@ -259,7 +267,6 @@ def download_assembly_fasta(
     Returns the local temporary FASTA path, or None on failure.
     """
     if ftp_url is None or summary_dict is None:
-        # fetch both
         ftp_url, summary_dict = get_assembly_summary(
             assembly_id, email, api_key, max_attempts, verbose
         )
@@ -270,35 +277,48 @@ def download_assembly_fasta(
         console.log(f"[dim][cyan]DRY-RUN: would download from {ftp_url}[/]")
         return "DRY_RUN_PLACEHOLDER"
 
+    # Try the primary URL; if fails, try a fallback (just genomic.fna.gz)
+    url_candidates = [ftp_url]
+    # If primary URL contains the accession and name, also try without the name part
+    if "_genomic.fna.gz" in ftp_url and not ftp_url.endswith("/genomic.fna.gz"):
+        base_dir = ftp_url.rsplit("/", 1)[0]
+        url_candidates.append(f"{base_dir}/genomic.fna.gz")
+
     for attempt in range(max_attempts):
-        try:
-            temp_gz = os.path.join(workdir, f".tmp_{assembly_id}.fna.gz")
-            if verbose:
-                console.log(f"[dim]Downloading: {ftp_url}[/]")
-            urllib.request.urlretrieve(ftp_url, temp_gz)
-
-            # Decompress to plain FASTA
-            temp_fasta = os.path.join(workdir, f".tmp_{assembly_id}.fna")
-            with gzip.open(temp_gz, "rt") as gz_f, open(temp_fasta, "w") as out_f:
-                out_f.write(gz_f.read())
-            os.remove(temp_gz)
-            return temp_fasta
-
-        except HTTPError as e:
-            if e.code == 404:
+        for url in url_candidates:
+            try:
                 if verbose:
-                    console.log(f"[red]File not found for {assembly_id}[/]")
+                    console.log(f"[dim]Attempting download: {url}[/]")
+                temp_gz = os.path.join(workdir, f".tmp_{assembly_id}.fna.gz")
+                urllib.request.urlretrieve(url, temp_gz)
+
+                # Decompress to plain FASTA
+                temp_fasta = os.path.join(workdir, f".tmp_{assembly_id}.fna")
+                with gzip.open(temp_gz, "rt") as gz_f, open(temp_fasta, "w") as out_f:
+                    out_f.write(gz_f.read())
+                os.remove(temp_gz)
+                return temp_fasta
+
+            except HTTPError as e:
+                if e.code == 404:
+                    if verbose:
+                        console.log(f"[red]File not found: {url}[/]")
+                    # Try next candidate
+                    continue
+                if e.code in (429, 500):
+                    wait = (attempt + 1) * 5
+                    if verbose:
+                        console.log(f"[yellow]Server error. Waiting {wait}s...[/]")
+                    time.sleep(wait)
+                    break  # break inner loop, try again with same url after wait
+                console.log(f"[red]HTTP error for {assembly_id}: {e}[/]")
                 return None
-            if e.code in (429, 500):
-                wait = (attempt + 1) * 5
-                if verbose:
-                    console.log(f"[yellow]Server error. Waiting {wait}s...[/]")
-                time.sleep(wait)
-                continue
-            console.log(f"[red]HTTP error for {assembly_id}: {e}[/]")
-            return None
-        except Exception as e:
-            console.log(f"[red]Error downloading {assembly_id}: {e}[/]")
+            except Exception as e:
+                console.log(f"[red]Error downloading {assembly_id}: {e}[/]")
+                return None
+        else:
+            # all candidates failed
+            console.log(f"[red]All download attempts failed for {assembly_id}[/]")
             return None
     return None
 
