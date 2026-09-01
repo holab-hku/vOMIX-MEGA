@@ -85,7 +85,7 @@ rule download_refseq_viral:
             --api-key "{params.api_key}" \
             --mode viral \
             --genomes-per-category 0 \
-            > {log} 2>&1
+            &> {log}
 
         mv {params.tmpdir}/tmp.fna {output.fna}
         mv {params.tmpdir}/tmp.tsv {output.tsv}
@@ -118,7 +118,7 @@ rule download_prok_contaminants:
             --api-key "{params.api_key}" \
             --mode prokaryotic \
             --verbose \
-            > {log} 2>&1
+            &> {log}
 
         mv {params.tmpdir}/tmp.fna {output.fna}
         mv {params.tmpdir}/tmp.tsv {output.tsv}
@@ -151,7 +151,7 @@ rule download_euk_contaminants:
             --api-key "{params.api_key}" \
             --mode eukaryotic \
             --verbose \
-            > {log} 2>&1
+            &> {log}
 
         mv {params.tmpdir}/tmp.fna {output.fna}
         mv {params.tmpdir}/tmp.tsv {output.tsv}
@@ -207,7 +207,7 @@ rule mock_Mock_10K:
             --mut-rate-max 0.05 \
             --seed {params.seed} \
             --force \
-            > {log} 2>&1
+            &> {log}
 
         touch {output.fna} {output.gt}
         """
@@ -262,7 +262,7 @@ rule mock_Mock_10K_HighVir:
             --mut-rate-max 0.05 \
             --seed {params.seed} \
             --force \
-            > {log} 2>&1
+            &> {log}
 
         touch {output.fna} {output.gt}
         """
@@ -317,7 +317,7 @@ rule mock_Mock_10K_LowVir:
             --mut-rate-max 0.05 \
             --seed {params.seed} \
             --force \
-            > {log} 2>&1
+            &> {log}
 
         touch {output.fna} {output.gt}
         """
@@ -372,7 +372,7 @@ rule mock_Mock_50K:
             --mut-rate-max 0.05 \
             --seed {params.seed} \
             --force \
-            > {log} 2>&1
+            &> {log}
 
         touch {output.fna} {output.gt}
         """
@@ -427,7 +427,7 @@ rule mock_Mock_100K:
             --mut-rate-max 0.05 \
             --seed {params.seed} \
             --force \
-            > {log} 2>&1
+            &> {log}
 
         touch {output.fna} {output.gt}
         """
@@ -482,7 +482,7 @@ rule mock_Mock_300K:
             --mut-rate-max 0.05 \
             --seed {params.seed} \
             --force \
-            > {log} 2>&1
+            &> {log}
 
         touch {output.fna} {output.gt}
         """
@@ -537,7 +537,7 @@ rule mock_Mock_1000K:
             --mut-rate-max 0.05 \
             --seed {params.seed} \
             --force \
-            > {log} 2>&1
+            &> {log}
 
         touch {output.fna} {output.gt}
         """
@@ -592,7 +592,7 @@ rule mock_Mock_Strain:
             --mut-rate-max 0.05 \
             --seed {params.seed} \
             --force \
-            > {log} 2>&1
+            &> {log}
 
         touch {output.fna} {output.gt}
         """
@@ -647,7 +647,7 @@ rule mock_Mock_Strain:
 #             --mut-rate-max 0.05 \
 #             --seed {params.seed} \
 #             --force \
-#             > {log} 2>&1
+#             &> {log}
 
 #         touch {output.fna} {output.gt}
 #         """
@@ -676,7 +676,7 @@ rule mock_Mock_Strain:
 #             --outdir {params.outdir} \
 #             --tmpdir {params.tmpdir} \
 #             --url "{params.url}" \
-#             > {log} 2>&1
+#             &> {log}
 
 #         touch {output.marker}
 #         """
