@@ -378,13 +378,11 @@ def download_species_list(
     if outdir and not dry_run:
         os.makedirs(outdir, exist_ok=True)
 
-    temp_files = []
+    temp_files = []  # unique file paths, one per assembly
     success_count = 0
     failed_species = []
     summary_records = []
-    # Track downloaded assemblies to avoid duplicates
-    downloaded_assemblies = {}
-    missing_files = []
+    downloaded_assemblies = {}  # assembly_id -> file_path
 
     for species in species_list:
         console.print(f"\n[bold]→ {species}[/]")
@@ -400,13 +398,14 @@ def download_species_list(
             if aid in downloaded_assemblies:
                 console.print(f"[dim]Reusing previously downloaded assembly {aid}[/]")
                 fname = downloaded_assemblies[aid]
-                temp_files.append(fname)
+                # Do NOT append to temp_files again
                 success_count += 1
                 status = "success"
                 local_path = fname
-                # Add a dummy summary record for this species (we can reuse the summary from the first)
-                # But we need a summary_dict for the TSV; we can fetch it or store it.
-                # We'll fetch it again just to get the summary, but we won't download again.
+                # Get summary for this species (reuse the one from first download?)
+                # We'll fetch a fresh summary to get species-specific metadata if needed,
+                # but we can reuse the summary from the first download to save time.
+                # For simplicity, we'll fetch it again (fast).
                 _, summary_dict = get_assembly_summary(
                     species, aid, email, api_key, verbose=verbose
                 )
@@ -443,7 +442,9 @@ def download_species_list(
                     summary_dict=summary_dict,
                 )
                 if fname:
-                    temp_files.append(fname)
+                    # Only append if not already present (should not happen here)
+                    if fname not in temp_files:
+                        temp_files.append(fname)
                     downloaded_assemblies[aid] = fname
                     success_count += 1
                     status = "success"
