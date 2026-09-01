@@ -66,7 +66,7 @@ rule download_refseq_viral:
     params:
         email    = config.get("NCBI-email", ""),
         api_key  = config.get("NCBI-API-key", ""),
-        script   = "../scripts/download_refseq_genomes.py",
+        script   = "workflow/scripts/download_refseq_genomes.py",
         outdir   = datadir,
         tmpdir   = os.path.join(tmpd, "genomes", "viral"),
     log: os.path.join(logdir, "download_refseq_viral.log")
@@ -99,7 +99,7 @@ rule download_prok_contaminants:
     params:
         email    = config.get("NCBI-email", ""),
         api_key  = config.get("NCBI-API-key", ""),
-        script   = "../scripts/download_refseq_genomes.py",
+        script   = "workflow/scripts/download_refseq_genomes.py",
         outdir   = datadir,
         tmpdir   = os.path.join(tmpd, "genomes", "euk"),
     log: os.path.join(logdir, "download_refseq_prok.log")
@@ -132,7 +132,7 @@ rule download_euk_contaminants:
     params:
         email    = config.get("NCBI-email", ""),
         api_key  = config.get("NCBI-API-key", ""),
-        script   = "../scripts/download_refseq_genomes.py",
+        script   = "workflow/scripts/download_refseq_genomes.py",
         outdir   = datadir,
         tmpdir   = os.path.join(tmpd, "genomes", "euk"),
     log: os.path.join(logdir, "download_refseq_euk.log")
@@ -177,7 +177,7 @@ rule mock_Mock_10K:
         strain = DATASET_PARAMS["Mock-10K"]["strain"],
         species = DATASET_PARAMS["Mock-10K"]["species"],
         seed   = DATASET_PARAMS["Mock-10K"]["seed"],
-        script = "../scripts/generate_mock_clust_data.py",
+        script = "workflow/scripts/generate_mock_clust_data.py",
     conda: "../envs/seqkit-biopython.yml"
     log: os.path.join(logdir, "mock_Mock-10K.log")
     benchmark: os.path.join(benchmarks, "mock_Mock-10K.benchmark")
@@ -231,7 +231,7 @@ rule mock_Mock_10K_HighVir:
         strain = DATASET_PARAMS["Mock-10K-HighVir"]["strain"],
         species = DATASET_PARAMS["Mock-10K-HighVir"]["species"],
         seed   = DATASET_PARAMS["Mock-10K-HighVir"]["seed"],
-        script = "../scripts/generate_mock_clust_data.py",
+        script = "workflow/scripts/generate_mock_clust_data.py",
     conda: "../envs/seqkit-biopython.yml"
     log: os.path.join(logdir, "mock_Mock-10K-HighVir.log")
     benchmark: os.path.join(benchmarks, "mock_Mock-10K-HighVir.benchmark")
@@ -286,7 +286,7 @@ rule mock_Mock_10K_LowVir:
         strain = DATASET_PARAMS["Mock-10K-LowVir"]["strain"],
         species = DATASET_PARAMS["Mock-10K-LowVir"]["species"],
         seed   = DATASET_PARAMS["Mock-10K-LowVir"]["seed"],
-        script = "../scripts/generate_mock_clust_data.py",
+        script = "workflow/scripts/generate_mock_clust_data.py",
     conda: "../envs/seqkit-biopython.yml"
     log: os.path.join(logdir, "mock_Mock-10K-LowVir.log")
     benchmark: os.path.join(benchmarks, "mock_Mock-10K-LowVir.benchmark")
@@ -341,7 +341,7 @@ rule mock_Mock_50K:
         strain = DATASET_PARAMS["Mock-50K"]["strain"],
         species = DATASET_PARAMS["Mock-50K"]["species"],
         seed   = DATASET_PARAMS["Mock-50K"]["seed"],
-        script = "../scripts/generate_mock_clust_data.py",
+        script = "workflow/scripts/generate_mock_clust_data.py",
     conda: "../envs/seqkit-biopython.yml"
     log: os.path.join(logdir, "mock_Mock-50K.log")
     benchmark: os.path.join(benchmarks, "mock_Mock-50K.benchmark")
@@ -396,7 +396,7 @@ rule mock_Mock_100K:
         strain = DATASET_PARAMS["Mock-100K"]["strain"],
         species = DATASET_PARAMS["Mock-100K"]["species"],
         seed   = DATASET_PARAMS["Mock-100K"]["seed"],
-        script = "../scripts/generate_mock_clust_data.py",
+        script = "workflow/scripts/generate_mock_clust_data.py",
     conda: "../envs/seqkit-biopython.yml"
     log: os.path.join(logdir, "mock_Mock-100K.log")
     benchmark: os.path.join(benchmarks, "mock_Mock-100K.benchmark")
@@ -451,7 +451,7 @@ rule mock_Mock_300K:
         strain = DATASET_PARAMS["Mock-300K"]["strain"],
         species = DATASET_PARAMS["Mock-300K"]["species"],
         seed   = DATASET_PARAMS["Mock-300K"]["seed"],
-        script = "../scripts/generate_mock_clust_data.py",
+        script = "workflow/scripts/generate_mock_clust_data.py",
     conda: "../envs/seqkit-biopython.yml"
     log: os.path.join(logdir, "mock_Mock-300K.log")
     benchmark: os.path.join(benchmarks, "mock_Mock-300K.benchmark")
@@ -506,7 +506,7 @@ rule mock_Mock_1000K:
         strain = DATASET_PARAMS["Mock-1000K"]["strain"],
         species = DATASET_PARAMS["Mock-1000K"]["species"],
         seed   = DATASET_PARAMS["Mock-1000K"]["seed"],
-        script = "../scripts/generate_mock_clust_data.py",
+        script = "workflow/scripts/generate_mock_clust_data.py",
     conda: "../envs/seqkit-biopython.yml"
     log: os.path.join(logdir, "mock_Mock-1000K.log")
     benchmark: os.path.join(benchmarks, "mock_Mock-1000K.benchmark")
@@ -561,7 +561,7 @@ rule mock_Mock_Strain:
         strain = DATASET_PARAMS["Mock-Strain"]["strain"],
         species = DATASET_PARAMS["Mock-Strain"]["species"],
         seed   = DATASET_PARAMS["Mock-Strain"]["seed"],
-        script = "../scripts/generate_mock_clust_data.py",
+        script = "workflow/scripts/generate_mock_clust_data.py",
     conda: "../envs/seqkit-biopython.yml"
     log: os.path.join(logdir, "mock_Mock-Strain.log")
     benchmark: os.path.join(benchmarks, "mock_Mock-Strain.benchmark")
@@ -616,7 +616,7 @@ rule mock_Mock_Strain:
 #         strain = lambda wc: DATASET_PARAMS[wc.dataset]["strain"],
 #         species = lambda wc: DATASET_PARAMS[wc.dataset]["species"],
 #         seed   = lambda wc: DATASET_PARAMS[wc.dataset]["seed"],
-#         script = "../scripts/generate_mock_clust_data.py",
+#         script = "workflow/scripts/generate_mock_clust_data.py",
 #     conda: "../envs/seqkit-biopython.yml"
 #     log: os.path.join(logdir, "mock_{dataset}.log")
 #     benchmark: os.path.join(benchmarks, "mock_{dataset}.benchmark")
@@ -672,7 +672,7 @@ rule mock_Mock_Strain:
 #         rm -rf {params.tmpdir}
 #         mkdir -p {params.tmpdir} {params.outdir}
 
-#         python ../scripts/download_cami.py \
+#         python workflow/scripts/download_cami.py \
 #             --outdir {params.outdir} \
 #             --tmpdir {params.tmpdir} \
 #             --url "{params.url}" \
