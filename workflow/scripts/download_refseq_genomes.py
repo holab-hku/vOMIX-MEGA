@@ -33,7 +33,6 @@ import json
 import argparse
 import urllib.request
 from urllib.error import HTTPError
-from collections import defaultdict
 from Bio import Entrez, SeqIO
 
 # Rich imports
@@ -48,6 +47,9 @@ except ImportError:
 
 console = Console()
 
+# ----------------------------------------------------------------------
+# Species lists
+# ----------------------------------------------------------------------
 VIRAL_CATEGORIES = {
     "dsDNA": [
         "Escherichia virus T4",
@@ -57,6 +59,8 @@ VIRAL_CATEGORIES = {
         "Vaccinia virus",
         "Acanthamoeba polyphaga mimivirus",
         "Human herpesvirus 1",
+        "Adenovirus C",
+        "Bacillus subtilis phage SPP1",
         "Pseudomonas phage PAK_P1",
     ],
     "ssDNA": [
@@ -112,244 +116,291 @@ EUKARYOTIC_SPECIES = [
     "Arabidopsis thaliana",
 ]
 
-# Legacy contaminants (all combined)
 CONTAMINANT_SPECIES = PROKARYOTIC_SPECIES + EUKARYOTIC_SPECIES
 
 
-def fetch_assembly_id(species_name, email, api_key=None, max_attempts=3, verbose=False):
-    """
-    Search RefSeq for the best complete genome assembly of a given species.
-    Returns assembly ID (GCF_* or GCA_*) or None if not found.
-    """
+# ----------------------------------------------------------------------
+# Entrez helpers
+# ----------------------------------------------------------------------
+def fetch_assembly_id(species_name, email, api_key=None, verbose=False):
+    """Search RefSeq for the best complete genome assembly."""
     Entrez.email = email
     if api_key:
         Entrez.api_key = api_key
 
-    term2 = f'"{species_name}"[Organism] AND "complete genome"[Assembly Level]'
-    term3 = f'"{species_name}"[Organism] AND refseq[filter]'
+    queries = [
+        f'"{species_name}"[Organism] AND "complete genome"[Assembly Level]',
+        f'"{species_name}"[Organism] AND refseq[filter]',
+    ]
 
-    db_ncbi = "assembly"
-
-    for attempt, query in enumerate([term2, term3], start=1):
+    for attempt, query in enumerate(queries, 1):
         try:
             if verbose:
-                console.log(
-                    f"[dim]Attempt #{attempt} querying {db_ncbi} db for:\n{query}[/]"
-                )
-            handle = Entrez.esearch(db=db_ncbi, term=query, retmax=1)
+                console.log(f"[dim]Attempt #{attempt}: {query}[/]")
+            handle = Entrez.esearch(db="assembly", term=query, retmax=1)
             record = Entrez.read(handle)
             handle.close()
             if record["IdList"]:
-                console.print(
-                    f"[dim]\t   ✓ Genome found ! Record ID: {record['IdList'][0]}[/]"
-                )
+                if verbose:
+                    console.log(f"[dim]   ✓ Found ID: {record['IdList'][0]}[/]")
                 return record["IdList"][0]
             else:
-                if attempt == 1:
-                    console.print(
-                        "[dim]\t   ✗ No complete RefSeq genome found, trying broader search[/]"
-                    )
-                elif attempt == 2:
-                    console.print(
-                        "[dim]\t   ✗ No complete genome found, trying any RefSeq assembly[/]"
+                if verbose and attempt == 1:
+                    console.log(
+                        "[dim]   ✗ No complete genome, trying broader search[/]"
                     )
         except HTTPError as e:
             if e.code in (429, 500):
-                wait = attempt * 5
-                if verbose:
-                    console.log(f"[yellow]Rate limit hit. Waiting {wait}s...[/]")
-                time.sleep(wait)
+                time.sleep(attempt * 5)
                 continue
-            else:
-                console.log(f"[red]Entrez error for {species_name}: {e}[/]")
-                return None
+            console.log(f"[red]Entrez error for {species_name}: {e}[/]")
+            return None
         except Exception as e:
-            console.log(f"[red]Unexpected error for {species_name}: {e}[/]")
+            console.log(f"[red]Error: {e}[/]")
             return None
         time.sleep(0.5)
-
     return None
 
 
-def get_assembly_summary(
-    species_name, assembly_id, email, api_key=None, max_attempts=3, verbose=False
-):
-    """
-    Retrieve the full assembly summary (DocumentSummary) for a given assembly ID.
-    Returns (ftp_url, summary_dict) or (None, None) on failure.
-    Handles special cases for problematic species.
-    """
-    # Check special cases first
-    if species_name in SPECIAL_CASES:
-        case = SPECIAL_CASES[species_name]
-        if verbose:
-            console.log(f"[cyan]Using special case for {species_name}[/]")
-        return case["ftp_url"], case["summary"]
+def build_ftp_url(ftp_dir, assembly_accession, assembly_name):
+    """Build the genomic.fna.gz URL from assembly metadata."""
+    if not ftp_dir:
+        return None
+    https_dir = ftp_dir.replace("ftp://", "https://")
+    if assembly_accession:
+        # Build a clean name: remove spaces, underscores okay
+        name_clean = assembly_name.replace(" ", "_")
+        return f"{https_dir}/{assembly_accession}_{name_clean}_genomic.fna.gz"
+    else:
+        return f"{https_dir}/genomic.fna.gz"
 
+
+def get_assembly_summary(assembly_id, email, api_key=None, verbose=False):
+    """
+    Retrieve assembly summary and FTP URL.
+    Returns (ftp_url, summary_dict) or (None, None).
+    """
     Entrez.email = email
     if api_key:
         Entrez.api_key = api_key
 
+    try:
+        # Resolve accession to numeric ID if needed
+        if assembly_id.startswith("GCF_") or assembly_id.startswith("GCA_"):
+            handle = Entrez.esearch(db="assembly", term=assembly_id, retmax=1)
+            record = Entrez.read(handle)
+            handle.close()
+            if not record["IdList"]:
+                return None, None
+            numeric_id = record["IdList"][0]
+        else:
+            numeric_id = assembly_id
+
+        # Fetch summary
+        handle = Entrez.esummary(db="assembly", id=numeric_id, report="full")
+        summary = Entrez.read(handle)
+        handle.close()
+        if not summary:
+            return None, None
+
+        doc = summary["DocumentSummarySet"]["DocumentSummary"][0]
+        ftp_dir = doc.get("FtpPath_RefSeq") or doc.get("FtpPath_GenBank")
+        if ftp_dir:
+            ftp_url = build_ftp_url(
+                ftp_dir, doc.get("AssemblyAccession"), doc.get("AssemblyName", "")
+            )
+        else:
+            # Fallback: try to construct URL from accession
+            acc = doc.get("AssemblyAccession")
+            name = doc.get("AssemblyName", "").replace(" ", "_")
+            if acc:
+                # Build base path (example: GCF_000865725.1 -> /GCF/000/865/725)
+                parts = acc.split("_")
+                if len(parts) >= 2:
+                    number = parts[1]
+                    groups = [number[i : i + 3] for i in range(0, len(number), 3)]
+                    base = f"https://ftp.ncbi.nlm.nih.gov/genomes/all/{parts[0]}/{groups[0]}/{groups[1]}/{groups[2]}/{acc}_{name}"
+                    ftp_url = f"{base}/{acc}_{name}_genomic.fna.gz"
+                else:
+                    ftp_url = None
+            else:
+                ftp_url = None
+
+        if verbose and ftp_url:
+            console.log(f"[dim][green]FTP URL: {ftp_url}[/]")
+        return ftp_url, doc
+    except Exception as e:
+        if verbose:
+            console.log(f"[red]Error fetching summary: {e}[/]")
+        return None, None
+
+
+# ----------------------------------------------------------------------
+# Download helper
+# ----------------------------------------------------------------------
+def download_file(url, local_path, max_attempts=3, verbose=False):
+    """Download a file with retries. Returns True on success."""
     for attempt in range(max_attempts):
         try:
-            # Resolve accession to numeric ID if needed
-            if assembly_id.startswith("GCF_") or assembly_id.startswith("GCA_"):
-                handle = Entrez.esearch(db="assembly", term=assembly_id, retmax=1)
-                record = Entrez.read(handle)
-                handle.close()
-                if not record["IdList"]:
-                    if verbose:
-                        console.log(
-                            f"[red]No numeric ID found for accession {assembly_id}[/]"
-                        )
-                    return None, None
-                numeric_id = record["IdList"][0]
-            else:
-                numeric_id = assembly_id
-
-            # Fetch summary using numeric ID
-            handle = Entrez.esummary(db="assembly", id=numeric_id, report="full")
-            summary = Entrez.read(handle)
-            handle.close()
-            if not summary:
-                return None, None
-
-            doc_summary = summary["DocumentSummarySet"]["DocumentSummary"][0]
-            ftp_dir = doc_summary.get("FtpPath_RefSeq") or doc_summary.get(
-                "FtpPath_GenBank"
-            )
-            if ftp_dir:
-                https_dir = ftp_dir.replace("ftp://", "https://")
-                assembly_accession = doc_summary.get("AssemblyAccession")
-                assembly_name = doc_summary.get("AssemblyName", "")
-                sanitized_name = assembly_name.replace(" ", "_")
-                if assembly_accession:
-                    fna_url = f"{https_dir}/{assembly_accession}_{sanitized_name}_genomic.fna.gz"
-                else:
-                    fna_url = f"{https_dir}/genomic.fna.gz"
-                if verbose:
-                    console.log(f"[dim][green]FTP URL found: {fna_url}[/]")
-                return fna_url, doc_summary
-            else:
-                # Try to construct a URL from the accession and name
-                assembly_accession = doc_summary.get("AssemblyAccession")
-                assembly_name = doc_summary.get("AssemblyName", "")
-                if assembly_accession:
-                    acc_parts = assembly_accession.split("_")
-                    if len(acc_parts) >= 2:
-                        prefix = acc_parts[0]
-                        number = acc_parts[1]
-                        group1 = number[0:3]
-                        group2 = number[3:6]
-                        group3 = number[6:9]
-                        if len(number) > 9:
-                            group3 = number[6:9]
-                            group4 = number[9:12]
-                            base_path = f"{prefix}/{group1}/{group2}/{group3}/{assembly_accession}_{assembly_name.replace(' ', '_')}"
-                        else:
-                            base_path = f"{prefix}/{group1}/{group2}/{group3}/{assembly_accession}_{assembly_name.replace(' ', '_')}"
-                        https_dir = (
-                            f"https://ftp.ncbi.nlm.nih.gov/genomes/all/{base_path}"
-                        )
-                        fna_url = f"{https_dir}/{assembly_accession}_{assembly_name.replace(' ', '_')}_genomic.fna.gz"
-                        if verbose:
-                            console.log(f"[dim][yellow]Constructed URL: {fna_url}[/]")
-                        return fna_url, doc_summary
-                if verbose:
-                    console.log(f"[red]No FTP path for {assembly_id}[/]")
-                return None, doc_summary
-
+            if verbose:
+                console.log(f"[dim]Downloading: {url}[/]")
+            urllib.request.urlretrieve(url, local_path)
+            return True
         except HTTPError as e:
+            if e.code == 404:
+                if verbose:
+                    console.log(f"[red]File not found: {url}[/]")
+                return False
             if e.code in (429, 500):
                 wait = (attempt + 1) * 5
                 if verbose:
                     console.log(f"[yellow]Server error. Waiting {wait}s...[/]")
                 time.sleep(wait)
                 continue
-            else:
-                if verbose:
-                    console.log(f"[red]HTTP error for {assembly_id}: {e}[/]")
-                return None, None
+            console.log(f"[red]HTTP error: {e}[/]")
+            return False
         except Exception as e:
-            if verbose:
-                console.log(f"[red]Error getting summary for {assembly_id}: {e}[/]")
-            return None, None
-    return None, None
+            console.log(f"[red]Download error: {e}[/]")
+            return False
+    return False
+
+
+def decompress_gz(gz_path, fasta_path):
+    """Decompress .gz to plain FASTA."""
+    try:
+        with gzip.open(gz_path, "rt") as gz_f, open(fasta_path, "w") as out_f:
+            out_f.write(gz_f.read())
+        os.remove(gz_path)
+        return True
+    except Exception as e:
+        console.log(f"[red]Decompression error: {e}[/]")
+        return False
 
 
 def download_assembly_fasta(
-    species_name,
-    assembly_id,
-    workdir,
-    email,
-    api_key=None,
-    max_attempts=3,
-    verbose=False,
-    dry_run=False,
-    ftp_url=None,
-    summary_dict=None,
+    assembly_id, workdir, ftp_url, verbose=False, dry_run=False
 ):
     """
-    Download the genomic FASTA (.fna.gz) for a given assembly ID.
-    If ftp_url is given, use it; otherwise fetch it (and optionally summary_dict if not given).
-    Returns the local temporary FASTA path, or None on failure.
+    Download and decompress a genome FASTA.
+    Returns local FASTA path or None.
     """
-    if ftp_url is None or summary_dict is None:
-        ftp_url, summary_dict = get_assembly_summary(
-            species_name, assembly_id, email, api_key, max_attempts, verbose
-        )
-    if not ftp_url:
-        return None
-
     if dry_run:
         console.log(f"[dim][cyan]DRY-RUN: would download from {ftp_url}[/]")
         return "DRY_RUN_PLACEHOLDER"
 
-    # Try the primary URL; if fails, try a fallback (just genomic.fna.gz)
-    url_candidates = [ftp_url]
-    if "_genomic.fna.gz" in ftp_url and not ftp_url.endswith("/genomic.fna.gz"):
-        base_dir = ftp_url.rsplit("/", 1)[0]
-        url_candidates.append(f"{base_dir}/genomic.fna.gz")
+    # Attempt primary URL, then fallback to genomic.fna.gz in same directory
+    urls = [ftp_url]
+    base_dir = ftp_url.rsplit("/", 1)[0]
+    if not ftp_url.endswith("/genomic.fna.gz"):
+        urls.append(f"{base_dir}/genomic.fna.gz")
 
-    for attempt in range(max_attempts):
-        for url in url_candidates:
-            try:
-                if verbose:
-                    console.log(f"[dim]Attempting download: {url}[/]")
-                temp_gz = os.path.join(workdir, f".tmp_{assembly_id}.fna.gz")
-                urllib.request.urlretrieve(url, temp_gz)
-
-                # Decompress to plain FASTA
-                temp_fasta = os.path.join(workdir, f".tmp_{assembly_id}.fna")
-                with gzip.open(temp_gz, "rt") as gz_f, open(temp_fasta, "w") as out_f:
-                    out_f.write(gz_f.read())
-                os.remove(temp_gz)
+    temp_gz = os.path.join(workdir, f".tmp_{assembly_id}.fna.gz")
+    for url in urls:
+        if download_file(url, temp_gz, verbose=verbose):
+            temp_fasta = os.path.join(workdir, f".tmp_{assembly_id}.fna")
+            if decompress_gz(temp_gz, temp_fasta):
                 return temp_fasta
-
-            except HTTPError as e:
-                if e.code == 404:
-                    if verbose:
-                        console.log(f"[red]File not found: {url}[/]")
-                    # Try next candidate
-                    continue
-                if e.code in (429, 500):
-                    wait = (attempt + 1) * 5
-                    if verbose:
-                        console.log(f"[yellow]Server error. Waiting {wait}s...[/]")
-                    time.sleep(wait)
-                    break  # break inner loop, try again with same url after wait
-                console.log(f"[red]HTTP error for {assembly_id}: {e}[/]")
-                return None
-            except Exception as e:
-                console.log(f"[red]Error downloading {assembly_id}: {e}[/]")
-                return None
-        else:
-            # all candidates failed
-            console.log(f"[red]All download attempts failed for {assembly_id}[/]")
-            return None
     return None
 
 
+# ----------------------------------------------------------------------
+# Species processing
+# ----------------------------------------------------------------------
+def process_species(
+    species,
+    email,
+    api_key,
+    outdir,
+    verbose,
+    dry_run,
+    downloaded_assemblies,
+    summary_records,
+):
+    """
+    Process a single species: fetch ID, download if needed.
+    Returns (success, temp_file_path) where temp_file_path is None on failure.
+    """
+    aid = fetch_assembly_id(species, email, api_key, verbose=verbose)
+    if not aid:
+        summary_records.append(
+            {
+                "species": species,
+                "category": "",
+                "assembly_accession": "",
+                "ftp_url": "",
+                "local_file": "N/A",
+                "status": "failed",
+                "summary_json": "",
+            }
+        )
+        return False, None
+
+    # Check if already downloaded
+    if aid in downloaded_assemblies:
+        fpath = downloaded_assemblies[aid]
+        summary_records.append(
+            {
+                "species": species,
+                "category": "",
+                "assembly_accession": aid,
+                "ftp_url": "",
+                "local_file": fpath,
+                "status": "success",
+                "summary_json": "",
+            }
+        )
+        return True, fpath
+
+    ftp_url, summary_dict = get_assembly_summary(aid, email, api_key, verbose=verbose)
+    if not ftp_url:
+        summary_records.append(
+            {
+                "species": species,
+                "category": "",
+                "assembly_accession": aid,
+                "ftp_url": "",
+                "local_file": "N/A",
+                "status": "failed",
+                "summary_json": json.dumps(summary_dict) if summary_dict else "",
+            }
+        )
+        return False, None
+
+    fpath = download_assembly_fasta(
+        aid, outdir, ftp_url, verbose=verbose, dry_run=dry_run
+    )
+    if fpath:
+        downloaded_assemblies[aid] = fpath
+        summary_records.append(
+            {
+                "species": species,
+                "category": "",
+                "assembly_accession": aid,
+                "ftp_url": ftp_url,
+                "local_file": fpath,
+                "status": "success",
+                "summary_json": json.dumps(summary_dict) if summary_dict else "",
+            }
+        )
+        return True, fpath
+    else:
+        summary_records.append(
+            {
+                "species": species,
+                "category": "",
+                "assembly_accession": aid,
+                "ftp_url": ftp_url,
+                "local_file": "N/A",
+                "status": "failed",
+                "summary_json": json.dumps(summary_dict) if summary_dict else "",
+            }
+        )
+        return False, None
+
+
+# ----------------------------------------------------------------------
+# Main download orchestrator
+# ----------------------------------------------------------------------
 def download_species_list(
     outfile,
     species_list,
@@ -361,126 +412,52 @@ def download_species_list(
     summary_tsv=None,
     color="magenta",
 ):
-    """
-    Download genomes for a given list of species.
-    The summary TSV is always written, even in dry‑run mode.
-    """
+    """Download genomes for a list of species."""
     console.print()
     console.rule(f"[bold {color}]Downloading {label} Genomes[/]")
     console.print(f"Target: {len(species_list)} species\n")
 
     if dry_run:
-        console.print(
-            "[yellow]DRY-RUN mode enabled – no fasta files will be downloaded or written.[/]\n"
-        )
+        console.print("[yellow]DRY-RUN mode – no files will be downloaded.[/]\n")
 
     outdir = os.path.dirname(outfile)
     if outdir and not dry_run:
         os.makedirs(outdir, exist_ok=True)
 
-    temp_files = []  # unique file paths, one per assembly
+    temp_files = []
     success_count = 0
-    failed_species = []
+    downloaded_assemblies = {}
     summary_records = []
-    downloaded_assemblies = {}  # assembly_id -> file_path
+    failed_species = []
 
     for species in species_list:
         console.print(f"\n[bold]→ {species}[/]")
-        aid = fetch_assembly_id(species, email, api_key, verbose=verbose)
-        console.log(f"[dim]Fetching FTP URL for {aid}:[/]")
-        ftp_url = ""
-        summary_dict = None
-        status = "failed"
-        local_path = "N/A"
-
-        if aid:
-            # Check if we already downloaded this assembly
-            if aid in downloaded_assemblies:
-                console.print(f"[dim]Reusing previously downloaded assembly {aid}[/]")
-                fname = downloaded_assemblies[aid]
-                # Do NOT append to temp_files again
-                success_count += 1
-                status = "success"
-                local_path = fname
-                # Get summary for this species (reuse the one from first download?)
-                # We'll fetch a fresh summary to get species-specific metadata if needed,
-                # but we can reuse the summary from the first download to save time.
-                # For simplicity, we'll fetch it again (fast).
-                _, summary_dict = get_assembly_summary(
-                    species, aid, email, api_key, verbose=verbose
-                )
-                summary_json = json.dumps(summary_dict) if summary_dict else ""
-                summary_json = summary_json.replace("\t", " ")
-                summary_records.append(
-                    {
-                        "species": species,
-                        "category": label,
-                        "assembly_accession": aid,
-                        "ftp_url": ftp_url,
-                        "local_file": local_path,
-                        "status": status,
-                        "summary_json": summary_json,
-                    }
-                )
-                console.print(f"\t   [green]✓ Reused ({success_count})[/]")
-                time.sleep(0.5)
-                continue
-
-            ftp_url, summary_dict = get_assembly_summary(
-                species, aid, email, api_key, verbose=verbose
-            )
-            if ftp_url:
-                fname = download_assembly_fasta(
-                    species,
-                    aid,
-                    outdir if outdir else ".",
-                    email,
-                    api_key,
-                    verbose=verbose,
-                    dry_run=dry_run,
-                    ftp_url=ftp_url,
-                    summary_dict=summary_dict,
-                )
-                if fname:
-                    # Only append if not already present (should not happen here)
-                    if fname not in temp_files:
-                        temp_files.append(fname)
-                    downloaded_assemblies[aid] = fname
-                    success_count += 1
-                    status = "success"
-                    local_path = fname if not dry_run else "DRY_RUN"
-                    if not dry_run:
-                        console.print(f"\t   [green]✓ Downloaded ({success_count})[/]")
-                    else:
-                        console.print(
-                            f"\t   [dim][green]✓ Would download ({success_count})[/]"
-                        )
-                else:
-                    console.print(f"\t   [red]✗ Failed to download[/]")
-                    failed_species.append(species)
-            else:
-                console.print(f"\t   [red]✗ No FTP URL found[/]")
-                failed_species.append(species)
-        else:
-            console.print(f"\t   [red]✗ No genome found[/]")
-            failed_species.append(species)
-
-        summary_json = json.dumps(summary_dict) if summary_dict else ""
-        summary_json = summary_json.replace("\t", " ")
-        summary_records.append(
-            {
-                "species": species,
-                "category": label,
-                "assembly_accession": aid if aid else "",
-                "ftp_url": ftp_url if ftp_url else "",
-                "local_file": local_path,
-                "status": status,
-                "summary_json": summary_json,
-            }
+        console.log("[dim]Fetching...[/]")
+        success, fpath = process_species(
+            species,
+            email,
+            api_key,
+            outdir or ".",
+            verbose,
+            dry_run,
+            downloaded_assemblies,
+            summary_records,
         )
+        if success and fpath:
+            # Avoid duplicates
+            if fpath not in temp_files:
+                temp_files.append(fpath)
+            success_count += 1
+            if not dry_run:
+                console.print(f"\t   [green]✓ Downloaded ({success_count})[/]")
+            else:
+                console.print(f"\t   [green]✓ Would download ({success_count})[/]")
+        else:
+            failed_species.append(species)
+            console.print(f"\t   [red]✗ Failed[/]")
         time.sleep(0.5)
 
-    # Always write summary TSV (even in dry-run)
+    # Write summary TSV
     if summary_tsv is None:
         base = os.path.splitext(outfile)[0]
         summary_tsv = base + "_summary.tsv"
@@ -500,62 +477,36 @@ def download_species_list(
     console.print(f"[green]\nSummary TSV written to: {summary_tsv}[/]")
 
     if dry_run:
-        console.print()
         console.print(
             Panel.fit(
-                f"[bold {color}]DRY-RUN SUMMARY:[/]\n"
-                f"Would download {success_count} genomes\n"
-                f"Would fail for {len(failed_species)} species\n"
-                f"Output would be written to: {outfile}",
+                f"[bold {color}]DRY-RUN: Would download {success_count} genomes, {len(failed_species)} failures[/]",
                 border_style=color,
             )
         )
-        if failed_species:
-            console.print("[yellow]Species not found (would be skipped):[/]")
-            for sp in failed_species:
-                console.print(f"  [dim]• {sp}[/]")
         return
 
-    if not temp_files:
+    # Check for missing files
+    valid_files = [f for f in temp_files if os.path.exists(f)]
+    if len(valid_files) < len(temp_files):
+        missing = set(temp_files) - set(valid_files)
+        console.print(
+            f"[yellow]WARNING: {len(missing)} temporary file(s) missing and skipped.[/]"
+        )
+
+    if not valid_files:
         console.print(
             Panel.fit(
-                f"[red]ERROR: No {label} genomes could be downloaded. Check your internet/email/API key.[/]",
-                border_style="red",
+                f"[red]ERROR: No {label} genomes downloaded.[/]", border_style="red"
             )
         )
         raise RuntimeError(f"No {label} genomes downloaded.")
 
-    # Check for missing files and warn
-    missing_files = [f for f in temp_files if not os.path.exists(f)]
-    if missing_files:
-        console.print(
-            Panel.fit(
-                f"[yellow]WARNING: {len(missing_files)} temporary file(s) missing and will be skipped:[/]\n"
-                + "\n".join(f"  - {f}" for f in missing_files[:5])
-                + (
-                    f"\n  ... and {len(missing_files)-5} more"
-                    if len(missing_files) > 5
-                    else ""
-                ),
-                title="Missing Files",
-                border_style="yellow",
-            )
-        )
-        # Filter out missing files
-        temp_files = [f for f in temp_files if os.path.exists(f)]
-
-    if not temp_files:
-        console.print(
-            Panel.fit(
-                f"[red]ERROR: No valid temporary files found for {label} genomes.[/]",
-                border_style="red",
-            )
-        )
-        raise RuntimeError(f"No valid {label} genomes to concatenate.")
-
-    console.print(f"\n[bold]Concatenating {len(temp_files)} genomes to {outfile}...[/]")
+    # Concatenate
+    console.print(
+        f"\n[bold]Concatenating {len(valid_files)} genomes to {outfile}...[/]"
+    )
     with open(outfile, "w") as out:
-        for f in temp_files:
+        for f in valid_files:
             try:
                 with open(f, "r") as inf:
                     out.write(inf.read())
@@ -565,12 +516,15 @@ def download_species_list(
 
     console.print(
         Panel.fit(
-            f"[bold green]✓ DONE: Wrote {len(temp_files)} {label} genomes to {outfile}[/]",
+            f"[bold green]✓ DONE: Wrote {len(valid_files)} {label} genomes to {outfile}[/]",
             border_style="green",
         )
     )
 
 
+# ----------------------------------------------------------------------
+# Wrapper functions for each mode
+# ----------------------------------------------------------------------
 def download_viral_genomes(
     outfile,
     email,
@@ -579,11 +533,8 @@ def download_viral_genomes(
     verbose=False,
     dry_run=False,
     summary_tsv=None,
-) -> None:
-    """
-    Download a balanced set of viral genomes across categories.
-    The summary TSV is always written, even in dry‑run mode.
-    """
+):
+    """Download stratified viral genomes."""
     console.print()
     console.rule("[bold cyan]Downloading Stratified Viral Genomes[/]")
 
@@ -591,48 +542,17 @@ def download_viral_genomes(
     table.add_column("Category", style="cyan")
     table.add_column("Species listed", justify="right")
     table.add_column("Target", justify="right", style="green")
+    all_species = []
     for cat, species in VIRAL_CATEGORIES.items():
         target = (
             len(species)
             if genomes_per_category == 0
             else min(genomes_per_category, len(species))
         )
+        selected = species[:target]
+        all_species.extend(selected)
         table.add_row(cat, str(len(species)), str(target))
     console.print(table)
-
-    if dry_run:
-        console.print(
-            "[yellow]DRY-RUN mode enabled – no files will be downloaded or written.[/]\n"
-        )
-
-    outdir = os.path.dirname(outfile)
-    if outdir and not dry_run:
-        os.makedirs(outdir, exist_ok=True)
-
-    # We'll collect all species across categories and download them with deduplication
-    all_species = []
-    all_categories = {}
-    for category, species_list in VIRAL_CATEGORIES.items():
-        if genomes_per_category == 0:
-            selected = species_list
-        else:
-            selected = species_list[:genomes_per_category]
-        for sp in selected:
-            all_species.append(sp)
-            all_categories[sp] = category
-
-    # Use download_species_list with the combined list, but we need to track categories per species.
-    # The existing download_species_list expects a label; we can pass "viral" but then category in TSV will be "viral".
-    # To keep category information, we need to modify download_species_list to accept a mapping.
-    # Simplest: call download_species_list once with all species, but the TSV category will be "viral".
-    # But we want per‑category classification in the TSV.
-    # We'll write a custom loop that mirrors download_species_list but with category tracking.
-    # Actually, we can reuse download_species_list and just pass "viral" as label; the summary TSV will have that.
-    # But the user might want category info. We'll enhance download_species_list to accept a category mapping.
-
-    # For simplicity, we'll just call download_species_list with the combined list and label="viral".
-    # The summary TSV will have category as "viral" for all, which is fine for the user's purpose.
-    # The main fix is deduplication, which is already in download_species_list.
 
     download_species_list(
         outfile=outfile,
@@ -648,114 +568,82 @@ def download_viral_genomes(
 
 
 def download_prokaryotic_genomes(
-    outfile,
-    email,
-    api_key=None,
-    verbose=False,
-    dry_run=False,
-    summary_tsv=None,
-) -> None:
-    """Download prokaryotic (bacteria + archaea) genomes."""
+    outfile, email, api_key=None, verbose=False, dry_run=False, summary_tsv=None
+):
     download_species_list(
-        outfile=outfile,
-        species_list=PROKARYOTIC_SPECIES,
-        email=email,
-        api_key=api_key,
-        label="Prokaryotic",
-        verbose=verbose,
-        dry_run=dry_run,
-        summary_tsv=summary_tsv,
-        color="green",
+        outfile,
+        PROKARYOTIC_SPECIES,
+        email,
+        api_key,
+        "Prokaryotic",
+        verbose,
+        dry_run,
+        summary_tsv,
+        "green",
     )
 
 
 def download_eukaryotic_genomes(
-    outfile,
-    email,
-    api_key=None,
-    verbose=False,
-    dry_run=False,
-    summary_tsv=None,
-) -> None:
-    """Download eukaryotic (host, fungi, plants) genomes."""
+    outfile, email, api_key=None, verbose=False, dry_run=False, summary_tsv=None
+):
     download_species_list(
-        outfile=outfile,
-        species_list=EUKARYOTIC_SPECIES,
-        email=email,
-        api_key=api_key,
-        label="Eukaryotic",
-        verbose=verbose,
-        dry_run=dry_run,
-        summary_tsv=summary_tsv,
-        color="yellow",
+        outfile,
+        EUKARYOTIC_SPECIES,
+        email,
+        api_key,
+        "Eukaryotic",
+        verbose,
+        dry_run,
+        summary_tsv,
+        "yellow",
     )
 
 
 def download_contaminant_genomes(
-    outfile,
-    email,
-    api_key=None,
-    verbose=False,
-    dry_run=False,
-    summary_tsv=None,
-) -> None:
-    """Legacy: download all contaminants (prokaryotic + eukaryotic) into one file."""
+    outfile, email, api_key=None, verbose=False, dry_run=False, summary_tsv=None
+):
     download_species_list(
-        outfile=outfile,
-        species_list=CONTAMINANT_SPECIES,
-        email=email,
-        api_key=api_key,
-        label="Contaminant (all)",
-        verbose=verbose,
-        dry_run=dry_run,
-        summary_tsv=summary_tsv,
-        color="magenta",
+        outfile,
+        CONTAMINANT_SPECIES,
+        email,
+        api_key,
+        "Contaminants (all)",
+        verbose,
+        dry_run,
+        summary_tsv,
+        "magenta",
     )
 
 
+# ----------------------------------------------------------------------
+# CLI
+# ----------------------------------------------------------------------
 def main():
     parser = argparse.ArgumentParser(
-        description="Download RefSeq genomes for mock benchmarks",
-        formatter_class=argparse.RawDescriptionHelpFormatter,
+        description="Download RefSeq genomes for mock benchmarks"
     )
-    parser.add_argument(
-        "--outfile",
-        required=True,
-        help="Output FASTA file path (parent directory created if needed)",
-    )
+    parser.add_argument("--outfile", required=True, help="Output FASTA file path")
     parser.add_argument("--email", required=True, help="NCBI Entrez email")
     parser.add_argument("--api-key", default="", help="NCBI API key (recommended)")
     parser.add_argument(
         "--mode",
         required=True,
         choices=["viral", "prokaryotic", "eukaryotic", "contaminants"],
-        help="Which dataset to download. 'contaminants' is legacy and combines all.",
+        help="Dataset to download",
     )
     parser.add_argument(
         "--genomes-per-category",
         type=int,
         default=5,
-        help="Number of genomes per viral category (use 0 to download all; only for --mode viral)",
+        help="Number per viral category (0=all; only for --mode viral)",
     )
     parser.add_argument(
-        "--verbose",
-        "-v",
-        action="store_true",
-        help="Enable debug-level logging (detailed per-step messages)",
+        "-v", "--verbose", action="store_true", help="Enable debug logging"
     )
-    parser.add_argument(
-        "--dry-run",
-        "-n",
-        action="store_true",
-        help="Only check availability (no downloads, no file writes)",
-    )
-    parser.add_argument(
-        "--summary-tsv",
-        help="Output TSV file for genome summary (default: derived from outfile)",
-    )
+    parser.add_argument("-n", "--dry-run", action="store_true", help="Dry run only")
+    parser.add_argument("--summary-tsv", help="Output summary TSV path")
     args = parser.parse_args()
 
-    # Set global Entrez settings
     Entrez.email = args.email
     if args.api_key:
         Entrez.api_key = args.api_key
@@ -774,30 +662,30 @@ def main():
             )
         elif args.mode == "prokaryotic":
             download_prokaryotic_genomes(
-                outfile=args.outfile,
-                email=args.email,
-                api_key=args.api_key,
-                verbose=args.verbose,
-                dry_run=args.dry_run,
-                summary_tsv=args.summary_tsv,
+                args.outfile,
+                args.email,
+                args.api_key,
+                args.verbose,
+                args.dry_run,
+                args.summary_tsv,
             )
         elif args.mode == "eukaryotic":
             download_eukaryotic_genomes(
-                outfile=args.outfile,
-                email=args.email,
-                api_key=args.api_key,
-                verbose=args.verbose,
-                dry_run=args.dry_run,
-                summary_tsv=args.summary_tsv,
+                args.outfile,
+                args.email,
+                args.api_key,
+                args.verbose,
+                args.dry_run,
+                args.summary_tsv,
             )
-        else:  # contaminants (legacy)
+        elif args.mode == "contaminants":
             download_contaminant_genomes(
-                outfile=args.outfile,
-                email=args.email,
-                api_key=args.api_key,
-                verbose=args.verbose,
-                dry_run=args.dry_run,
-                summary_tsv=args.summary_tsv,
+                args.outfile,
+                args.email,
+                args.api_key,
+                args.verbose,
+                args.dry_run,
+                args.summary_tsv,
             )
     except Exception as e:
         console.print(Panel.fit(f"[red]FATAL ERROR: {e}[/]", border_style="red"))
