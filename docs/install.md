@@ -6,13 +6,13 @@ You can install **vOMIX‑MEGA** using general‑purpose package managers like *
 
 ::::{tab-set}
 
-:::{tab-item} Conda
-[Conda](https://docs.conda.io/projects/conda/en/stable/) is a package manager that handles all your dependencies for you. To install vOMIX-MEGA using Conda, you can create the environment from the repository environment file.
+:::{tab-item} Mamba
+[Mamba](https://mamba.readthedocs.io/en/latest/index.html) is a re‑implementation of Conda that uses a faster, more robust dependency solver. This is the recommended way of installing vomix-mega's latest stable release:
 
 ```bash
 # Install via Bioconda
-conda create -n vomix -c bioconda vomix-mega
-conda activate vomix
+mamba create -n vomix -c conda-forge -c bioconda vomix-mega
+mamba activate vomix
 
 # Verify Installation
 vomix -h
@@ -20,13 +20,13 @@ vomix -h
 
 :::
 
-:::{tab-item} Mamba
-[Mamba](https://mamba.readthedocs.io/en/latest/index.html) is a re‑implementation of Conda that uses a faster, more robust dependency solver. The commands are almost identical:
+:::{tab-item} Conda
+[Conda](https://docs.conda.io/projects/conda/en/stable/) is a package manager that handles all your dependencies for you. To install vOMIX-MEGA using Conda, you can create the environment from the repository environment file.
 
 ```bash
 # Install via Bioconda
-mamba create -n vomix -c bioconda vomix-mega
-mamba activate vomix
+conda create -n vomix -c conda-forge -c bioconda vomix-mega
+conda activate vomix
 
 # Verify Installation
 vomix -h
@@ -124,7 +124,7 @@ Make sure you have `Apptainer` installed before you run the following commands. 
 cd vOMIX-MEGA
 
 # Pull Container Image 
-VOMIX_VERSION="v0.1.0-beta.1"
+VOMIX_VERSION="v0.1.0"
 apptainer pull --name workflow/apptainer/vomix_${VOMIX_VERSION}.sif oras://ghcr.io/erfanshekarriz/vomix:${VOMIX_VERSION}
 
 # Dry run (test installation)
