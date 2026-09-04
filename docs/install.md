@@ -124,7 +124,7 @@ Make sure you have `Apptainer` installed before you run the following commands. 
 cd vOMIX-MEGA
 
 # Pull Container Image 
-VOMIX_VERSION="v0.1.0-beta.1"
+VOMIX_VERSION="v0.1.0"
 apptainer pull --name workflow/apptainer/vomix_${VOMIX_VERSION}.sif oras://ghcr.io/erfanshekarriz/vomix:${VOMIX_VERSION}
 
 # Dry run (test installation)
