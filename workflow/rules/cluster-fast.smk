@@ -71,7 +71,7 @@ rule split_input:
     params:
         pieces = n_chunks_layer_1,
         outdir = relpath("identify/viral/tmp/derep/cluster-splits"),
-        tmpdir = os.path.join(tmpd, "derep", "cluster-splits"), 
+        tmpdir = os.path.join(tmpd, "derep", "cluster-splits"),
         seed = config.get("seed", 42)
     log: os.path.join(logdir, "split_input.log")
     benchmark: os.path.join(benchmarks, "split_input.log")
@@ -79,21 +79,27 @@ rule split_input:
     threads: 1
     shell:
         """
+        set -euo pipefail
         rm -rf {params.outdir} {params.tmpdir}
         mkdir -p {params.outdir} {params.tmpdir}
-            
-        seqkit split2 {input} -p {params.pieces} -O {params.tmpdir}/ -s {params.seed}
-            
+
+        # Shuffle the input with a fixed seed, then split
+        seqkit shuffle -s {params.seed} {input} > {params.tmpdir}/shuffled.fa 2>> {log}
+        seqkit split2 {params.tmpdir}/shuffled.fa -p {params.pieces} -O {params.tmpdir}/ 2>> {log}
+
+        # Rename chunks to match expected output names
         counter=0
         shopt -s nullglob
         set -- {params.tmpdir}/*.fa {params.tmpdir}/*.fna {params.tmpdir}/*.fasta
         for file in "$@"; do
             mv "$file" "{params.outdir}/chunk_${{counter}}.fa"
             counter=$((counter+1))
-        done       
-        shopt -u nullglob 
-        """
+        done
+        shopt -u nullglob
 
+        # Clean up temporary shuffled file
+        rm -f {params.tmpdir}/shuffled.fa
+        """
 
 # ----- CheckV-MEGABLAST -----
 if cluster_method_input in ["checkv-megablast", "all"]:
