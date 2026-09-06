@@ -201,7 +201,6 @@ rule mock_Mock_10K:
             --name {params.name} \
             --num-sequences {params.num} \
             --outdir {params.outdir} \
-            --tmpdir {params.tmpdir} \
             --viral-seq {input.vir} \
             --prokaryotic-seq {input.prok} \
             --eukaryotic-seq {input.euk} \
@@ -256,7 +255,6 @@ rule mock_Mock_10K_HighVir:
             --name {params.name} \
             --num-sequences {params.num} \
             --outdir {params.outdir} \
-            --tmpdir {params.tmpdir} \
             --viral-seq {input.vir} \
             --prokaryotic-seq {input.prok} \
             --eukaryotic-seq {input.euk} \
@@ -311,7 +309,6 @@ rule mock_Mock_10K_LowVir:
             --name {params.name} \
             --num-sequences {params.num} \
             --outdir {params.outdir} \
-            --tmpdir {params.tmpdir} \
             --viral-seq {input.vir} \
             --prokaryotic-seq {input.prok} \
             --eukaryotic-seq {input.euk} \
@@ -365,8 +362,7 @@ rule mock_Mock_50K:
         python {params.script} \
             --name {params.name} \
             --num-sequences {params.num} \
-            --outdir {params.outdir} \
-            --tmpdir {params.tmpdir} \
+            --outdir {params.tmpdir} \
             --viral-seq {input.vir} \
             --prokaryotic-seq {input.prok} \
             --eukaryotic-seq {input.euk} \
@@ -380,6 +376,9 @@ rule mock_Mock_50K:
             --seed {params.seed} \
             --force \
             &> {log}
+        
+        mv {params.tmpdir}/*.fna {output.fna}
+        mv {params.tmpdir}/*.tsv {output.gt}
         """
 
 # ----- Mock-100K -----
@@ -420,8 +419,7 @@ rule mock_Mock_100K:
         python {params.script} \
             --name {params.name} \
             --num-sequences {params.num} \
-            --outdir {params.outdir} \
-            --tmpdir {params.tmpdir} \
+            --outdir {params.tmpdir} \
             --viral-seq {input.vir} \
             --prokaryotic-seq {input.prok} \
             --eukaryotic-seq {input.euk} \
@@ -435,6 +433,9 @@ rule mock_Mock_100K:
             --seed {params.seed} \
             --force \
             &> {log}
+        
+        mv {params.tmpdir}/*.fna {output.fna}
+        mv {params.tmpdir}/*.tsv {output.gt}
         """
 
 # ----- Mock-300K -----
@@ -475,8 +476,7 @@ rule mock_Mock_300K:
         python {params.script} \
             --name {params.name} \
             --num-sequences {params.num} \
-            --outdir {params.outdir} \
-            --tmpdir {params.tmpdir} \
+            --outdir {params.tmpdir} \
             --viral-seq {input.vir} \
             --prokaryotic-seq {input.prok} \
             --eukaryotic-seq {input.euk} \
@@ -490,6 +490,9 @@ rule mock_Mock_300K:
             --seed {params.seed} \
             --force \
             &> {log}
+        
+        mv {params.tmpdir}/*.fna {output.fna}
+        mv {params.tmpdir}/*.tsv {output.gt}
         """
 
 # ----- Mock-1000K -----
@@ -530,8 +533,7 @@ rule mock_Mock_1000K:
         python {params.script} \
             --name {params.name} \
             --num-sequences {params.num} \
-            --outdir {params.outdir} \
-            --tmpdir {params.tmpdir} \
+            --outdir {params.tmpdir} \
             --viral-seq {input.vir} \
             --prokaryotic-seq {input.prok} \
             --eukaryotic-seq {input.euk} \
@@ -545,6 +547,9 @@ rule mock_Mock_1000K:
             --seed {params.seed} \
             --force \
             &> {log}
+        
+        mv {params.tmpdir}/*.fna {output.fna}
+        mv {params.tmpdir}/*.tsv {output.gt}
         """
 
 # ----- Mock-Strain -----
@@ -585,8 +590,7 @@ rule mock_Mock_Strain:
         python {params.script} \
             --name {params.name} \
             --num-sequences {params.num} \
-            --outdir {params.outdir} \
-            --tmpdir {params.tmpdir} \
+            --outdir {params.tmpdir} \
             --viral-seq {input.vir} \
             --prokaryotic-seq {input.prok} \
             --eukaryotic-seq {input.euk} \
@@ -600,6 +604,9 @@ rule mock_Mock_Strain:
             --seed {params.seed} \
             --force \
             &> {log}
+        
+        mv {params.tmpdir}/*.fna {output.fna}
+        mv {params.tmpdir}/*.tsv {output.gt}
         """
 
 # rule generate_mock:
@@ -639,7 +646,6 @@ rule mock_Mock_Strain:
 #             --name {params.name} \
 #             --num-sequences {params.num} \
 #             --outdir {datadir}/mock-data \
-#             --tmpdir {params.tmpdir} \
 #             --viral-seq {input.vir} \
 #             --prokaryotic-seq {input.prok} \
 #             --eukaryotic-seq {input.euk} \
