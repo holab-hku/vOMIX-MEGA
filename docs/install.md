@@ -110,6 +110,11 @@ If the standard conda or mamba installation methods do not work, `conda-lock` is
 
 vOMIX-MEGA is built on a snakemake back-end, which facilitates native containerized deployment via an `Apptainer` (formerly `Singularity`) `.sif` image. The container image generated contains explicitly each conda environment mounted on top of a base operating system. Containers are preferred for the most robust forms of reproducibility, whereas `conda` and `mamba` installations might not work on Windows or Mac-ARM systems.
 
+```{admonition} Lightweight Environment
+:class: note
+This method still relies on building a lightweight `conda` environment (that works for all operating systems), but will bypass installation of heavier  environments that run specific vOMIX-MEGA rules and workflows such as `viral-benchmarking` that are not compatible with most OS systems.
+```
+
 ```{admonition} Install Apptainer
 :class: tip
 Make sure you have `Apptainer` installed before you run the following commands. The advantage of Apptainer over docker is that it allows non-privilieged installation without root permissions. View the full documentation at the [Apptainer Wiki](https://apptainer.org/docs/admin/main/installation.html). Note that while the prebuilt image does not require root permission, a manual build might require it.
@@ -120,14 +125,18 @@ Make sure you have `Apptainer` installed before you run the following commands. 
 
 ```bash
 # Enter vOMIX-MEGA directory
-# replace this with your native installation path
 cd vOMIX-MEGA
+
+# Setup a lightweight conda environment
+conda create -n vomix python=3.12 -y
+conda activate vomix
+pip install .
 
 # Pull Container Image 
 VOMIX_VERSION="v0.1.0"
 apptainer pull --name workflow/apptainer/vomix_${VOMIX_VERSION}.sif oras://ghcr.io/erfanshekarriz/vomix:${VOMIX_VERSION}
 
-# Dry run (test installation)
+# test your installation
 vomix viral-identify --sdm apptainer --fasta sample/contigs/contigs_simulated_viral_nonviral.fasta --outdir quick-run/results -j 64 --latency-wait 20 -n
 ```
 
@@ -136,12 +145,16 @@ vomix viral-identify --sdm apptainer --fasta sample/contigs/contigs_simulated_vi
 
 ```bash
 # Enter vOMIX-MEGA directory
-# replace this with your native installation path
 cd vOMIX-MEGA
 
+# Setup a lightweight conda environment
+conda create -n vomix python=3.12 -y
+conda activate vomix
+pip install .
+
 # Built container Image 
-VOMIX_VERSION="v0.1.0-beta.1"
-apptainer build workflow/apptainer/vomix_${VERSION}.sif workflow/apptainer/vomix_${VERSION}.def
+VOMIX_VERSION="v0.1.0"
+apptainer build workflow/apptainer/vomix_${VOMIX_VERSION}.sif workflow/apptainer/vomix_${VOMIX_VERSION}.def
 
 # Dry run (test installation)
 vomix viral-identify --sdm apptainer --fasta sample/contigs/contigs_simulated_viral_nonviral.fasta --outdir quick-run/results -j 64 --latency-wait 20 -n
