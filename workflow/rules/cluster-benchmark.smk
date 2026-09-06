@@ -609,38 +609,6 @@ rule mock_Mock_Strain:
         mv {params.tmpdir}/*.tsv {output.gt}
         """
 
-# rule generate_mock:
-#     name: "cluster-benchmark.smk Generating mock datasets"
-#     output:
-#         fna = os.path.join(datadir, "mock-data", "{dataset}.fna"),
-#         gt  = os.path.join(datadir, "mock-data", "{dataset}.ground_truth.tsv")
-#     input:
-#         vir  = os.path.join(datadir, "mock-data", "genomes", "refseq_viral.fna"),
-#         prok = os.path.join(datadir, "mock-data", "genomes", "refseq_prok.fna"),
-#         euk  = os.path.join(datadir, "mock-data", "genomes", "refseq_euk.fna")
-#     params:
-#         tmpdir = os.path.join(tmpd, "{dataset}"),
-#         name   = lambda wc: wc.dataset,
-#         num    = lambda wc: DATASET_PARAMS[wc.dataset]["size"],
-#         virus  = lambda wc: DATASET_PARAMS[wc.dataset]["virus"],
-#         prok_f = lambda wc: DATASET_PARAMS[wc.dataset]["prok"],
-#         euk_f  = lambda wc: DATASET_PARAMS[wc.dataset]["euk"],
-#         strain = lambda wc: DATASET_PARAMS[wc.dataset]["strain"],
-#         species = lambda wc: DATASET_PARAMS[wc.dataset]["species"],
-#         seed   = lambda wc: DATASET_PARAMS[wc.dataset]["seed"],
-#         script = "workflow/scripts/generate_mock_clust_data.py",
-#     conda: "../envs/seqkit-biopython.yml"
-#     log: os.path.join(logdir, "mock_{dataset}.log")
-#     benchmark: os.path.join(benchmarks, "mock_{dataset}.benchmark")
-#     threads: lambda wc: get_resources(wc)["threads"]
-#     resources:
-#         mem_mb = lambda wc: get_resources(wc)["mem_mb"],
-#         disk_mb = lambda wc: get_resources(wc)["disk_mb"]
-#     shell:
-#         """
-#         set -euo pipefail
-#         rm -rf {params.tmpdir}
-#         mkdir -p {params.tmpdir}
 
 #         python {params.script} \
 #             --name {params.name} \
@@ -691,24 +659,3 @@ rule mock_Mock_Strain:
 
 #         touch {output.marker}
 #         """
-
-
-# # ================================================================
-# # 6. Aggregate rule – signals all mock data is ready
-# # ================================================================
-# rule all_mock_done:
-#     name: "cluster-benchmark.smk - All mock datasets ready"
-#     localrule: True
-#     input:
-#         # Tier 1
-#         rules.mock_10K.output.fna,
-#         rules.mock_50K.output.fna,
-#         rules.mock_100K.output.fna,
-#         rules.mock_300K.output.fna,
-#         rules.mock_Strain.output.fna,
-#         # Tier 2
-#         rules.cami_marine.output.marker,
-#     output:
-#         done = os.path.join(benchmarks, "mock_all.done")
-#     shell:
-#         "touch {output.done}"

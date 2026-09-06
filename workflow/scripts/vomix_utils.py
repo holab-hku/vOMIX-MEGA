@@ -11,7 +11,6 @@ from typing import List, Union
 # Global objects (set from the Snakefile)
 # ----------------------------------------------------------------------
 console = None
-Panel = None
 config = None  # set to the Snakemake config dict
 outdir = None  # set to the output directory
 targets = []  # global list of target logfiles
