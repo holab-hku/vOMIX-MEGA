@@ -86,6 +86,7 @@ rule split_input:
         # Shuffle the input with a fixed seed, then split
         seqkit shuffle -s {params.seed} {input} > {params.tmpdir}/shuffled.fa 2>> {log}
         seqkit split2 {params.tmpdir}/shuffled.fa -p {params.pieces} -O {params.tmpdir}/ 2>> {log}
+        rm -f {params.tmpdir}/shuffled.fa
 
         # Rename chunks to match expected output names
         counter=0
@@ -96,9 +97,6 @@ rule split_input:
             counter=$((counter+1))
         done
         shopt -u nullglob
-
-        # Clean up temporary shuffled file
-        rm -f {params.tmpdir}/shuffled.fa
         """
 
 # ----- CheckV-MEGABLAST -----
