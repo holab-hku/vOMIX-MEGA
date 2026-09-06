@@ -2223,7 +2223,7 @@ def run_cluster_fast(**kwargs):
         module_obj,
         kwargs,
         {
-            "cluster_method": "checkv_database",
+            "cluster_method": "cluster_method",
             "cluster_iter": "cluster_iter",
             "cdhit_params": "cdhit_params",
             "checkv_megablast_ani": "checkv_megablast_ani",
