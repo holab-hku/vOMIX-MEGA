@@ -6,6 +6,9 @@ import json
 import datetime
 from typing import Union, List
 
+from rich.console import Console
+from rich.panel import Panel
+
 sys.path.insert(0, os.path.join(workflow.basedir, "scripts"))
 import vomix_utils
 import vomix_modules
@@ -13,9 +16,6 @@ from vomix_utils import cleanpath, relpath, fullpath
 from vomix_parse_samples import parse_sample_list
 
 from snakemake.utils import validate
-
-from rich.console import Console
-from rich.panel import Panel
 
 configfile: "config/config.yml"
 workdir: config["workdir"]
@@ -31,6 +31,7 @@ console = Console()
 vomix_utils.config = config
 vomix_utils.outdir = config["outdir"]
 vomix_utils.console = console
+vomix_utils.Panel = Panel
 
 # Set database paths absolute relative to basedir
 db_list = [key for key in config if key.endswith("db")]
@@ -59,6 +60,7 @@ fastadir = config.get("fastadir")
 vomix_modules.config = vomix_utils.config
 vomix_modules.outdir = vomix_utils.outdir
 vomix_modules.console = vomix_utils.console
+vomix_modules.Panel = vomix_utils.Panel
 
 # Set wildcard constraints
 wildcard_constraints:
