@@ -22,8 +22,8 @@ DATASET_PARAMS = {
         "max_fragments_per_genome": 500,
         "copies_mean": 3.0,
         "copies_min": 2,
-        "copies_max": 5,
-        "copies_distribution": "uniform",
+        "copies_max": 20,
+        "copies_distribution": "poisson",
         "mut_rate_min": 0.001,   # 99.9% ANI
         "mut_rate_max": 0.07,    # 93% ANI (includes MIUViG boundary)
         "indel_rate": 0.1,
@@ -43,8 +43,8 @@ DATASET_PARAMS = {
         "max_fragments_per_genome": 500,
         "copies_mean": 3.0,
         "copies_min": 2,
-        "copies_max": 5,
-        "copies_distribution": "uniform",
+        "copies_max": 20,
+        "copies_distribution": "poisson",
         "mut_rate_min": 0.001,   # 99.9% ANI
         "mut_rate_max": 0.07,    # 93% ANI
         "indel_rate": 0.1,
@@ -64,8 +64,8 @@ DATASET_PARAMS = {
         "max_fragments_per_genome": 500,
         "copies_mean": 3.0,
         "copies_min": 2,
-        "copies_max": 5,
-        "copies_distribution": "uniform",
+        "copies_max": 20,
+        "copies_distribution": "poisson",
         "mut_rate_min": 0.001,   # 99.9% ANI
         "mut_rate_max": 0.07,    # 93% ANI
         "indel_rate": 0.1,
@@ -85,8 +85,8 @@ DATASET_PARAMS = {
         "max_fragments_per_genome": 500,
         "copies_mean": 3.0,
         "copies_min": 2,
-        "copies_max": 5,
-        "copies_distribution": "uniform",
+        "copies_max": 20,
+        "copies_distribution": "poisson",
         "mut_rate_min": 0.001,   # 99.9% ANI
         "mut_rate_max": 0.07,    # 93% ANI
         "indel_rate": 0.1,
@@ -106,8 +106,8 @@ DATASET_PARAMS = {
         "max_fragments_per_genome": 500,
         "copies_mean": 3.0,
         "copies_min": 2,
-        "copies_max": 5,
-        "copies_distribution": "uniform",
+        "copies_max": 20,
+        "copies_distribution": "poisson",
         "mut_rate_min": 0.001,   # 99.9% ANI
         "mut_rate_max": 0.07,    # 93% ANI
         "indel_rate": 0.1,
@@ -127,8 +127,8 @@ DATASET_PARAMS = {
         "max_fragments_per_genome": 500,
         "copies_mean": 3.0,
         "copies_min": 2,
-        "copies_max": 5,
-        "copies_distribution": "uniform",
+        "copies_max": 20,
+        "copies_distribution": "poisson",
         "mut_rate_min": 0.001,   # 99.9% ANI
         "mut_rate_max": 0.07,    # 93% ANI
         "indel_rate": 0.1,
@@ -148,8 +148,8 @@ DATASET_PARAMS = {
         "max_fragments_per_genome": 500,
         "copies_mean": 3.0,
         "copies_min": 2,
-        "copies_max": 5,
-        "copies_distribution": "uniform",
+        "copies_max": 20,
+        "copies_distribution": "poisson",
         "mut_rate_min": 0.001,   # 99.9% ANI
         "mut_rate_max": 0.07,    # 93% ANI
         "indel_rate": 0.1,
@@ -170,7 +170,7 @@ DATASET_PARAMS = {
         "copies_mean": 5.0,
         "copies_min": 4,
         "copies_max": 8,
-        "copies_distribution": "uniform",
+        "copies_distribution": "poisson",
         "mut_rate_min": 0.001,   # 99.9% ANI
         "mut_rate_max": 0.07,    # 93% ANI
         "indel_rate": 0.1,
@@ -191,8 +191,8 @@ DATASET_PARAMS = {
         "max_fragments_per_genome": 500,
         "copies_mean": 3.0,
         "copies_min": 2,
-        "copies_max": 5,
-        "copies_distribution": "uniform",
+        "copies_max": 20,
+        "copies_distribution": "poisson",
         "mut_rate_min": 0.001,   # 99.9% ANI
         "mut_rate_max": 0.30,    # 70% ANI (ICTV genus threshold)
         "indel_rate": 0.1,
