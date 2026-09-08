@@ -12,9 +12,13 @@ Fractions (must sum to 1.0):
   --prokaryote-frac    fraction of prokaryotic contigs (default 0.3)
   --eukaryote-frac     fraction of eukaryotic contigs (default 0.2)
 
-Fragment length distribution (lognormal):
-  --lognormal-mu       mean of log-length (default 8.5, median ~5 kb)
-  --lognormal-sigma    spread of log-length (default 1.2)
+Fragment generation:
+  --fragments-min      minimum number of fragments per genome (default 1)
+  --fragments-max      maximum number of fragments per genome (default 5)
+  --overlap-min        minimum overlap between consecutive fragments (bp, default 50)
+  --overlap-max        maximum overlap between consecutive fragments (bp, default 500)
+  --lognormal-mu       mean of log-length distribution (default 8.5)
+  --lognormal-sigma    spread of log-length distribution (default 1.2)
 
 Outputs:
   - FASTA file (<name>.fna)
@@ -62,37 +66,83 @@ def fragment_sequence(
     num_fragments: int = 1,
     lognormal_mu: float = 8.5,
     lognormal_sigma: float = 1.2,
+    overlap_min: int = 50,
+    overlap_max: int = 500,
+    verbose: bool = False,
 ) -> List[SeqRecord]:
     """
     Generate num_fragments contigs from a single sequence.
-    Fragment lengths are drawn from a truncated lognormal distribution
-    bounded by [min_len, max_len].
+    Fragments tile the genome with controlled overlaps.
     """
     seq_len = len(seq_record.seq)
-    if seq_len < min_len:
+    if seq_len < min_len or num_fragments == 1:
         return [seq_record]
 
-    effective_max = min(max_len, seq_len)
-    if effective_max < min_len:
-        effective_max = seq_len
+    # Ensure overlaps are reasonable
+    if overlap_min > overlap_max:
+        overlap_min, overlap_max = overlap_max, overlap_min
 
-    fragments = []
+    # If num_fragments is too many, reduce to fit the genome
+    # Minimum total length = num_fragments * min_len - (num_fragments-1) * overlap_max
+    min_total_len = num_fragments * min_len - (num_fragments - 1) * overlap_max
+    if min_total_len > seq_len:
+        # Reduce fragments to fit
+        # Approximate maximum fragments possible with minimal overlaps
+        new_num = max(1, seq_len // (min_len - overlap_max))
+        if verbose:
+            console.log(f"    Reducing fragments for {seq_record.id} from {num_fragments} to {new_num}")
+        num_fragments = new_num
+        if num_fragments == 1:
+            return [seq_record]
 
+    # Generate fragment lengths from lognormal (truncated)
+    max_frag_len = min(max_len, seq_len // 2)  # avoid fragments longer than half the genome
+    lengths = []
     for _ in range(num_fragments):
         length = None
-        for _ in range(100):  # safety limit
+        for _ in range(100):
             z = random.gauss(0, 1)
             candidate = int(round(math.exp(lognormal_mu + lognormal_sigma * z)))
-            if min_len <= candidate <= effective_max:
+            if min_len <= candidate <= max_frag_len:
                 length = candidate
                 break
         if length is None:
-            length = random.randint(min_len, effective_max)
+            length = random.randint(min_len, max_frag_len)
+        lengths.append(length)
 
-        max_start = max(0, seq_len - length)
-        start = random.randint(0, max_start)
-        end = start + length
-        fragments.append(seq_record[start:end])
+    # Scale lengths to fit the genome with overlaps
+    # We need total_length - (num_fragments-1) * avg_overlap <= seq_len
+    avg_overlap = (overlap_min + overlap_max) // 2
+    total_length_needed = sum(lengths) - (num_fragments - 1) * avg_overlap
+    if total_length_needed > seq_len:
+        # Scale down proportionally, but keep each >= min_len
+        scale = seq_len / (total_length_needed + (num_fragments - 1) * overlap_min)
+        lengths = [max(min_len, int(l * scale)) for l in lengths]
+
+    # Place fragments sequentially with overlaps
+    fragments = []
+    current_pos = 0
+    for i, length in enumerate(lengths):
+        if i > 0:
+            # Determine overlap for this junction
+            max_overlap_here = min(overlap_max, length // 2, lengths[i-1] // 2)
+            if max_overlap_here < overlap_min:
+                overlap = overlap_min
+            else:
+                overlap = random.randint(overlap_min, max_overlap_here)
+            current_pos -= overlap
+        end_pos = min(current_pos + length, seq_len)
+        if end_pos - current_pos < min_len:
+            break
+        fragments.append(seq_record[current_pos:end_pos])
+        current_pos += length - (overlap if i > 0 else 0)
+
+    # If we didn't get all fragments, fallback to random intervals
+    while len(fragments) < num_fragments:
+        start = random.randint(0, max(0, seq_len - min_len))
+        end = min(start + random.randint(min_len, max_frag_len), seq_len)
+        if end - start >= min_len:
+            fragments.append(seq_record[start:end])
 
     return fragments if fragments else [seq_record]
 
@@ -143,6 +193,10 @@ def add_contaminant_contigs(
     max_len: int = 50000,
     lognormal_mu: float = 8.5,
     lognormal_sigma: float = 1.2,
+    overlap_min: int = 50,
+    overlap_max: int = 500,
+    fragments_min: int = 1,
+    fragments_max: int = 5,
     verbose: bool = False,
 ) -> Tuple[List[SeqRecord], List[Tuple]]:
     """
@@ -160,7 +214,7 @@ def add_contaminant_contigs(
         if not use_synthetic and source_records:
             # Use real genomes
             rec = random.choice(source_records)
-            num_frags = random.randint(1, 3)
+            num_frags = random.randint(fragments_min, fragments_max)
             if verbose:
                 console.log(
                     f"Fragmenting {rec.id} into {num_frags} fragments for {category}"
@@ -172,6 +226,9 @@ def add_contaminant_contigs(
                 num_fragments=num_frags,
                 lognormal_mu=lognormal_mu,
                 lognormal_sigma=lognormal_sigma,
+                overlap_min=overlap_min,
+                overlap_max=overlap_max,
+                verbose=verbose,
             )
             for frag in frags:
                 new_id = f"{rec.id}_{category}_{len(records)+1}"
@@ -309,6 +366,10 @@ def generate_mock_dataset(
     seed: int = 42,
     lognormal_mu: float = 8.5,
     lognormal_sigma: float = 1.2,
+    overlap_min: int = 50,
+    overlap_max: int = 500,
+    fragments_min: int = 1,
+    fragments_max: int = 5,
     ground_truth_file: Optional[str] = None,
     no_ground_truth: bool = False,
     force: bool = False,
@@ -325,6 +386,18 @@ def generate_mock_dataset(
             f"The fractions must sum to 1.0. Got virus={virus_frac}, "
             f"prokaryote={prokaryote_frac}, eukaryote={eukaryote_frac} (sum={total_frac:.10f})."
         )
+
+    # Validate overlap range
+    if overlap_min > overlap_max:
+        overlap_min, overlap_max = overlap_max, overlap_min
+
+    # Validate fragment range
+    if fragments_min > fragments_max:
+        fragments_min, fragments_max = fragments_max, fragments_min
+    if fragments_min < 1:
+        fragments_min = 1
+    if fragments_max < fragments_min:
+        fragments_max = fragments_min
 
     random.seed(seed)
     outfile = os.path.join(outdir, f"{name}.fna")
@@ -349,6 +422,8 @@ def generate_mock_dataset(
             f"Virus fraction: {virus_frac}, Prokaryote: {prokaryote_frac}, Eukaryote: {eukaryote_frac}"
         )
         console.print(f"Strain mode: {strain_mode}, duplications: {duplication_factor}")
+        console.print(f"Fragments: {fragments_min}–{fragments_max} per genome")
+        console.print(f"Overlap: {overlap_min}–{overlap_max} bp")
         console.print(f"Lognormal mu: {lognormal_mu}, sigma: {lognormal_sigma}")
         console.print(f"Output: {outfile}, ground truth: {gt_file}")
         return
@@ -358,6 +433,8 @@ def generate_mock_dataset(
         console.log(
             f"Using lognormal_mu={lognormal_mu}, lognormal_sigma={lognormal_sigma}"
         )
+        console.log(f"Fragment count: {fragments_min}–{fragments_max}")
+        console.log(f"Overlap: {overlap_min}–{overlap_max} bp")
 
     # Load sequences
     viral_records = read_fasta_seq(viral_seq)
@@ -417,7 +494,7 @@ def generate_mock_dataset(
             )
 
             for strain_rec, cluster_label, mut_rate in strain_tuples:
-                num_frags = random.randint(1, 5)
+                num_frags = random.randint(fragments_min, fragments_max)
                 if verbose:
                     console.log(
                         f"Strain {strain_rec.id}: fragmenting into {num_frags} contigs (mut_rate={mut_rate:.4f})"
@@ -427,6 +504,9 @@ def generate_mock_dataset(
                     num_fragments=num_frags,
                     lognormal_mu=lognormal_mu,
                     lognormal_sigma=lognormal_sigma,
+                    overlap_min=overlap_min,
+                    overlap_max=overlap_max,
+                    verbose=verbose,
                 )
                 for frag in frags:
                     new_id = f"{strain_rec.id}_frag_{len(records)+1}"
@@ -458,13 +538,17 @@ def generate_mock_dataset(
         # Fill remaining viral count with non‑strain fragments
         while len(records) < n_virus:
             rec = random.choice(viral_records)
+            num_frags = random.randint(fragments_min, fragments_max)
             if verbose:
-                console.log(f"Filling with non-strain fragment from {rec.id}")
+                console.log(f"Filling with non-strain fragment from {rec.id} ({num_frags} contigs)")
             frags = fragment_sequence(
                 rec,
-                num_fragments=1,
+                num_fragments=num_frags,
                 lognormal_mu=lognormal_mu,
                 lognormal_sigma=lognormal_sigma,
+                overlap_min=overlap_min,
+                overlap_max=overlap_max,
+                verbose=verbose,
             )
             for frag in frags:
                 new_id = f"{rec.id}_frag_{len(records)+1}"
@@ -489,7 +573,7 @@ def generate_mock_dataset(
         console.print("[cyan]Normal mode: fragmenting viral genomes into contigs[/]")
         while len(records) < n_virus:
             rec = random.choice(viral_records)
-            num_frags = random.randint(1, 5)
+            num_frags = random.randint(fragments_min, fragments_max)
             if verbose:
                 console.log(f"Fragmenting {rec.id} into {num_frags} contigs")
             frags = fragment_sequence(
@@ -497,6 +581,9 @@ def generate_mock_dataset(
                 num_fragments=num_frags,
                 lognormal_mu=lognormal_mu,
                 lognormal_sigma=lognormal_sigma,
+                overlap_min=overlap_min,
+                overlap_max=overlap_max,
+                verbose=verbose,
             )
             for frag in frags:
                 new_id = f"{rec.id}_frag_{len(records)+1}"
@@ -544,6 +631,10 @@ def generate_mock_dataset(
         max_len=50000,
         lognormal_mu=lognormal_mu,
         lognormal_sigma=lognormal_sigma,
+        overlap_min=overlap_min,
+        overlap_max=overlap_max,
+        fragments_min=fragments_min,
+        fragments_max=fragments_max,
         verbose=verbose,
     )
 
@@ -561,6 +652,10 @@ def generate_mock_dataset(
         max_len=50000,
         lognormal_mu=lognormal_mu,
         lognormal_sigma=lognormal_sigma,
+        overlap_min=overlap_min,
+        overlap_max=overlap_max,
+        fragments_min=fragments_min,
+        fragments_max=fragments_max,
         verbose=verbose,
     )
 
@@ -671,6 +766,30 @@ def main():
         default=1.2,
         help="Spread (standard deviation) of the log-length distribution",
     )
+    parser.add_argument(
+        "--overlap-min",
+        type=int,
+        default=50,
+        help="Minimum overlap between consecutive fragments (bp)",
+    )
+    parser.add_argument(
+        "--overlap-max",
+        type=int,
+        default=500,
+        help="Maximum overlap between consecutive fragments (bp)",
+    )
+    parser.add_argument(
+        "--fragments-min",
+        type=int,
+        default=1,
+        help="Minimum number of fragments per genome",
+    )
+    parser.add_argument(
+        "--fragments-max",
+        type=int,
+        default=5,
+        help="Maximum number of fragments per genome",
+    )
     parser.add_argument("--seed", type=int, default=42, help="Random seed")
     parser.add_argument(
         "--ground-truth", help="Output path for ground truth TSV (default: auto)"
@@ -728,6 +847,10 @@ def main():
         seed=args.seed,
         lognormal_mu=args.lognormal_mu,
         lognormal_sigma=args.lognormal_sigma,
+        overlap_min=args.overlap_min,
+        overlap_max=args.overlap_max,
+        fragments_min=args.fragments_min,
+        fragments_max=args.fragments_max,
         ground_truth_file=args.ground_truth,
         no_ground_truth=args.no_ground_truth,
         force=args.force,

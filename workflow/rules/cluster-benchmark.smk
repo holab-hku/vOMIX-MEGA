@@ -10,6 +10,14 @@ tmpd = vomix_module.tmpd
 # Setup mock dataset parameters
 # ------------------------------------------------------------
 
+# Global fragment generation settings (can be overridden per dataset if needed)
+DEFAULT_FRAGMENTS_MIN = 1
+DEFAULT_FRAGMENTS_MAX = 5
+DEFAULT_OVERLAP_MIN = 50
+DEFAULT_OVERLAP_MAX = 500
+DEFAULT_LOGNORMAL_MU = 8.5
+DEFAULT_LOGNORMAL_SIGMA = 1.2
+
 DATASET_PARAMS = {
     "Mock-10K":          {"size": 10000,  "virus": 0.5,  "prok": 0.3,  "euk": 0.2,  "strain": 0, "species": 10, "seed": config.get("seed", 42)},
     "Mock-10K-HighVir":  {"size": 10000,  "virus": 1.0,  "prok": 0.0,  "euk": 0.0,  "strain": 0, "species": 10, "seed": config.get("seed", 42)},
@@ -159,8 +167,10 @@ rule download_euk_contaminants:
 
 
 # ------------------------------------------------------------
-# Mock dataset generation
+# Mock dataset generation (all rules use consistent parameters)
 # ------------------------------------------------------------
+
+# Template for mock rules – we'll define each explicitly but with a common structure.
 
 # ----- Mock-10K -----
 rule mock_Mock_10K:
@@ -184,6 +194,12 @@ rule mock_Mock_10K:
         seed   = DATASET_PARAMS["Mock-10K"]["seed"],
         script = "workflow/scripts/generate_mock_clust_data.py",
         outdir = os.path.join(datadir, "mock-data"),
+        frag_min = DEFAULT_FRAGMENTS_MIN,
+        frag_max = DEFAULT_FRAGMENTS_MAX,
+        overlap_min = DEFAULT_OVERLAP_MIN,
+        overlap_max = DEFAULT_OVERLAP_MAX,
+        lognorm_mu = DEFAULT_LOGNORMAL_MU,
+        lognorm_sigma = DEFAULT_LOGNORMAL_SIGMA,
     conda: "../envs/seqkit-biopython.yml"
     log: os.path.join(logdir, "mock_Mock-10K.log")
     benchmark: os.path.join(benchmarks, "mock_Mock-10K.benchmark")
@@ -211,6 +227,12 @@ rule mock_Mock_10K:
             --num-species {params.species} \
             --mut-rate-min 0.001 \
             --mut-rate-max 0.05 \
+            --fragments-min {params.frag_min} \
+            --fragments-max {params.frag_max} \
+            --overlap-min {params.overlap_min} \
+            --overlap-max {params.overlap_max} \
+            --lognormal-mu {params.lognorm_mu} \
+            --lognormal-sigma {params.lognorm_sigma} \
             --seed {params.seed} \
             --force \
             &> {log}
@@ -238,6 +260,12 @@ rule mock_Mock_10K_HighVir:
         seed   = DATASET_PARAMS["Mock-10K-HighVir"]["seed"],
         script = "workflow/scripts/generate_mock_clust_data.py",
         outdir = os.path.join(datadir, "mock-data"),
+        frag_min = DEFAULT_FRAGMENTS_MIN,
+        frag_max = DEFAULT_FRAGMENTS_MAX,
+        overlap_min = DEFAULT_OVERLAP_MIN,
+        overlap_max = DEFAULT_OVERLAP_MAX,
+        lognorm_mu = DEFAULT_LOGNORMAL_MU,
+        lognorm_sigma = DEFAULT_LOGNORMAL_SIGMA,
     conda: "../envs/seqkit-biopython.yml"
     log: os.path.join(logdir, "mock_Mock-10K-HighVir.log")
     benchmark: os.path.join(benchmarks, "mock_Mock-10K-HighVir.benchmark")
@@ -265,6 +293,12 @@ rule mock_Mock_10K_HighVir:
             --num-species {params.species} \
             --mut-rate-min 0.001 \
             --mut-rate-max 0.05 \
+            --fragments-min {params.frag_min} \
+            --fragments-max {params.frag_max} \
+            --overlap-min {params.overlap_min} \
+            --overlap-max {params.overlap_max} \
+            --lognormal-mu {params.lognorm_mu} \
+            --lognormal-sigma {params.lognorm_sigma} \
             --seed {params.seed} \
             --force \
             &> {log}
@@ -292,6 +326,12 @@ rule mock_Mock_10K_LowVir:
         seed   = DATASET_PARAMS["Mock-10K-LowVir"]["seed"],
         script = "workflow/scripts/generate_mock_clust_data.py",
         outdir = os.path.join(datadir, "mock-data"),
+        frag_min = DEFAULT_FRAGMENTS_MIN,
+        frag_max = DEFAULT_FRAGMENTS_MAX,
+        overlap_min = DEFAULT_OVERLAP_MIN,
+        overlap_max = DEFAULT_OVERLAP_MAX,
+        lognorm_mu = DEFAULT_LOGNORMAL_MU,
+        lognorm_sigma = DEFAULT_LOGNORMAL_SIGMA,
     conda: "../envs/seqkit-biopython.yml"
     log: os.path.join(logdir, "mock_Mock-10K-LowVir.log")
     benchmark: os.path.join(benchmarks, "mock_Mock-10K-LowVir.benchmark")
@@ -319,6 +359,12 @@ rule mock_Mock_10K_LowVir:
             --num-species {params.species} \
             --mut-rate-min 0.001 \
             --mut-rate-max 0.05 \
+            --fragments-min {params.frag_min} \
+            --fragments-max {params.frag_max} \
+            --overlap-min {params.overlap_min} \
+            --overlap-max {params.overlap_max} \
+            --lognormal-mu {params.lognorm_mu} \
+            --lognormal-sigma {params.lognorm_sigma} \
             --seed {params.seed} \
             --force \
             &> {log}
@@ -346,6 +392,12 @@ rule mock_Mock_50K:
         seed   = DATASET_PARAMS["Mock-50K"]["seed"],
         script = "workflow/scripts/generate_mock_clust_data.py",
         outdir = os.path.join(datadir, "mock-data"),
+        frag_min = DEFAULT_FRAGMENTS_MIN,
+        frag_max = DEFAULT_FRAGMENTS_MAX,
+        overlap_min = DEFAULT_OVERLAP_MIN,
+        overlap_max = DEFAULT_OVERLAP_MAX,
+        lognorm_mu = DEFAULT_LOGNORMAL_MU,
+        lognorm_sigma = DEFAULT_LOGNORMAL_SIGMA,
     conda: "../envs/seqkit-biopython.yml"
     log: os.path.join(logdir, "mock_Mock-50K.log")
     benchmark: os.path.join(benchmarks, "mock_Mock-50K.benchmark")
@@ -362,7 +414,7 @@ rule mock_Mock_50K:
         python {params.script} \
             --name {params.name} \
             --num-sequences {params.num} \
-            --outdir {params.tmpdir} \
+            --outdir {params.outdir} \
             --viral-seq {input.vir} \
             --prokaryotic-seq {input.prok} \
             --eukaryotic-seq {input.euk} \
@@ -373,12 +425,15 @@ rule mock_Mock_50K:
             --num-species {params.species} \
             --mut-rate-min 0.001 \
             --mut-rate-max 0.05 \
+            --fragments-min {params.frag_min} \
+            --fragments-max {params.frag_max} \
+            --overlap-min {params.overlap_min} \
+            --overlap-max {params.overlap_max} \
+            --lognormal-mu {params.lognorm_mu} \
+            --lognormal-sigma {params.lognorm_sigma} \
             --seed {params.seed} \
             --force \
             &> {log}
-        
-        mv {params.tmpdir}/*.fna {output.fna}
-        mv {params.tmpdir}/*.tsv {output.gt}
         """
 
 # ----- Mock-100K -----
@@ -403,6 +458,12 @@ rule mock_Mock_100K:
         seed   = DATASET_PARAMS["Mock-100K"]["seed"],
         script = "workflow/scripts/generate_mock_clust_data.py",
         outdir = os.path.join(datadir, "mock-data"),
+        frag_min = DEFAULT_FRAGMENTS_MIN,
+        frag_max = DEFAULT_FRAGMENTS_MAX,
+        overlap_min = DEFAULT_OVERLAP_MIN,
+        overlap_max = DEFAULT_OVERLAP_MAX,
+        lognorm_mu = DEFAULT_LOGNORMAL_MU,
+        lognorm_sigma = DEFAULT_LOGNORMAL_SIGMA,
     conda: "../envs/seqkit-biopython.yml"
     log: os.path.join(logdir, "mock_Mock-100K.log")
     benchmark: os.path.join(benchmarks, "mock_Mock-100K.benchmark")
@@ -419,7 +480,7 @@ rule mock_Mock_100K:
         python {params.script} \
             --name {params.name} \
             --num-sequences {params.num} \
-            --outdir {params.tmpdir} \
+            --outdir {params.outdir} \
             --viral-seq {input.vir} \
             --prokaryotic-seq {input.prok} \
             --eukaryotic-seq {input.euk} \
@@ -430,12 +491,15 @@ rule mock_Mock_100K:
             --num-species {params.species} \
             --mut-rate-min 0.001 \
             --mut-rate-max 0.05 \
+            --fragments-min {params.frag_min} \
+            --fragments-max {params.frag_max} \
+            --overlap-min {params.overlap_min} \
+            --overlap-max {params.overlap_max} \
+            --lognormal-mu {params.lognorm_mu} \
+            --lognormal-sigma {params.lognorm_sigma} \
             --seed {params.seed} \
             --force \
             &> {log}
-        
-        mv {params.tmpdir}/*.fna {output.fna}
-        mv {params.tmpdir}/*.tsv {output.gt}
         """
 
 # ----- Mock-300K -----
@@ -460,6 +524,12 @@ rule mock_Mock_300K:
         seed   = DATASET_PARAMS["Mock-300K"]["seed"],
         script = "workflow/scripts/generate_mock_clust_data.py",
         outdir = os.path.join(datadir, "mock-data"),
+        frag_min = DEFAULT_FRAGMENTS_MIN,
+        frag_max = DEFAULT_FRAGMENTS_MAX,
+        overlap_min = DEFAULT_OVERLAP_MIN,
+        overlap_max = DEFAULT_OVERLAP_MAX,
+        lognorm_mu = DEFAULT_LOGNORMAL_MU,
+        lognorm_sigma = DEFAULT_LOGNORMAL_SIGMA,
     conda: "../envs/seqkit-biopython.yml"
     log: os.path.join(logdir, "mock_Mock-300K.log")
     benchmark: os.path.join(benchmarks, "mock_Mock-300K.benchmark")
@@ -476,7 +546,7 @@ rule mock_Mock_300K:
         python {params.script} \
             --name {params.name} \
             --num-sequences {params.num} \
-            --outdir {params.tmpdir} \
+            --outdir {params.outdir} \
             --viral-seq {input.vir} \
             --prokaryotic-seq {input.prok} \
             --eukaryotic-seq {input.euk} \
@@ -487,12 +557,15 @@ rule mock_Mock_300K:
             --num-species {params.species} \
             --mut-rate-min 0.001 \
             --mut-rate-max 0.05 \
+            --fragments-min {params.frag_min} \
+            --fragments-max {params.frag_max} \
+            --overlap-min {params.overlap_min} \
+            --overlap-max {params.overlap_max} \
+            --lognormal-mu {params.lognorm_mu} \
+            --lognormal-sigma {params.lognorm_sigma} \
             --seed {params.seed} \
             --force \
             &> {log}
-        
-        mv {params.tmpdir}/*.fna {output.fna}
-        mv {params.tmpdir}/*.tsv {output.gt}
         """
 
 # ----- Mock-1000K -----
@@ -517,6 +590,12 @@ rule mock_Mock_1000K:
         seed   = DATASET_PARAMS["Mock-1000K"]["seed"],
         script = "workflow/scripts/generate_mock_clust_data.py",
         outdir = os.path.join(datadir, "mock-data"),
+        frag_min = DEFAULT_FRAGMENTS_MIN,
+        frag_max = DEFAULT_FRAGMENTS_MAX,
+        overlap_min = DEFAULT_OVERLAP_MIN,
+        overlap_max = DEFAULT_OVERLAP_MAX,
+        lognorm_mu = DEFAULT_LOGNORMAL_MU,
+        lognorm_sigma = DEFAULT_LOGNORMAL_SIGMA,
     conda: "../envs/seqkit-biopython.yml"
     log: os.path.join(logdir, "mock_Mock-1000K.log")
     benchmark: os.path.join(benchmarks, "mock_Mock-1000K.benchmark")
@@ -533,7 +612,7 @@ rule mock_Mock_1000K:
         python {params.script} \
             --name {params.name} \
             --num-sequences {params.num} \
-            --outdir {params.tmpdir} \
+            --outdir {params.outdir} \
             --viral-seq {input.vir} \
             --prokaryotic-seq {input.prok} \
             --eukaryotic-seq {input.euk} \
@@ -544,12 +623,15 @@ rule mock_Mock_1000K:
             --num-species {params.species} \
             --mut-rate-min 0.001 \
             --mut-rate-max 0.05 \
+            --fragments-min {params.frag_min} \
+            --fragments-max {params.frag_max} \
+            --overlap-min {params.overlap_min} \
+            --overlap-max {params.overlap_max} \
+            --lognormal-mu {params.lognorm_mu} \
+            --lognormal-sigma {params.lognorm_sigma} \
             --seed {params.seed} \
             --force \
             &> {log}
-        
-        mv {params.tmpdir}/*.fna {output.fna}
-        mv {params.tmpdir}/*.tsv {output.gt}
         """
 
 # ----- Mock-Strain -----
@@ -574,6 +656,12 @@ rule mock_Mock_Strain:
         seed   = DATASET_PARAMS["Mock-Strain"]["seed"],
         script = "workflow/scripts/generate_mock_clust_data.py",
         outdir = os.path.join(datadir, "mock-data"),
+        frag_min = DEFAULT_FRAGMENTS_MIN,
+        frag_max = DEFAULT_FRAGMENTS_MAX,
+        overlap_min = DEFAULT_OVERLAP_MIN,
+        overlap_max = DEFAULT_OVERLAP_MAX,
+        lognorm_mu = DEFAULT_LOGNORMAL_MU,
+        lognorm_sigma = DEFAULT_LOGNORMAL_SIGMA,
     conda: "../envs/seqkit-biopython.yml"
     log: os.path.join(logdir, "mock_Mock-Strain.log")
     benchmark: os.path.join(benchmarks, "mock_Mock-Strain.benchmark")
@@ -590,7 +678,7 @@ rule mock_Mock_Strain:
         python {params.script} \
             --name {params.name} \
             --num-sequences {params.num} \
-            --outdir {params.tmpdir} \
+            --outdir {params.outdir} \
             --viral-seq {input.vir} \
             --prokaryotic-seq {input.prok} \
             --eukaryotic-seq {input.euk} \
@@ -601,37 +689,21 @@ rule mock_Mock_Strain:
             --num-species {params.species} \
             --mut-rate-min 0.001 \
             --mut-rate-max 0.05 \
+            --fragments-min {params.frag_min} \
+            --fragments-max {params.frag_max} \
+            --overlap-min {params.overlap_min} \
+            --overlap-max {params.overlap_max} \
+            --lognormal-mu {params.lognorm_mu} \
+            --lognormal-sigma {params.lognorm_sigma} \
             --seed {params.seed} \
             --force \
             &> {log}
-        
-        mv {params.tmpdir}/*.fna {output.fna}
-        mv {params.tmpdir}/*.tsv {output.gt}
         """
 
 
-#         python {params.script} \
-#             --name {params.name} \
-#             --num-sequences {params.num} \
-#             --outdir {datadir}/mock-data \
-#             --viral-seq {input.vir} \
-#             --prokaryotic-seq {input.prok} \
-#             --eukaryotic-seq {input.euk} \
-#             --virus-frac {params.virus} \
-#             --prokaryote-frac {params.prok_f} \
-#             --eukaryote-frac {params.euk_f} \
-#             --strain-mode {params.strain} \
-#             --num-species {params.species} \
-#             --mut-rate-min 0.001 \
-#             --mut-rate-max 0.05 \
-#             --seed {params.seed} \
-#             --force \
-#             &> {log}
-
-#         touch {output.fna} {output.gt}
-#         """
-
-
+# ------------------------------------------------------------
+# CAMI Marine (commented out, kept for reference)
+# ------------------------------------------------------------
 # rule cami_marine:
 #     name: "cluster-benchmark.smk - Download CAMI Marine"
 #     output:
@@ -650,12 +722,12 @@ rule mock_Mock_Strain:
 #         set -euo pipefail
 #         rm -rf {params.tmpdir}
 #         mkdir -p {params.tmpdir} {params.outdir}
-
+#
 #         python workflow/scripts/download_cami.py \
 #             --outdir {params.outdir} \
 #             --tmpdir {params.tmpdir} \
 #             --url "{params.url}" \
 #             &> {log}
-
+#
 #         touch {output.marker}
 #         """
