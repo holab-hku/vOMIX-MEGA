@@ -3,48 +3,26 @@
 generate_mock_clust_data.py - Generate a mock FASTA dataset for clustering benchmarking.
 
 Approach:
-- For each genome (viral, prokaryotic, eukaryotic), generate a large number of random,
-  non-overlapping fragments (contigs) with lengths drawn from a log‑normal distribution.
+- For each genome, generate random non-overlapping fragments.
 - Each fragment becomes a "set" – a cluster that clustering algorithms should recover.
-- For each set, generate multiple mutated copies (copies) with controlled point mutations
-  and indels. The number of copies can follow a uniform or Poisson distribution.
-- All categories (viral, prokaryotic, eukaryotic) are mutated in the same way.
-- Balanced representation: sequences are distributed across genomes based on genome size
-  or a fixed target, ensuring no single genome dominates.
+- For each set, generate multiple mutated copies with controlled mutations.
+- Balanced representation across genomes.
 
 Inputs:
-  --viral-seq          FASTA with viral genomes (required)
-  --prokaryotic-seq    FASTA with prokaryotic genomes (optional; synthetic fallback)
-  --eukaryotic-seq     FASTA with eukaryotic genomes (optional; synthetic fallback)
-
-Fractions (must sum to 1.0):
-  --virus-frac         fraction of viral sequences (default 0.5)
-  --prokaryote-frac    fraction of prokaryotic sequences (default 0.3)
-  --eukaryote-frac     fraction of eukaryotic sequences (default 0.2)
+  --viral-seq, --prokaryotic-seq, --eukaryotic-seq
+Fractions (virus, prokaryote, eukaryote) must sum to 1.0.
 
 Fragmentation:
-  --fragments-per-10kb     number of fragments per 10 kb of genome (default 1)
-  --min-fragments-per-genome  minimum fragments per genome (default 10)
-  --max-fragments-per-genome  maximum fragments per genome (default 500)
+  --fragments-per-10kb, --min-fragments-per-genome, --max-fragments-per-genome
 
 Copies per set:
-  --copies-mean        mean number of copies per set (default 3)
-  --copies-min         minimum copies per set (default 2)
-  --copies-max         maximum copies per set (default 5)
-  --copies-distribution  distribution for copies: 'uniform' or 'poisson' (default 'uniform')
+  --copies-mean, --copies-min, --copies-max, --copies-distribution (uniform/poisson)
 
 Mutation:
-  --mut-rate-min       minimum mutation rate (default 0.001, 99.9% ANI)
-  --mut-rate-max       maximum mutation rate (default 0.05, 95% ANI)
-  --indel-rate         fraction of mutations that are indels (default 0.1)
+  --mut-rate-min, --mut-rate-max, --indel-rate
 
 Other:
-  --total-sequences    total sequences to generate (across all categories)
-  --seed               random seed (default 42)
-  --outdir             output directory
-  --force              overwrite existing files
-  --verbose            detailed logging
-  --dry-run            preview settings without writing
+  --total-sequences, --seed, --outdir, --force, --verbose, --dry-run
 """
 
 import os
@@ -76,11 +54,7 @@ console = Console()
 
 
 def poisson(lam: float) -> int:
-    """
-    Generate a Poisson random variate with mean `lam` using the exponential
-    interarrival method. This is a fallback for environments where
-    random.poisson is not available (though it usually is).
-    """
+    """Generate a Poisson random variate using exponential interarrival."""
     if lam <= 0:
         return 0
     n = 0
@@ -129,7 +103,6 @@ def extract_random_fragments(
     if seq_len < min_len:
         return [seq_record] if n_fragments > 0 else []
 
-    # Generate lengths
     lengths = []
     for _ in range(n_fragments):
         length = generate_fragment_length(
@@ -137,14 +110,12 @@ def extract_random_fragments(
         )
         lengths.append(min(length, seq_len))
 
-    # Scale lengths to fit the genome if total exceeds seq_len
     total_len = sum(lengths)
     if total_len > seq_len:
         scale = seq_len / total_len
         lengths = [max(min_len, int(l * scale)) for l in lengths]
         lengths = [max(min_len, l) for l in lengths]
 
-    # Place fragments sequentially (non‑overlapping)
     fragments = []
     current_pos = 0
     for i, length in enumerate(lengths):
@@ -155,7 +126,7 @@ def extract_random_fragments(
             fragments.append(seq_record[current_pos:end])
         current_pos = end
 
-    # If we didn't get all fragments, fill with random intervals
+    # Fallback: fill with random intervals if not enough
     while len(fragments) < n_fragments:
         start = random.randint(0, max(0, seq_len - min_len))
         end = min(start + random.randint(min_len, max_len), seq_len)
@@ -176,13 +147,11 @@ def mutate_sequence(
     Returns:
         (mutated_sequence, mutations)
     mutations: list of (position, mutation_type, detail)
-    mutation_type: 'substitution', 'insertion', 'deletion'
     """
     seq_str = list(str(sequence))
     seq_len = len(seq_str)
     mutations = []
 
-    # Number of mutations: Poisson(mutation_rate * seq_len)
     mean_muts = mutation_rate * seq_len
     if mean_muts > 0:
         n_mutations = max(1, poisson(mean_muts))
@@ -220,7 +189,6 @@ def create_mutation_set(
     source_fragment: SeqRecord,
     source_genome: str,
     fragment_idx: int,
-    set_id: int,
     category: str,
     num_copies: int,
     mut_rate_min: float = 0.001,
@@ -230,15 +198,14 @@ def create_mutation_set(
 ) -> List[Tuple[SeqRecord, Dict[str, Any]]]:
     """
     Create a set of mutated copies from a source fragment.
-
-    Returns:
-        List of (mutated_record, metadata)
+    set_id is now a string: {source_genome}_frag_{fragment_idx}
     """
     results = []
+    set_id = f"{source_genome}_frag_{fragment_idx}"
 
-    # Original copy (no mutations)
+    # Original copy
     orig_rec = source_fragment[:]
-    orig_id = f"{source_genome}_frag_{fragment_idx}_set_{set_id}_copy_1"
+    orig_id = f"{source_genome}_frag_{fragment_idx}_copy_1"
     orig_rec.id = orig_id
     orig_rec.description = (
         f"source={source_genome} frag={fragment_idx} set={set_id} copy=1 mut_rate=0.000"
@@ -258,9 +225,9 @@ def create_mutation_set(
     )
 
     if verbose:
-        console.log(f"      set {set_id} (frag {fragment_idx}) → {num_copies} copies")
+        console.log(f"      set {set_id} → {num_copies} copies")
 
-    # Mutated copies (copy numbers 2..num_copies)
+    # Mutated copies
     for copy_idx in range(2, num_copies + 1):
         mut_rate = random.uniform(mut_rate_min, mut_rate_max)
         mutated_seq, mutations = mutate_sequence(
@@ -269,7 +236,7 @@ def create_mutation_set(
 
         mut_rec = SeqRecord(
             mutated_seq,
-            id=f"{source_genome}_frag_{fragment_idx}_set_{set_id}_copy_{copy_idx}",
+            id=f"{source_genome}_frag_{fragment_idx}_copy_{copy_idx}",
             description=f"source={source_genome} frag={fragment_idx} set={set_id} copy={copy_idx} mut_rate={mut_rate:.4f}",
         )
         results.append(
@@ -311,16 +278,14 @@ def generate_balanced_category(
     verbose: bool = False,
 ) -> Tuple[List[SeqRecord], List[Dict]]:
     """
-    Generate a balanced set of fragments from a list of source genomes (or synthetic sequences).
-
-    Returns:
-        (records, ground_truth)
+    Generate a balanced set of fragments from source genomes.
+    Returns (records, ground_truth).
     """
     if target_sequences <= 0:
         return [], []
 
     if use_synthetic or not source_records:
-        # Synthetic mode: generate random sequences as singleton sets
+        # Synthetic mode: singletons
         if verbose:
             console.log(
                 f"[cyan]Generating {target_sequences} synthetic {category} sequences (singletons)[/]"
@@ -337,7 +302,7 @@ def generate_balanced_category(
                 {
                     "sequence_id": seq_id,
                     "true_cluster": seq_id,
-                    "set_id": len(gt),
+                    "set_id": seq_id,
                     "source_genome": "synthetic",
                     "source_fragment": "1",
                     "length": length,
@@ -354,7 +319,6 @@ def generate_balanced_category(
                 console.log(f"  Synthetic {i+1}/{target_sequences}")
         return records, gt
 
-    # Real genomes mode
     n_genomes = len(source_records)
     if n_genomes == 0:
         return [], []
@@ -364,12 +328,11 @@ def generate_balanced_category(
             f"[cyan]Generating {target_sequences} sequences from {n_genomes} {category} genomes[/]"
         )
 
-    # Determine the average number of copies per set
+    # Average copies per set
     if copies_distribution == "poisson":
         avg_copies = copies_mean
     else:
         avg_copies = (copies_min + copies_max) / 2
-
     if avg_copies <= 0:
         avg_copies = 1
 
@@ -422,10 +385,8 @@ def generate_balanced_category(
             f"  Total fragments needed: {total_fragments_needed}, actual: {sum(fragments_per_genome.values())}"
         )
 
-    # Now generate fragments
     records = []
     ground_truth = []
-    set_counter = 0
 
     for idx, genome in enumerate(source_records):
         n_frags = fragments_per_genome[genome.id]
@@ -450,14 +411,10 @@ def generate_balanced_category(
             else:
                 num_copies = random.randint(copies_min, copies_max)
 
-            set_id = set_counter
-            set_counter += 1
-
             mutation_set = create_mutation_set(
                 frag,
                 genome.id,
                 frag_idx + 1,
-                set_id,
                 category,
                 num_copies,
                 mut_rate_min=mut_rate_min,
@@ -471,7 +428,7 @@ def generate_balanced_category(
                 gt_entry = {
                     "sequence_id": mut_record.id,
                     "true_cluster": genome.id,
-                    "set_id": set_id,
+                    "set_id": meta["set_id"],
                     "source_genome": genome.id,
                     "source_fragment": f"{frag_idx+1}",
                     "length": len(mut_record.seq),
@@ -485,7 +442,7 @@ def generate_balanced_category(
                 }
                 ground_truth.append(gt_entry)
 
-            if verbose and (set_counter % 10 == 0):
+            if verbose and (len(records) % 100 == 0):
                 console.log(f"    Generated {len(records)} sequences so far")
 
     if verbose:
@@ -493,22 +450,21 @@ def generate_balanced_category(
             f"  Generated {len(records)} sequences for {category} (target: {target_sequences})"
         )
 
-    # ---- Enforce exact target_sequences ----
+    # Enforce exact target_sequences
     if len(records) != target_sequences:
         if verbose:
             console.log(
                 f"[yellow]Adjusting {category} sequences from {len(records)} to {target_sequences}[/]"
             )
         if len(records) > target_sequences:
-            # Randomly subsample
             indices = list(range(len(records)))
             random.shuffle(indices)
             keep = set(indices[:target_sequences])
-            new_records = [records[i] for i in range(len(records)) if i in keep]
-            new_gt = [ground_truth[i] for i in range(len(records)) if i in keep]
-            records, ground_truth = new_records, new_gt
+            records = [records[i] for i in range(len(records)) if i in keep]
+            ground_truth = [
+                ground_truth[i] for i in range(len(ground_truth)) if i in keep
+            ]
         else:
-            # Need more sequences – duplicate some sets (rare, but happens with low targets)
             extra_needed = target_sequences - len(records)
             if verbose:
                 console.log(
@@ -642,7 +598,6 @@ def generate_mock_dataset(
             f"prokaryote={prokaryote_frac}, eukaryote={eukaryote_frac} (sum={total_frac:.10f})."
         )
 
-    # Set the seed for all random operations
     random.seed(seed)
 
     outfile = os.path.join(outdir, f"{name}.fna")
@@ -706,7 +661,6 @@ def generate_mock_dataset(
         f"Target sequences: viral={n_viral}, prokaryotic={n_prok}, eukaryotic={n_euk}"
     )
 
-    # Generate each category
     all_records = []
     all_ground_truth = []
     stats = {}
@@ -739,14 +693,7 @@ def generate_mock_dataset(
         all_ground_truth.extend(gt)
         stats["viral"] = {
             "genomes": len(viral_records),
-            "fragments": (
-                len(gt)
-                // (
-                    copies_min if copies_distribution == "uniform" else int(copies_mean)
-                )
-                if gt
-                else 0
-            ),
+            "fragments": len(set(g["source_fragment"] for g in gt)) if gt else 0,
             "sets": len(set(g["set_id"] for g in gt)) if gt else 0,
             "sequences": len(recs),
         }
@@ -781,14 +728,7 @@ def generate_mock_dataset(
         all_ground_truth.extend(gt)
         stats["prokaryotic"] = {
             "genomes": len(prokaryotic_records) if not use_synthetic_prok else 0,
-            "fragments": (
-                len(gt)
-                // (
-                    copies_min if copies_distribution == "uniform" else int(copies_mean)
-                )
-                if gt
-                else 0
-            ),
+            "fragments": len(set(g["source_fragment"] for g in gt)) if gt else 0,
             "sets": len(set(g["set_id"] for g in gt)) if gt else 0,
             "sequences": len(recs),
         }
@@ -823,14 +763,7 @@ def generate_mock_dataset(
         all_ground_truth.extend(gt)
         stats["eukaryotic"] = {
             "genomes": len(eukaryotic_records) if not use_synthetic_euk else 0,
-            "fragments": (
-                len(gt)
-                // (
-                    copies_min if copies_distribution == "uniform" else int(copies_mean)
-                )
-                if gt
-                else 0
-            ),
+            "fragments": len(set(g["source_fragment"] for g in gt)) if gt else 0,
             "sets": len(set(g["set_id"] for g in gt)) if gt else 0,
             "sequences": len(recs),
         }
