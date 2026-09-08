@@ -1,6 +1,16 @@
 #!/usr/bin/env python3
 """
-generate_mock.py - Generate a mock FASTA dataset for benchmarking.
+generate_mock_clust_data.py - Generate a mock FASTA dataset for clustering benchmarking.
+
+Approach:
+- For each genome (viral, prokaryotic, eukaryotic), generate a large number of random,
+  non-overlapping fragments (contigs) with lengths drawn from a log‑normal distribution.
+- Each fragment becomes a "set" – a cluster that clustering algorithms should recover.
+- For each set, generate multiple mutated copies (copies) with controlled point mutations
+  and indels. The number of copies can follow a uniform or Poisson distribution.
+- All categories (viral, prokaryotic, eukaryotic) are mutated in the same way.
+- Balanced representation: sequences are distributed across genomes based on genome size
+  or a fixed target, ensuring no single genome dominates.
 
 Inputs:
   --viral-seq          FASTA with viral genomes (required)
@@ -8,23 +18,33 @@ Inputs:
   --eukaryotic-seq     FASTA with eukaryotic genomes (optional; synthetic fallback)
 
 Fractions (must sum to 1.0):
-  --virus-frac         fraction of viral contigs (default 0.5)
-  --prokaryote-frac    fraction of prokaryotic contigs (default 0.3)
-  --eukaryote-frac     fraction of eukaryotic contigs (default 0.2)
+  --virus-frac         fraction of viral sequences (default 0.5)
+  --prokaryote-frac    fraction of prokaryotic sequences (default 0.3)
+  --eukaryote-frac     fraction of eukaryotic sequences (default 0.2)
 
-Fragment generation:
-  --fragments-min      minimum number of fragments per genome (default 1)
-  --fragments-max      maximum number of fragments per genome (default 5)
-  --overlap-min        minimum overlap between consecutive fragments (bp, default 50)
-  --overlap-max        maximum overlap between consecutive fragments (bp, default 500)
-  --lognormal-mu       mean of log-length distribution (default 8.5)
-  --lognormal-sigma    spread of log-length distribution (default 1.2)
+Fragmentation:
+  --fragments-per-10kb     number of fragments per 10 kb of genome (default 1)
+  --min-fragments-per-genome  minimum fragments per genome (default 10)
+  --max-fragments-per-genome  maximum fragments per genome (default 500)
 
-Outputs:
-  - FASTA file (<name>.fna)
-  - Ground truth TSV (<name>.ground_truth.tsv) with extensive metadata
+Copies per set:
+  --copies-mean        mean number of copies per set (default 3)
+  --copies-min         minimum copies per set (default 2)
+  --copies-max         maximum copies per set (default 5)
+  --copies-distribution  distribution for copies: 'uniform' or 'poisson' (default 'uniform')
 
-All proportions, mutation rates, and duplications are adjustable.
+Mutation:
+  --mut-rate-min       minimum mutation rate (default 0.001, 99.9% ANI)
+  --mut-rate-max       maximum mutation rate (default 0.05, 95% ANI)
+  --indel-rate         fraction of mutations that are indels (default 0.1)
+
+Other:
+  --total-sequences    total sequences to generate (across all categories)
+  --seed               random seed (default 42)
+  --outdir             output directory
+  --force              overwrite existing files
+  --verbose            detailed logging
+  --dry-run            preview settings without writing
 """
 
 import os
@@ -32,7 +52,8 @@ import sys
 import math
 import random
 import argparse
-from typing import List, Tuple, Optional, Any
+import time
+from typing import List, Tuple, Optional, Dict, Any
 from Bio import SeqIO
 from Bio.Seq import Seq
 from Bio.SeqRecord import SeqRecord
@@ -41,6 +62,7 @@ from Bio.SeqRecord import SeqRecord
 try:
     from rich.console import Console
     from rich.panel import Panel
+    from rich.table import Table
     from rich import box
 except ImportError:
     print("Rich library not installed. Install with: pip install rich", file=sys.stderr)
@@ -59,317 +81,471 @@ def read_fasta_seq(seq_file: str) -> List[SeqRecord]:
     return list(SeqIO.parse(seq_file, "fasta"))
 
 
-def fragment_sequence(
-    seq_record: SeqRecord,
-    min_len: int = 500,
-    max_len: int = 50000,
-    num_fragments: int = 1,
+def generate_fragment_length(
     lognormal_mu: float = 8.5,
     lognormal_sigma: float = 1.2,
-    overlap_min: int = 50,
-    overlap_max: int = 500,
-    verbose: bool = False,
+    min_len: int = 500,
+    max_len: int = 50000,
+) -> int:
+    """
+    Generate a fragment length from a truncated log-normal distribution.
+    Uses the global random module (seeded externally).
+    """
+    for _ in range(100):
+        z = random.gauss(0, 1)
+        candidate = int(round(math.exp(lognormal_mu + lognormal_sigma * z)))
+        if min_len <= candidate <= max_len:
+            return candidate
+    return random.randint(min_len, max_len)
+
+
+def extract_random_fragments(
+    seq_record: SeqRecord,
+    n_fragments: int,
+    min_len: int = 500,
+    max_len: int = 50000,
+    lognormal_mu: float = 8.5,
+    lognormal_sigma: float = 1.2,
 ) -> List[SeqRecord]:
     """
-    Generate num_fragments contigs from a single sequence.
-    Fragments tile the genome with controlled overlaps.
+    Extract n_fragments non‑overlapping random fragments from a sequence.
+    Uses the global random module (seeded externally).
     """
     seq_len = len(seq_record.seq)
     if seq_len < min_len:
-        return [seq_record]
+        return [seq_record] if n_fragments > 0 else []
 
-    # If we only want one fragment, just return the whole sequence (or a fragment)
-    if num_fragments == 1:
-        # We can return the entire genome, or a random fragment of reasonable length.
-        # To be consistent with the tiling logic, we simply return the whole sequence.
-        return [seq_record]
-
-    # Ensure overlaps are sensible
-    if overlap_min > overlap_max:
-        overlap_min, overlap_max = overlap_max, overlap_min
-
-    # ---- Determine the maximum feasible number of fragments ----
-    # We need to fit num_fragments fragments, each at least min_len,
-    # with overlaps at most overlap_max.
-    # Minimal total length = num_fragments * min_len - (num_fragments - 1) * overlap_max
-    max_possible = 1
-    for f in range(2, 100):  # try up to 100 fragments
-        min_total = f * min_len - (f - 1) * overlap_max
-        if min_total <= seq_len:
-            max_possible = f
-        else:
-            break
-    if num_fragments > max_possible:
-        if verbose:
-            console.log(
-                f"  Reducing fragments for {seq_record.id} from {num_fragments} to {max_possible}"
-            )
-        num_fragments = max_possible
-        if num_fragments == 1:
-            return [seq_record]
-
-    # ---- Generate fragment lengths ----
-    # Ensure max fragment length is at least min_len and at most seq_len
-    max_frag_len = min(
-        max_len, seq_len
-    )  # allow a fragment to take the whole genome if needed
-    # But if we have multiple fragments, we should cap to avoid excessive scaling
-    # We'll rely on the scaling logic to adjust.
+    # Generate lengths
     lengths = []
-    for _ in range(num_fragments):
-        length = None
-        for _ in range(100):
-            z = random.gauss(0, 1)
-            candidate = int(round(math.exp(lognormal_mu + lognormal_sigma * z)))
-            if min_len <= candidate <= max_frag_len:
-                length = candidate
-                break
-        if length is None:
-            # Safe fallback – ensure max_frag_len >= min_len
-            if max_frag_len < min_len:
-                max_frag_len = min_len  # this shouldn't happen, but just in case
-            length = random.randint(min_len, max_frag_len)
-        lengths.append(length)
+    for _ in range(n_fragments):
+        length = generate_fragment_length(
+            lognormal_mu, lognormal_sigma, min_len, max_len
+        )
+        lengths.append(min(length, seq_len))
 
-    # ---- Scale lengths to fit the genome with overlaps ----
-    avg_overlap = (overlap_min + overlap_max) // 2
-    total_length_needed = sum(lengths) - (num_fragments - 1) * avg_overlap
-    if total_length_needed > seq_len:
-        # Scale down proportionally, but keep each >= min_len
-        # Use a safe scaling factor: if the denominator is zero, set scale = 1.0
-        denom = total_length_needed + (num_fragments - 1) * overlap_min
-        if denom <= 0:
-            scale = 1.0
-        else:
-            scale = seq_len / denom
+    # Scale lengths to fit the genome if total exceeds seq_len
+    total_len = sum(lengths)
+    if total_len > seq_len:
+        scale = seq_len / total_len
         lengths = [max(min_len, int(l * scale)) for l in lengths]
+        lengths = [max(min_len, l) for l in lengths]
 
-    # ---- Place fragments sequentially with overlaps ----
+    # Place fragments sequentially (non‑overlapping)
     fragments = []
     current_pos = 0
     for i, length in enumerate(lengths):
-        if i > 0:
-            # Determine overlap for this junction
-            max_overlap_here = min(overlap_max, length // 2, lengths[i - 1] // 2)
-            if max_overlap_here < overlap_min:
-                overlap = overlap_min
-            else:
-                overlap = random.randint(overlap_min, max_overlap_here)
-            current_pos -= overlap
-        end_pos = min(current_pos + length, seq_len)
-        if end_pos - current_pos < min_len:
+        if current_pos >= seq_len:
             break
-        fragments.append(seq_record[current_pos:end_pos])
-        current_pos += length - (overlap if i > 0 else 0)
+        end = min(current_pos + length, seq_len)
+        if end - current_pos >= min_len:
+            fragments.append(seq_record[current_pos:end])
+        current_pos = end
 
-    # Fallback: if we didn't get enough fragments, use random intervals
-    while len(fragments) < num_fragments:
+    # If we didn't get all fragments, fill with random intervals
+    while len(fragments) < n_fragments:
         start = random.randint(0, max(0, seq_len - min_len))
-        end = min(
-            start + random.randint(min_len, max(min_len, seq_len - start)), seq_len
-        )
+        end = min(start + random.randint(min_len, max_len), seq_len)
         if end - start >= min_len:
             fragments.append(seq_record[start:end])
 
-    return fragments if fragments else [seq_record]
+    return fragments
 
 
-def generate_strains(
-    species_seq: SeqRecord,
-    source_id: str,
-    num_strains: int,
-    mut_rate_min: float = 0.001,
-    mut_rate_max: float = 0.05,
-) -> List[Tuple[SeqRecord, str, float]]:
+def mutate_sequence(
+    sequence: Seq,
+    mutation_rate: float,
+    indel_rate: float = 0.1,
+) -> Tuple[Seq, List[Tuple[int, str, Optional[str]]]]:
     """
-    Generate mutated strains from a single species sequence.
+    Introduce mutations into a sequence.
 
     Returns:
-        List of (strain_record, source_id, mutation_rate)
+        (mutated_sequence, mutations)
+    mutations: list of (position, mutation_type, detail)
+    mutation_type: 'substitution', 'insertion', 'deletion'
+    Uses the global random module (seeded externally).
     """
-    seq_str = str(species_seq.seq)
-    strains = []
+    seq_str = list(str(sequence))
+    seq_len = len(seq_str)
+    mutations = []
 
-    for strain_idx in range(num_strains):
-        mut_rate = random.uniform(mut_rate_min, mut_rate_max)
-        mutated = list(seq_str)
-        for i in range(len(mutated)):
-            if random.random() < mut_rate:
-                mutated[i] = random.choice("ACGT")
-        new_seq = Seq("".join(mutated))
-        new_id = f"{source_id}_strain_{strain_idx+1}"
-        new_record = SeqRecord(
-            new_seq,
-            id=new_id,
-            description=f"ANI={1-mut_rate:.3f} source={source_id}",
-        )
-        strains.append((new_record, source_id, mut_rate))
+    # Number of mutations = Poisson(mutation_rate * seq_len)
+    mean_muts = mutation_rate * seq_len
+    if mean_muts > 0:
+        n_mutations = max(1, int(round(random.poisson(mean_muts))))
+    else:
+        n_mutations = 0
 
-    return strains
+    for _ in range(n_mutations):
+        if len(seq_str) <= 1:
+            break
+        pos = random.randint(0, len(seq_str) - 1)
+
+        is_indel = random.random() < indel_rate
+
+        if is_indel:
+            if len(seq_str) > 1 and random.random() < 0.5:
+                # Deletion
+                removed = seq_str.pop(pos)
+                mutations.append((pos, "deletion", removed))
+            else:
+                # Insertion
+                new_base = random.choice("ACGT")
+                seq_str.insert(pos, new_base)
+                mutations.append((pos, "insertion", new_base))
+        else:
+            # Substitution
+            old_base = seq_str[pos]
+            new_base = random.choice([b for b in "ACGT" if b != old_base])
+            seq_str[pos] = new_base
+            mutations.append((pos, "substitution", f"{old_base}->{new_base}"))
+
+    return Seq("".join(seq_str)), mutations
 
 
-def add_contaminant_contigs(
-    records: List[SeqRecord],
-    ground_truth: List[Tuple],
-    source_records: List[SeqRecord],
-    needed: int,
-    label_prefix: str,
+def create_mutation_set(
+    source_fragment: SeqRecord,
+    source_genome: str,
+    fragment_idx: int,
+    set_id: int,
     category: str,
-    use_synthetic: bool = False,
-    min_len: int = 500,
-    max_len: int = 50000,
-    lognormal_mu: float = 8.5,
-    lognormal_sigma: float = 1.2,
-    overlap_min: int = 50,
-    overlap_max: int = 500,
-    fragments_min: int = 1,
-    fragments_max: int = 5,
+    num_copies: int,
+    mut_rate_min: float = 0.001,
+    mut_rate_max: float = 0.05,
+    indel_rate: float = 0.1,
     verbose: bool = False,
-) -> Tuple[List[SeqRecord], List[Tuple]]:
+) -> List[Tuple[SeqRecord, Dict[str, Any]]]:
     """
-    Add exactly `needed` contaminant (prokaryotic/eukaryotic) contigs.
+    Create a set of mutated copies from a source fragment.
+
+    Returns:
+        List of (mutated_record, metadata)
+    Uses the global random module (seeded externally).
     """
-    if needed <= 0:
-        return records, ground_truth
+    results = []
+
+    # Original copy (no mutations)
+    orig_rec = source_fragment[:]
+    orig_id = f"{source_genome}_frag_{fragment_idx}_set_{set_id}_copy_1"
+    orig_rec.id = orig_id
+    orig_rec.description = (
+        f"source={source_genome} frag={fragment_idx} set={set_id} copy=1 mut_rate=0.000"
+    )
+    results.append(
+        (
+            orig_rec,
+            {
+                "set_id": set_id,
+                "copy_number": 1,
+                "mutation_rate": 0.0,
+                "mutation_positions": "",
+                "mutation_types": "",
+                "is_duplicate": False,
+            },
+        )
+    )
 
     if verbose:
-        console.log(f"[cyan]Adding {needed} {category} sequences...[/]")
+        console.log(f"      set {set_id} (frag {fragment_idx}) → {num_copies} copies")
 
-    added = 0
+    # Mutated copies (copy numbers 2..num_copies)
+    for copy_idx in range(2, num_copies + 1):
+        mut_rate = random.uniform(mut_rate_min, mut_rate_max)
+        mutated_seq, mutations = mutate_sequence(
+            source_fragment.seq, mut_rate, indel_rate
+        )
 
-    while added < needed:
-        if not use_synthetic and source_records:
-            # Use real genomes
-            rec = random.choice(source_records)
-            num_frags = random.randint(fragments_min, fragments_max)
-            if verbose:
-                console.log(
-                    f"Fragmenting {rec.id} into {num_frags} fragments for {category}"
-                )
-            frags = fragment_sequence(
-                rec,
-                min_len=min_len,
-                max_len=max_len,
-                num_fragments=num_frags,
-                lognormal_mu=lognormal_mu,
-                lognormal_sigma=lognormal_sigma,
-                overlap_min=overlap_min,
-                overlap_max=overlap_max,
-                verbose=verbose,
+        mut_rec = SeqRecord(
+            mutated_seq,
+            id=f"{source_genome}_frag_{fragment_idx}_set_{set_id}_copy_{copy_idx}",
+            description=f"source={source_genome} frag={fragment_idx} set={set_id} copy={copy_idx} mut_rate={mut_rate:.4f}",
+        )
+        results.append(
+            (
+                mut_rec,
+                {
+                    "set_id": set_id,
+                    "copy_number": copy_idx,
+                    "mutation_rate": mut_rate,
+                    "mutation_positions": ",".join(str(m[0]) for m in mutations),
+                    "mutation_types": ",".join(m[1] for m in mutations),
+                    "is_duplicate": False,
+                },
             )
-            for frag in frags:
-                new_id = f"{rec.id}_{category}_{len(records)+1}"
-                frag.id = new_id
-                frag.description = f"source={rec.id}"
-                records.append(frag)
-                meta = (
-                    new_id,
-                    rec.id,  # cluster = source genome
-                    category,
-                    rec.id,
-                    len(frag.seq),
-                    "no",
-                    "NA",
-                    1,
-                    "no",
-                )
-                ground_truth.append(meta)
-                added += 1
-                if verbose:
-                    console.log(f"Added contig {new_id} (length {len(frag.seq)})")
-                if added >= needed:
-                    break
-        else:
-            # Synthetic sequences
+        )
+
+    return results
+
+
+def generate_balanced_category(
+    source_records: List[SeqRecord],
+    category: str,
+    target_sequences: int,
+    fragments_per_10kb: float = 1.0,
+    min_fragments_per_genome: int = 10,
+    max_fragments_per_genome: int = 500,
+    copies_mean: float = 3.0,
+    copies_min: int = 2,
+    copies_max: int = 5,
+    copies_distribution: str = "uniform",
+    mut_rate_min: float = 0.001,
+    mut_rate_max: float = 0.05,
+    indel_rate: float = 0.1,
+    lognormal_mu: float = 8.5,
+    lognormal_sigma: float = 1.2,
+    min_len: int = 500,
+    max_len: int = 50000,
+    use_synthetic: bool = False,
+    verbose: bool = False,
+) -> Tuple[List[SeqRecord], List[Dict]]:
+    """
+    Generate a balanced set of fragments from a list of source genomes (or synthetic sequences).
+
+    Returns:
+        (records, ground_truth)
+    Uses the global random module (seeded externally).
+    """
+    if target_sequences <= 0:
+        return [], []
+
+    if use_synthetic or not source_records:
+        # Synthetic mode: generate random sequences as singleton sets
+        if verbose:
+            console.log(
+                f"[cyan]Generating {target_sequences} synthetic {category} sequences (singletons)[/]"
+            )
+        records = []
+        gt = []
+        for i in range(target_sequences):
             length = random.randint(min_len, max_len)
             seq = "".join(random.choices("ACGT", k=length))
-            new_id = f"{category}_synthetic_{len(records)+1}"
-            rec = SeqRecord(Seq(seq), id=new_id, description=f"length={length}")
+            seq_id = f"{category}_synthetic_{i+1}"
+            rec = SeqRecord(Seq(seq), id=seq_id, description=f"length={length}")
             records.append(rec)
-            meta = (
-                new_id,
-                new_id,  # cluster = self
-                category,
-                "synthetic",
-                length,
-                "no",
-                "NA",
-                1,
-                "yes",
+            gt.append(
+                {
+                    "sequence_id": seq_id,
+                    "true_cluster": seq_id,
+                    "set_id": len(gt),
+                    "source_genome": "synthetic",
+                    "source_fragment": "1",
+                    "length": length,
+                    "mutation_rate": 0.0,
+                    "mutation_positions": "",
+                    "mutation_types": "",
+                    "copy_number": 1,
+                    "is_duplicate": False,
+                    "source_category": category,
+                    "is_synthetic": "yes",
+                }
             )
-            ground_truth.append(meta)
-            added += 1
-            if verbose:
-                console.log(f"Added synthetic contig {new_id} (length {length})")
+            if verbose and (i + 1) % 1000 == 0:
+                console.log(f"  Synthetic {i+1}/{target_sequences}")
+        return records, gt
+
+    # Real genomes mode
+    n_genomes = len(source_records)
+    if n_genomes == 0:
+        return [], []
+
+    if verbose:
+        console.log(
+            f"[cyan]Generating {target_sequences} sequences from {n_genomes} {category} genomes[/]"
+        )
+
+    # Determine the average number of copies per set
+    if copies_distribution == "poisson":
+        avg_copies = copies_mean
+    else:
+        avg_copies = (copies_min + copies_max) / 2
+
+    if avg_copies <= 0:
+        avg_copies = 1
+
+    total_fragments_needed = (
+        int(target_sequences / avg_copies) if avg_copies > 0 else target_sequences
+    )
+    total_fragments_needed = max(
+        total_fragments_needed, n_genomes * min_fragments_per_genome
+    )
+
+    # Compute fragments per genome based on genome length
+    total_genome_length = sum(len(g.seq) for g in source_records)
+    if total_genome_length == 0:
+        total_genome_length = 1
+
+    fragments_per_genome = {}
+    for genome in source_records:
+        len_based = max(1, int(len(genome.seq) / 10000 * fragments_per_10kb))
+        len_based = max(
+            min_fragments_per_genome, min(len_based, max_fragments_per_genome)
+        )
+        fragments_per_genome[genome.id] = len_based
+
+    # Scale to match total_fragments_needed
+    current_total = sum(fragments_per_genome.values())
+    if current_total < total_fragments_needed:
+        scale = total_fragments_needed / current_total
+        for genome in source_records:
+            new_val = int(fragments_per_genome[genome.id] * scale)
+            new_val = max(
+                min_fragments_per_genome, min(new_val, max_fragments_per_genome)
+            )
+            fragments_per_genome[genome.id] = new_val
+
+    # Distribute remaining
+    remaining = total_fragments_needed - sum(fragments_per_genome.values())
+    if remaining > 0:
+        sorted_ids = sorted(
+            fragments_per_genome.keys(),
+            key=lambda x: fragments_per_genome[x],
+            reverse=True,
+        )
+        for i in range(remaining):
+            genome_id = sorted_ids[i % len(sorted_ids)]
+            if fragments_per_genome[genome_id] < max_fragments_per_genome:
+                fragments_per_genome[genome_id] += 1
+
+    if verbose:
+        console.log(
+            f"  Total fragments needed: {total_fragments_needed}, actual: {sum(fragments_per_genome.values())}"
+        )
+
+    # Now generate fragments
+    records = []
+    ground_truth = []
+    set_counter = 0
+
+    for idx, genome in enumerate(source_records):
+        n_frags = fragments_per_genome[genome.id]
+        if verbose:
+            console.log(
+                f"  Processing genome {idx+1}/{n_genomes}: {genome.id} (length {len(genome.seq)}) → {n_frags} fragments"
+            )
+
+        frags = extract_random_fragments(
+            genome,
+            n_frags,
+            min_len=min_len,
+            max_len=max_len,
+            lognormal_mu=lognormal_mu,
+            lognormal_sigma=lognormal_sigma,
+        )
+
+        for frag_idx, frag in enumerate(frags):
+            if copies_distribution == "poisson":
+                num_copies = max(1, int(round(random.poisson(copies_mean))))
+                num_copies = max(copies_min, min(num_copies, copies_max))
+            else:
+                num_copies = random.randint(copies_min, copies_max)
+
+            set_id = set_counter
+            set_counter += 1
+
+            mutation_set = create_mutation_set(
+                frag,
+                genome.id,
+                frag_idx + 1,
+                set_id,
+                category,
+                num_copies,
+                mut_rate_min=mut_rate_min,
+                mut_rate_max=mut_rate_max,
+                indel_rate=indel_rate,
+                verbose=verbose,
+            )
+
+            for mut_record, meta in mutation_set:
+                records.append(mut_record)
+                gt_entry = {
+                    "sequence_id": mut_record.id,
+                    "true_cluster": genome.id,
+                    "set_id": set_id,
+                    "source_genome": genome.id,
+                    "source_fragment": f"{frag_idx+1}",
+                    "length": len(mut_record.seq),
+                    "mutation_rate": meta["mutation_rate"],
+                    "mutation_positions": meta["mutation_positions"],
+                    "mutation_types": meta["mutation_types"],
+                    "copy_number": meta["copy_number"],
+                    "is_duplicate": meta["is_duplicate"],
+                    "source_category": category,
+                    "is_synthetic": "no",
+                }
+                ground_truth.append(gt_entry)
+
+            # Verbose per-set log
+            if verbose and (set_counter % 10 == 0):
+                console.log(f"    Generated {len(records)} sequences so far")
+
+    if verbose:
+        console.log(
+            f"  Generated {len(records)} sequences for {category} from {len(frags)} fragments"
+        )
 
     return records, ground_truth
 
 
-def duplicate_records(
-    records: List[SeqRecord],
-    ground_truth: List[Tuple],
-    duplication_factor: int,
-    verbose: bool = False,
-) -> Tuple[List[SeqRecord], List[Tuple]]:
-    """
-    Duplicate each record `duplication_factor` times.
-    Updates seq_id and metadata with copy number.
-    """
-    if duplication_factor <= 1:
-        return records, ground_truth
-
-    console.print(f"[yellow]Duplicating fragments {duplication_factor} times...[/]")
-    new_records = []
-    new_gt = []
-
-    for rec, meta in zip(records, ground_truth):
-        (
-            seq_id,
-            cluster,
-            category,
-            source_id,
-            length,
-            is_strain,
-            mut_rate,
-            dup_copy,
-            is_synthetic,
-        ) = meta
-        for copy in range(1, duplication_factor + 1):
-            new_rec = rec[:]
-            new_id = f"{seq_id}_dup{copy}"
-            new_rec.id = new_id
-            new_rec.description = rec.description + f" copy={copy}"
-            new_records.append(new_rec)
-            new_meta = (
-                new_id,
-                cluster,
-                category,
-                source_id,
-                length,
-                is_strain,
-                mut_rate,
-                copy,
-                is_synthetic,
-            )
-            new_gt.append(new_meta)
-            if verbose:
-                console.log(f"Duplicated {seq_id} -> {new_id} (copy {copy})")
-
-    return new_records, new_gt
-
-
-def write_ground_truth(gt_file: str, ground_truth: List[Tuple]) -> None:
+def write_ground_truth(gt_file: str, ground_truth: List[Dict]) -> None:
     """Write ground truth TSV with extensive metadata."""
+    if not ground_truth:
+        return
     with open(gt_file, "w") as f:
         f.write(
-            "sequence_id\ttrue_cluster\tsource_category\tsource_genome\t"
-            "length\tstrain_mutated\tmutation_rate\tduplication_copy\tis_synthetic\n"
+            "sequence_id\ttrue_cluster\tset_id\tsource_genome\tsource_fragment\t"
+            "length\tmutation_rate\tmutation_positions\tmutation_types\t"
+            "copy_number\tis_duplicate\tsource_category\tis_synthetic\n"
         )
-        for meta in ground_truth:
+        for entry in ground_truth:
             f.write(
-                f"{meta[0]}\t{meta[1]}\t{meta[2]}\t{meta[3]}\t"
-                f"{meta[4]}\t{meta[5]}\t{meta[6]}\t{meta[7]}\t{meta[8]}\n"
+                f"{entry['sequence_id']}\t"
+                f"{entry['true_cluster']}\t"
+                f"{entry['set_id']}\t"
+                f"{entry['source_genome']}\t"
+                f"{entry['source_fragment']}\t"
+                f"{entry['length']}\t"
+                f"{entry['mutation_rate']}\t"
+                f"{entry['mutation_positions']}\t"
+                f"{entry['mutation_types']}\t"
+                f"{entry['copy_number']}\t"
+                f"{str(entry['is_duplicate']).lower()}\t"
+                f"{entry['source_category']}\t"
+                f"{entry['is_synthetic']}\n"
             )
+
+
+def print_summary_table(
+    name: str,
+    total_sequences: int,
+    viral_stats: Dict,
+    prok_stats: Dict,
+    euk_stats: Dict,
+) -> None:
+    """Print a summary table of generated data."""
+    table = Table(title=f"Summary for {name}", box=box.ROUNDED)
+    table.add_column("Category", style="cyan")
+    table.add_column("Genomes", justify="right")
+    table.add_column("Fragments", justify="right")
+    table.add_column("Sets", justify="right")
+    table.add_column("Sequences", justify="right", style="green")
+
+    for cat, stats in [
+        ("Viral", viral_stats),
+        ("Prokaryotic", prok_stats),
+        ("Eukaryotic", euk_stats),
+    ]:
+        if stats["sequences"] > 0:
+            table.add_row(
+                cat,
+                str(stats["genomes"]),
+                str(stats["fragments"]),
+                str(stats["sets"]),
+                str(stats["sequences"]),
+            )
+
+    table.add_row("", "", "", "", "")
+    table.add_row("[bold]Total[/]", "", "", "", f"[bold]{total_sequences}[/]")
+    console.print(table)
 
 
 # ----------------------------------------------------------------------
@@ -377,7 +553,7 @@ def write_ground_truth(gt_file: str, ground_truth: List[Tuple]) -> None:
 # ----------------------------------------------------------------------
 def generate_mock_dataset(
     name: str,
-    total_seqs: int,
+    total_sequences: int,
     outdir: str,
     viral_seq: str,
     prokaryotic_seq: str,
@@ -385,18 +561,21 @@ def generate_mock_dataset(
     virus_frac: float = 0.5,
     prokaryote_frac: float = 0.3,
     eukaryote_frac: float = 0.2,
-    strain_mode: bool = False,
+    fragments_per_10kb: float = 1.0,
+    min_fragments_per_genome: int = 10,
+    max_fragments_per_genome: int = 500,
+    copies_mean: float = 3.0,
+    copies_min: int = 2,
+    copies_max: int = 5,
+    copies_distribution: str = "uniform",
     mut_rate_min: float = 0.001,
     mut_rate_max: float = 0.05,
-    duplication_factor: int = 1,
-    num_species: int = 10,
+    indel_rate: float = 0.1,
     seed: int = 42,
     lognormal_mu: float = 8.5,
     lognormal_sigma: float = 1.2,
-    overlap_min: int = 50,
-    overlap_max: int = 500,
-    fragments_min: int = 1,
-    fragments_max: int = 5,
+    min_len: int = 500,
+    max_len: int = 50000,
     ground_truth_file: Optional[str] = None,
     no_ground_truth: bool = False,
     force: bool = False,
@@ -404,8 +583,10 @@ def generate_mock_dataset(
     dry_run: bool = False,
 ) -> None:
     """
-    Main random contig generation function.
+    Main generation function.
     """
+    start_time = time.time()
+
     # Validate fractions
     total_frac = virus_frac + prokaryote_frac + eukaryote_frac
     if not abs(total_frac - 1.0) < 1e-9:
@@ -414,19 +595,9 @@ def generate_mock_dataset(
             f"prokaryote={prokaryote_frac}, eukaryote={eukaryote_frac} (sum={total_frac:.10f})."
         )
 
-    # Validate overlap range
-    if overlap_min > overlap_max:
-        overlap_min, overlap_max = overlap_max, overlap_min
-
-    # Validate fragment range
-    if fragments_min > fragments_max:
-        fragments_min, fragments_max = fragments_max, fragments_min
-    if fragments_min < 1:
-        fragments_min = 1
-    if fragments_max < fragments_min:
-        fragments_max = fragments_min
-
+    # Set the seed for all random operations
     random.seed(seed)
+
     outfile = os.path.join(outdir, f"{name}.fna")
     gt_file = ground_truth_file or outfile.replace(".fna", ".ground_truth.tsv")
 
@@ -444,275 +615,216 @@ def generate_mock_dataset(
         console.print(
             "[cyan]DRY-RUN: Would generate dataset with the following parameters:[/]"
         )
-        console.print(f"Name: {name}, total sequences: {total_seqs}")
+        console.print(f"  Name: {name}, total sequences: {total_sequences}")
         console.print(
-            f"Virus fraction: {virus_frac}, Prokaryote: {prokaryote_frac}, Eukaryote: {eukaryote_frac}"
+            f"  Fractions: virus={virus_frac}, prokaryote={prokaryote_frac}, eukaryote={eukaryote_frac}"
         )
-        console.print(f"Strain mode: {strain_mode}, duplications: {duplication_factor}")
-        console.print(f"Fragments: {fragments_min}–{fragments_max} per genome")
-        console.print(f"Overlap: {overlap_min}–{overlap_max} bp")
-        console.print(f"Lognormal mu: {lognormal_mu}, sigma: {lognormal_sigma}")
-        console.print(f"Output: {outfile}, ground truth: {gt_file}")
+        console.print(
+            f"  Fragments per 10kb: {fragments_per_10kb} (min={min_fragments_per_genome}, max={max_fragments_per_genome})"
+        )
+        console.print(
+            f"  Copies: distribution={copies_distribution}, mean={copies_mean}, min={copies_min}, max={copies_max}"
+        )
+        console.print(
+            f"  Mutation: rate={mut_rate_min}–{mut_rate_max}, indel={indel_rate}"
+        )
+        console.print(f"  Seed: {seed}")
+        console.print(f"  Output: {outfile}, ground truth: {gt_file}")
         return
 
-    console.print(f"[green][GEN] Generating {name} with {total_seqs} sequences...[/]")
-    if verbose:
-        console.log(
-            f"Using lognormal_mu={lognormal_mu}, lognormal_sigma={lognormal_sigma}"
-        )
-        console.log(f"Fragment count: {fragments_min}–{fragments_max}")
-        console.log(f"Overlap: {overlap_min}–{overlap_max} bp")
+    console.log(f"[green][START] Generating {name} with {total_sequences} sequences[/]")
+    console.log(f"Seed: {seed}")
 
     # Load sequences
+    console.log("Loading viral genomes...")
     viral_records = read_fasta_seq(viral_seq)
     if not viral_records:
         raise RuntimeError("Viral sequences file is empty or missing.")
-    prokaryotic_records = read_fasta_seq(prokaryotic_seq) if prokaryotic_seq else []
-    eukaryotic_records = read_fasta_seq(eukaryotic_seq) if eukaryotic_seq else []
+    console.log(f"  Loaded {len(viral_records)} viral records")
 
-    if verbose:
-        console.log(f"Loaded {len(viral_records)} viral records")
-        console.log(f"Loaded {len(prokaryotic_records)} prokaryotic records")
-        console.log(f"Loaded {len(eukaryotic_records)} eukaryotic records")
+    console.log("Loading prokaryotic genomes...")
+    prokaryotic_records = read_fasta_seq(prokaryotic_seq) if prokaryotic_seq else []
+    console.log(f"  Loaded {len(prokaryotic_records)} prokaryotic records")
+
+    console.log("Loading eukaryotic genomes...")
+    eukaryotic_records = read_fasta_seq(eukaryotic_seq) if eukaryotic_seq else []
+    console.log(f"  Loaded {len(eukaryotic_records)} eukaryotic records")
 
     # Target counts
-    n_virus = int(total_seqs * virus_frac)
-    n_prok = int(total_seqs * prokaryote_frac)
-    n_euk = total_seqs - n_virus - n_prok
+    n_viral = int(total_sequences * virus_frac)
+    n_prok = int(total_sequences * prokaryote_frac)
+    n_euk = total_sequences - n_viral - n_prok
 
-    if verbose:
-        console.log(f"Target viral sequences: {n_virus}")
-        console.log(f"Target prokaryotic sequences: {n_prok}")
-        console.log(f"Target eukaryotic sequences: {n_euk}")
+    console.log(
+        f"Target sequences: viral={n_viral}, prokaryotic={n_prok}, eukaryotic={n_euk}"
+    )
 
-    records = []
-    ground_truth = []
+    # Generate each category
+    all_records = []
+    all_ground_truth = []
+    stats = {}
 
-    # ===== Viral sequences =====
-    if strain_mode:
-        if len(viral_records) < num_species:
-            raise ValueError(
-                f"Not enough viral genomes for strain mode (need {num_species}, have {len(viral_records)})."
-            )
-        selected = random.sample(viral_records, num_species)
-        per_species = n_virus // num_species
-        remainder = n_virus % num_species
-
-        console.print(
-            f"[cyan]Strain mode: {num_species} species, {per_species} strains each (+ {remainder} extra)[/]"
+    # Viral
+    if n_viral > 0:
+        console.log("[cyan]Generating viral sets...[/]")
+        recs, gt = generate_balanced_category(
+            viral_records,
+            category="viral",
+            target_sequences=n_viral,
+            fragments_per_10kb=fragments_per_10kb,
+            min_fragments_per_genome=min_fragments_per_genome,
+            max_fragments_per_genome=max_fragments_per_genome,
+            copies_mean=copies_mean,
+            copies_min=copies_min,
+            copies_max=copies_max,
+            copies_distribution=copies_distribution,
+            mut_rate_min=mut_rate_min,
+            mut_rate_max=mut_rate_max,
+            indel_rate=indel_rate,
+            lognormal_mu=lognormal_mu,
+            lognormal_sigma=lognormal_sigma,
+            min_len=min_len,
+            max_len=max_len,
+            use_synthetic=False,
+            verbose=verbose,
         )
-        if verbose:
-            console.log(f"Selected {len(selected)} species for strain generation")
-
-        for species_idx, species_seq in enumerate(selected):
-            source_id = species_seq.id
-            strains_needed = per_species + (1 if species_idx < remainder else 0)
-            if strains_needed <= 0:
-                continue
-            if verbose:
-                console.log(f"Species {source_id}: generating {strains_needed} strains")
-
-            strain_tuples = generate_strains(
-                species_seq,
-                source_id,
-                strains_needed,
-                mut_rate_min,
-                mut_rate_max,
-            )
-
-            for strain_rec, cluster_label, mut_rate in strain_tuples:
-                num_frags = random.randint(fragments_min, fragments_max)
-                if verbose:
-                    console.log(
-                        f"Strain {strain_rec.id}: fragmenting into {num_frags} contigs (mut_rate={mut_rate:.4f})"
-                    )
-                frags = fragment_sequence(
-                    strain_rec,
-                    num_fragments=num_frags,
-                    lognormal_mu=lognormal_mu,
-                    lognormal_sigma=lognormal_sigma,
-                    overlap_min=overlap_min,
-                    overlap_max=overlap_max,
-                    verbose=verbose,
+        all_records.extend(recs)
+        all_ground_truth.extend(gt)
+        stats["viral"] = {
+            "genomes": len(viral_records),
+            "fragments": (
+                len(gt)
+                // (
+                    copies_min if copies_distribution == "uniform" else int(copies_mean)
                 )
-                for frag in frags:
-                    new_id = f"{strain_rec.id}_frag_{len(records)+1}"
-                    frag.id = new_id
-                    frag.description = (
-                        f"strain={strain_rec.id} source={source_id} "
-                        f"ANI={strain_rec.description.split('ANI=')[-1].split()[0]}"
-                    )
-                    records.append(frag)
-                    meta = (
-                        new_id,
-                        cluster_label,
-                        "viral",
-                        source_id,
-                        len(frag.seq),
-                        "yes",
-                        f"{mut_rate:.6f}",
-                        1,
-                        "no",
-                    )
-                    ground_truth.append(meta)
-                    if len(records) >= n_virus:
-                        break
-                if len(records) >= n_virus:
-                    break
-            if len(records) >= n_virus:
-                break
+                if gt
+                else 0
+            ),
+            "sets": len(set(g["set_id"] for g in gt)) if gt else 0,
+            "sequences": len(recs),
+        }
+        console.log(f"  Generated {len(recs)} viral sequences")
 
-        # Fill remaining viral count with non‑strain fragments
-        while len(records) < n_virus:
-            rec = random.choice(viral_records)
-            num_frags = random.randint(fragments_min, fragments_max)
-            if verbose:
-                console.log(
-                    f"Filling with non-strain fragment from {rec.id} ({num_frags} contigs)"
-                )
-            frags = fragment_sequence(
-                rec,
-                num_fragments=num_frags,
-                lognormal_mu=lognormal_mu,
-                lognormal_sigma=lognormal_sigma,
-                overlap_min=overlap_min,
-                overlap_max=overlap_max,
-                verbose=verbose,
-            )
-            for frag in frags:
-                new_id = f"{rec.id}_frag_{len(records)+1}"
-                frag.id = new_id
-                frag.description = f"source={rec.id}"
-                records.append(frag)
-                meta = (
-                    new_id,
-                    rec.id,
-                    "viral",
-                    rec.id,
-                    len(frag.seq),
-                    "no",
-                    "NA",
-                    1,
-                    "no",
-                )
-                ground_truth.append(meta)
-                if len(records) >= n_virus:
-                    break
-    else:
-        console.print("[cyan]Normal mode: fragmenting viral genomes into contigs[/]")
-        while len(records) < n_virus:
-            rec = random.choice(viral_records)
-            num_frags = random.randint(fragments_min, fragments_max)
-            if verbose:
-                console.log(f"Fragmenting {rec.id} into {num_frags} contigs")
-            frags = fragment_sequence(
-                rec,
-                num_fragments=num_frags,
-                lognormal_mu=lognormal_mu,
-                lognormal_sigma=lognormal_sigma,
-                overlap_min=overlap_min,
-                overlap_max=overlap_max,
-                verbose=verbose,
-            )
-            for frag in frags:
-                new_id = f"{rec.id}_frag_{len(records)+1}"
-                frag.id = new_id
-                frag.description = f"source={rec.id}"
-                records.append(frag)
-                meta = (
-                    new_id,
-                    rec.id,
-                    "viral",
-                    rec.id,
-                    len(frag.seq),
-                    "no",
-                    "NA",
-                    1,
-                    "no",
-                )
-                ground_truth.append(meta)
-                if len(records) >= n_virus:
-                    break
-            if len(records) >= n_virus:
-                break
-
-    # Trim to exactly n_virus (if overshot)
-    if len(records) > n_virus:
-        if verbose:
-            console.log(f"Trimming viral records from {len(records)} to {n_virus}")
-        records = records[:n_virus]
-        ground_truth = ground_truth[:n_virus]
-
-    if verbose:
-        console.log(f"After viral generation: {len(records)} sequences")
-
-    # ===== Prokaryotic sequences =====
+    # Prokaryotic
     use_synthetic_prok = not bool(prokaryotic_records)
-    records, ground_truth = add_contaminant_contigs(
-        records,
-        ground_truth,
-        prokaryotic_records,
-        n_prok,
-        label_prefix="prok",
-        category="prokaryotic",
-        use_synthetic=use_synthetic_prok,
-        min_len=500,
-        max_len=50000,
-        lognormal_mu=lognormal_mu,
-        lognormal_sigma=lognormal_sigma,
-        overlap_min=overlap_min,
-        overlap_max=overlap_max,
-        fragments_min=fragments_min,
-        fragments_max=fragments_max,
-        verbose=verbose,
-    )
+    if n_prok > 0:
+        console.log("[magenta]Generating prokaryotic sets...[/]")
+        recs, gt = generate_balanced_category(
+            prokaryotic_records,
+            category="prokaryotic",
+            target_sequences=n_prok,
+            fragments_per_10kb=fragments_per_10kb,
+            min_fragments_per_genome=min_fragments_per_genome,
+            max_fragments_per_genome=max_fragments_per_genome,
+            copies_mean=copies_mean,
+            copies_min=copies_min,
+            copies_max=copies_max,
+            copies_distribution=copies_distribution,
+            mut_rate_min=mut_rate_min,
+            mut_rate_max=mut_rate_max,
+            indel_rate=indel_rate,
+            lognormal_mu=lognormal_mu,
+            lognormal_sigma=lognormal_sigma,
+            min_len=min_len,
+            max_len=max_len,
+            use_synthetic=use_synthetic_prok,
+            verbose=verbose,
+        )
+        all_records.extend(recs)
+        all_ground_truth.extend(gt)
+        stats["prokaryotic"] = {
+            "genomes": len(prokaryotic_records) if not use_synthetic_prok else 0,
+            "fragments": (
+                len(gt)
+                // (
+                    copies_min if copies_distribution == "uniform" else int(copies_mean)
+                )
+                if gt
+                else 0
+            ),
+            "sets": len(set(g["set_id"] for g in gt)) if gt else 0,
+            "sequences": len(recs),
+        }
+        console.log(f"  Generated {len(recs)} prokaryotic sequences")
 
-    # ===== Eukaryotic sequences =====
+    # Eukaryotic
     use_synthetic_euk = not bool(eukaryotic_records)
-    records, ground_truth = add_contaminant_contigs(
-        records,
-        ground_truth,
-        eukaryotic_records,
-        n_euk,
-        label_prefix="euk",
-        category="eukaryotic",
-        use_synthetic=use_synthetic_euk,
-        min_len=500,
-        max_len=50000,
-        lognormal_mu=lognormal_mu,
-        lognormal_sigma=lognormal_sigma,
-        overlap_min=overlap_min,
-        overlap_max=overlap_max,
-        fragments_min=fragments_min,
-        fragments_max=fragments_max,
-        verbose=verbose,
-    )
+    if n_euk > 0:
+        console.log("[yellow]Generating eukaryotic sets...[/]")
+        recs, gt = generate_balanced_category(
+            eukaryotic_records,
+            category="eukaryotic",
+            target_sequences=n_euk,
+            fragments_per_10kb=fragments_per_10kb,
+            min_fragments_per_genome=min_fragments_per_genome,
+            max_fragments_per_genome=max_fragments_per_genome,
+            copies_mean=copies_mean,
+            copies_min=copies_min,
+            copies_max=copies_max,
+            copies_distribution=copies_distribution,
+            mut_rate_min=mut_rate_min,
+            mut_rate_max=mut_rate_max,
+            indel_rate=indel_rate,
+            lognormal_mu=lognormal_mu,
+            lognormal_sigma=lognormal_sigma,
+            min_len=min_len,
+            max_len=max_len,
+            use_synthetic=use_synthetic_euk,
+            verbose=verbose,
+        )
+        all_records.extend(recs)
+        all_ground_truth.extend(gt)
+        stats["eukaryotic"] = {
+            "genomes": len(eukaryotic_records) if not use_synthetic_euk else 0,
+            "fragments": (
+                len(gt)
+                // (
+                    copies_min if copies_distribution == "uniform" else int(copies_mean)
+                )
+                if gt
+                else 0
+            ),
+            "sets": len(set(g["set_id"] for g in gt)) if gt else 0,
+            "sequences": len(recs),
+        }
+        console.log(f"  Generated {len(recs)} eukaryotic sequences")
 
+    # Shuffle records
     if verbose:
-        console.log(f"After adding contaminants: {len(records)} sequences")
-
-    # ===== Duplication =====
-    records, ground_truth = duplicate_records(
-        records, ground_truth, duplication_factor, verbose=verbose
-    )
-
-    # Shuffle records (keep ground truth in sync)
-    combined = list(zip(records, ground_truth))
+        console.log("Shuffling records...")
+    combined = list(zip(all_records, all_ground_truth))
     random.shuffle(combined)
-    records, ground_truth = zip(*combined) if combined else ([], [])
+    all_records, all_ground_truth = zip(*combined) if combined else ([], [])
 
     if verbose:
-        console.log(f"Final sequence count: {len(records)}")
+        console.log(f"Final sequence count: {len(all_records)}")
 
     # Write FASTA
+    console.log(f"Writing FASTA to {outfile}...")
     os.makedirs(outdir, exist_ok=True)
-    SeqIO.write(records, outfile, "fasta")
-    console.print(f"[green][DONE] Wrote {len(records)} sequences to {outfile}[/]")
+    SeqIO.write(all_records, outfile, "fasta")
+    console.log(f"[green]Wrote {len(all_records)} sequences to {outfile}[/]")
 
     # Write ground truth TSV
     if not no_ground_truth:
-        write_ground_truth(gt_file, ground_truth)
-        console.print(f"[green][DONE] Wrote ground truth to {gt_file}[/]")
+        console.log(f"Writing ground truth to {gt_file}...")
+        write_ground_truth(gt_file, all_ground_truth)
+        console.log(f"[green]Wrote ground truth to {gt_file}[/]")
+
+    # Print summary
+    elapsed = time.time() - start_time
+    print_summary_table(
+        name,
+        len(all_records),
+        stats.get("viral", {"genomes": 0, "fragments": 0, "sets": 0, "sequences": 0}),
+        stats.get(
+            "prokaryotic", {"genomes": 0, "fragments": 0, "sets": 0, "sequences": 0}
+        ),
+        stats.get(
+            "eukaryotic", {"genomes": 0, "fragments": 0, "sets": 0, "sequences": 0}
+        ),
+    )
+    console.log(f"[green]Done in {elapsed:.1f} seconds[/]")
 
 
 # ----------------------------------------------------------------------
@@ -720,12 +832,15 @@ def generate_mock_dataset(
 # ----------------------------------------------------------------------
 def main():
     parser = argparse.ArgumentParser(
-        description="Generate a mock contig FASTA dataset with ground truth.",
+        description="Generate a mock contig FASTA dataset for clustering benchmarks.",
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
-    parser.add_argument("--name", required=True, help="Dataset name (e.g., Mock-10K)")
+    parser.add_argument("--name", required=True, help="Dataset name (e.g., Mock-300K)")
     parser.add_argument(
-        "--num-sequences", type=int, required=True, help="Total number of sequences"
+        "--total-sequences",
+        type=int,
+        required=True,
+        help="Total number of sequences to generate (across all categories)",
     )
     parser.add_argument("--outdir", required=True, help="Output directory")
     parser.add_argument(
@@ -734,12 +849,12 @@ def main():
     parser.add_argument(
         "--prokaryotic-seq",
         default="",
-        help="FASTA file with prokaryotic genomes",
+        help="FASTA file with prokaryotic genomes (optional)",
     )
     parser.add_argument(
         "--eukaryotic-seq",
         default="",
-        help="FASTA file with eukaryotic genomes",
+        help="FASTA file with eukaryotic genomes (optional)",
     )
     parser.add_argument(
         "--virus-frac", type=float, default=0.5, help="Fraction of viral sequences"
@@ -756,12 +871,48 @@ def main():
         default=0.2,
         help="Fraction of eukaryotic sequences",
     )
+
+    # Fragmentation
     parser.add_argument(
-        "--strain-mode",
-        type=int,
-        default=0,
-        help="Enable strain variation (1) or not (0)",
+        "--fragments-per-10kb",
+        type=float,
+        default=1.0,
+        help="Number of fragments per 10 kb of genome length",
     )
+    parser.add_argument(
+        "--min-fragments-per-genome",
+        type=int,
+        default=10,
+        help="Minimum number of fragments per genome",
+    )
+    parser.add_argument(
+        "--max-fragments-per-genome",
+        type=int,
+        default=500,
+        help="Maximum number of fragments per genome",
+    )
+
+    # Copies per set
+    parser.add_argument(
+        "--copies-mean",
+        type=float,
+        default=3.0,
+        help="Mean number of copies per set (used for Poisson distribution)",
+    )
+    parser.add_argument(
+        "--copies-min", type=int, default=2, help="Minimum copies per set"
+    )
+    parser.add_argument(
+        "--copies-max", type=int, default=5, help="Maximum copies per set"
+    )
+    parser.add_argument(
+        "--copies-distribution",
+        choices=["uniform", "poisson"],
+        default="uniform",
+        help="Distribution for number of copies per set ('uniform' or 'poisson')",
+    )
+
+    # Mutation
     parser.add_argument(
         "--mut-rate-min",
         type=float,
@@ -775,14 +926,13 @@ def main():
         help="Maximum mutation rate (0.05 = 95%% ANI)",
     )
     parser.add_argument(
-        "--duplication-factor",
-        type=int,
-        default=1,
-        help="Number of copies of each fragment",
+        "--indel-rate",
+        type=float,
+        default=0.1,
+        help="Fraction of mutations that are insertions or deletions",
     )
-    parser.add_argument(
-        "--num-species", type=int, default=10, help="Number of species for strain mode"
-    )
+
+    # Fragment length distribution
     parser.add_argument(
         "--lognormal-mu",
         type=float,
@@ -796,30 +946,15 @@ def main():
         help="Spread (standard deviation) of the log-length distribution",
     )
     parser.add_argument(
-        "--overlap-min",
-        type=int,
-        default=50,
-        help="Minimum overlap between consecutive fragments (bp)",
+        "--min-len", type=int, default=500, help="Minimum fragment length (bp)"
     )
     parser.add_argument(
-        "--overlap-max",
-        type=int,
-        default=500,
-        help="Maximum overlap between consecutive fragments (bp)",
+        "--max-len", type=int, default=50000, help="Maximum fragment length (bp)"
     )
+
     parser.add_argument(
-        "--fragments-min",
-        type=int,
-        default=1,
-        help="Minimum number of fragments per genome",
+        "--seed", type=int, default=42, help="Random seed for reproducibility"
     )
-    parser.add_argument(
-        "--fragments-max",
-        type=int,
-        default=5,
-        help="Maximum number of fragments per genome",
-    )
-    parser.add_argument("--seed", type=int, default=42, help="Random seed")
     parser.add_argument(
         "--ground-truth", help="Output path for ground truth TSV (default: auto)"
     )
@@ -838,6 +973,7 @@ def main():
         action="store_true",
         help="Preview actions without writing files",
     )
+
     args = parser.parse_args()
 
     # Validate fractions
@@ -860,7 +996,7 @@ def main():
 
     generate_mock_dataset(
         name=args.name,
-        total_seqs=args.num_sequences,
+        total_sequences=args.total_sequences,
         outdir=args.outdir,
         viral_seq=args.viral_seq,
         prokaryotic_seq=args.prokaryotic_seq,
@@ -868,18 +1004,21 @@ def main():
         virus_frac=args.virus_frac,
         prokaryote_frac=args.prokaryote_frac,
         eukaryote_frac=args.eukaryote_frac,
-        strain_mode=bool(args.strain_mode),
+        fragments_per_10kb=args.fragments_per_10kb,
+        min_fragments_per_genome=args.min_fragments_per_genome,
+        max_fragments_per_genome=args.max_fragments_per_genome,
+        copies_mean=args.copies_mean,
+        copies_min=args.copies_min,
+        copies_max=args.copies_max,
+        copies_distribution=args.copies_distribution,
         mut_rate_min=args.mut_rate_min,
         mut_rate_max=args.mut_rate_max,
-        duplication_factor=args.duplication_factor,
-        num_species=args.num_species,
+        indel_rate=args.indel_rate,
         seed=args.seed,
         lognormal_mu=args.lognormal_mu,
         lognormal_sigma=args.lognormal_sigma,
-        overlap_min=args.overlap_min,
-        overlap_max=args.overlap_max,
-        fragments_min=args.fragments_min,
-        fragments_max=args.fragments_max,
+        min_len=args.min_len,
+        max_len=args.max_len,
         ground_truth_file=args.ground_truth,
         no_ground_truth=args.no_ground_truth,
         force=args.force,
