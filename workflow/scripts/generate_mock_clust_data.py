@@ -490,8 +490,45 @@ def generate_balanced_category(
 
     if verbose:
         console.log(
-            f"  Generated {len(records)} sequences for {category} from {len(frags)} fragments"
+            f"  Generated {len(records)} sequences for {category} (target: {target_sequences})"
         )
+
+    # ---- Enforce exact target_sequences ----
+    if len(records) != target_sequences:
+        if verbose:
+            console.log(
+                f"[yellow]Adjusting {category} sequences from {len(records)} to {target_sequences}[/]"
+            )
+        if len(records) > target_sequences:
+            # Randomly subsample
+            indices = list(range(len(records)))
+            random.shuffle(indices)
+            keep = set(indices[:target_sequences])
+            new_records = [records[i] for i in range(len(records)) if i in keep]
+            new_gt = [ground_truth[i] for i in range(len(records)) if i in keep]
+            records, ground_truth = new_records, new_gt
+        else:
+            # Need more sequences – duplicate some sets (rare, but happens with low targets)
+            extra_needed = target_sequences - len(records)
+            if verbose:
+                console.log(
+                    f"[yellow]Adding {extra_needed} extra sequences to reach target[/]"
+                )
+            for i in range(extra_needed):
+                idx = random.randint(0, len(records) - 1)
+                rec = records[idx]
+                gt = ground_truth[idx]
+                new_rec = rec[:]
+                new_id = f"{rec.id}_extra_{i+1}"
+                new_rec.id = new_id
+                new_rec.description = rec.description + f" extra={i+1}"
+                records.append(new_rec)
+                new_gt = gt.copy()
+                new_gt["sequence_id"] = new_id
+                ground_truth.append(new_gt)
+
+    if verbose:
+        console.log(f"  Final {category} sequences: {len(records)}")
 
     return records, ground_truth
 
