@@ -75,28 +75,46 @@ def fragment_sequence(
     Fragments tile the genome with controlled overlaps.
     """
     seq_len = len(seq_record.seq)
-    if seq_len < min_len or num_fragments == 1:
+    if seq_len < min_len:
         return [seq_record]
 
-    # Ensure overlaps are reasonable
+    # If we only want one fragment, just return the whole sequence (or a fragment)
+    if num_fragments == 1:
+        # We can return the entire genome, or a random fragment of reasonable length.
+        # To be consistent with the tiling logic, we simply return the whole sequence.
+        return [seq_record]
+
+    # Ensure overlaps are sensible
     if overlap_min > overlap_max:
         overlap_min, overlap_max = overlap_max, overlap_min
 
-    # If num_fragments is too many, reduce to fit the genome
-    # Minimum total length = num_fragments * min_len - (num_fragments-1) * overlap_max
-    min_total_len = num_fragments * min_len - (num_fragments - 1) * overlap_max
-    if min_total_len > seq_len:
-        # Reduce fragments to fit
-        # Approximate maximum fragments possible with minimal overlaps
-        new_num = max(1, seq_len // (min_len - overlap_max))
+    # ---- Determine the maximum feasible number of fragments ----
+    # We need to fit num_fragments fragments, each at least min_len,
+    # with overlaps at most overlap_max.
+    # Minimal total length = num_fragments * min_len - (num_fragments - 1) * overlap_max
+    max_possible = 1
+    for f in range(2, 100):  # try up to 100 fragments
+        min_total = f * min_len - (f - 1) * overlap_max
+        if min_total <= seq_len:
+            max_possible = f
+        else:
+            break
+    if num_fragments > max_possible:
         if verbose:
-            console.log(f"    Reducing fragments for {seq_record.id} from {num_fragments} to {new_num}")
-        num_fragments = new_num
+            console.log(
+                f"  Reducing fragments for {seq_record.id} from {num_fragments} to {max_possible}"
+            )
+        num_fragments = max_possible
         if num_fragments == 1:
             return [seq_record]
 
-    # Generate fragment lengths from lognormal (truncated)
-    max_frag_len = min(max_len, seq_len // 2)  # avoid fragments longer than half the genome
+    # ---- Generate fragment lengths ----
+    # Ensure max fragment length is at least min_len and at most seq_len
+    max_frag_len = min(
+        max_len, seq_len
+    )  # allow a fragment to take the whole genome if needed
+    # But if we have multiple fragments, we should cap to avoid excessive scaling
+    # We'll rely on the scaling logic to adjust.
     lengths = []
     for _ in range(num_fragments):
         length = None
@@ -107,25 +125,32 @@ def fragment_sequence(
                 length = candidate
                 break
         if length is None:
+            # Safe fallback – ensure max_frag_len >= min_len
+            if max_frag_len < min_len:
+                max_frag_len = min_len  # this shouldn't happen, but just in case
             length = random.randint(min_len, max_frag_len)
         lengths.append(length)
 
-    # Scale lengths to fit the genome with overlaps
-    # We need total_length - (num_fragments-1) * avg_overlap <= seq_len
+    # ---- Scale lengths to fit the genome with overlaps ----
     avg_overlap = (overlap_min + overlap_max) // 2
     total_length_needed = sum(lengths) - (num_fragments - 1) * avg_overlap
     if total_length_needed > seq_len:
         # Scale down proportionally, but keep each >= min_len
-        scale = seq_len / (total_length_needed + (num_fragments - 1) * overlap_min)
+        # Use a safe scaling factor: if the denominator is zero, set scale = 1.0
+        denom = total_length_needed + (num_fragments - 1) * overlap_min
+        if denom <= 0:
+            scale = 1.0
+        else:
+            scale = seq_len / denom
         lengths = [max(min_len, int(l * scale)) for l in lengths]
 
-    # Place fragments sequentially with overlaps
+    # ---- Place fragments sequentially with overlaps ----
     fragments = []
     current_pos = 0
     for i, length in enumerate(lengths):
         if i > 0:
             # Determine overlap for this junction
-            max_overlap_here = min(overlap_max, length // 2, lengths[i-1] // 2)
+            max_overlap_here = min(overlap_max, length // 2, lengths[i - 1] // 2)
             if max_overlap_here < overlap_min:
                 overlap = overlap_min
             else:
@@ -137,10 +162,12 @@ def fragment_sequence(
         fragments.append(seq_record[current_pos:end_pos])
         current_pos += length - (overlap if i > 0 else 0)
 
-    # If we didn't get all fragments, fallback to random intervals
+    # Fallback: if we didn't get enough fragments, use random intervals
     while len(fragments) < num_fragments:
         start = random.randint(0, max(0, seq_len - min_len))
-        end = min(start + random.randint(min_len, max_frag_len), seq_len)
+        end = min(
+            start + random.randint(min_len, max(min_len, seq_len - start)), seq_len
+        )
         if end - start >= min_len:
             fragments.append(seq_record[start:end])
 
@@ -540,7 +567,9 @@ def generate_mock_dataset(
             rec = random.choice(viral_records)
             num_frags = random.randint(fragments_min, fragments_max)
             if verbose:
-                console.log(f"Filling with non-strain fragment from {rec.id} ({num_frags} contigs)")
+                console.log(
+                    f"Filling with non-strain fragment from {rec.id} ({num_frags} contigs)"
+                )
             frags = fragment_sequence(
                 rec,
                 num_fragments=num_frags,
