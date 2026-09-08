@@ -70,10 +70,27 @@ except ImportError:
 
 console = Console()
 
-
 # ----------------------------------------------------------------------
 # Helper functions
 # ----------------------------------------------------------------------
+
+
+def poisson(lam: float) -> int:
+    """
+    Generate a Poisson random variate with mean `lam` using the exponential
+    interarrival method. This is a fallback for environments where
+    random.poisson is not available (though it usually is).
+    """
+    if lam <= 0:
+        return 0
+    n = 0
+    total = 0.0
+    while total < 1.0:
+        total += random.expovariate(lam)
+        n += 1
+    return n - 1
+
+
 def read_fasta_seq(seq_file: str) -> List[SeqRecord]:
     """Return a list of SeqRecord objects from a FASTA file."""
     if not os.path.exists(seq_file) or os.path.getsize(seq_file) == 0:
@@ -87,10 +104,7 @@ def generate_fragment_length(
     min_len: int = 500,
     max_len: int = 50000,
 ) -> int:
-    """
-    Generate a fragment length from a truncated log-normal distribution.
-    Uses the global random module (seeded externally).
-    """
+    """Generate a fragment length from a truncated log-normal distribution."""
     for _ in range(100):
         z = random.gauss(0, 1)
         candidate = int(round(math.exp(lognormal_mu + lognormal_sigma * z)))
@@ -109,7 +123,7 @@ def extract_random_fragments(
 ) -> List[SeqRecord]:
     """
     Extract n_fragments non‑overlapping random fragments from a sequence.
-    Uses the global random module (seeded externally).
+    Fragments are placed sequentially to avoid overlap.
     """
     seq_len = len(seq_record.seq)
     if seq_len < min_len:
@@ -163,16 +177,15 @@ def mutate_sequence(
         (mutated_sequence, mutations)
     mutations: list of (position, mutation_type, detail)
     mutation_type: 'substitution', 'insertion', 'deletion'
-    Uses the global random module (seeded externally).
     """
     seq_str = list(str(sequence))
     seq_len = len(seq_str)
     mutations = []
 
-    # Number of mutations = Poisson(mutation_rate * seq_len)
+    # Number of mutations: Poisson(mutation_rate * seq_len)
     mean_muts = mutation_rate * seq_len
     if mean_muts > 0:
-        n_mutations = max(1, int(round(random.poisson(mean_muts))))
+        n_mutations = max(1, poisson(mean_muts))
     else:
         n_mutations = 0
 
@@ -220,7 +233,6 @@ def create_mutation_set(
 
     Returns:
         List of (mutated_record, metadata)
-    Uses the global random module (seeded externally).
     """
     results = []
 
@@ -303,7 +315,6 @@ def generate_balanced_category(
 
     Returns:
         (records, ground_truth)
-    Uses the global random module (seeded externally).
     """
     if target_sequences <= 0:
         return [], []
@@ -434,7 +445,7 @@ def generate_balanced_category(
 
         for frag_idx, frag in enumerate(frags):
             if copies_distribution == "poisson":
-                num_copies = max(1, int(round(random.poisson(copies_mean))))
+                num_copies = max(1, int(round(poisson(copies_mean))))
                 num_copies = max(copies_min, min(num_copies, copies_max))
             else:
                 num_copies = random.randint(copies_min, copies_max)
@@ -474,7 +485,6 @@ def generate_balanced_category(
                 }
                 ground_truth.append(gt_entry)
 
-            # Verbose per-set log
             if verbose and (set_counter % 10 == 0):
                 console.log(f"    Generated {len(records)} sequences so far")
 
