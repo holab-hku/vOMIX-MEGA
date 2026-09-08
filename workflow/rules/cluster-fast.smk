@@ -27,27 +27,19 @@ n_chunks_layer_1 =  2 ** (cluster_iter - 1)          # nCluster Chunks for Layer
 # MASTER RULE
 # ------------------------------------------------------------
 if cluster_method_input == "all":
-    final_targets = [
-        relpath("identify/viral/output/derep/checkv-megablast/combined.viralcontigs.derep.fa"),
-        relpath("identify/viral/output/derep/checkv-megablast/combined.viralcontigs.derep.fa.clstr"),
-        relpath("identify/viral/output/derep/cd-hit-est/combined.viralcontigs.derep.fa"),
-        relpath("identify/viral/output/derep/cd-hit-est/combined.viralcontigs.derep.fa.clstr"),
-        relpath("identify/viral/output/derep/vclust/combined.viralcontigs.derep.fa"),
-        relpath("identify/viral/output/derep/vclust/combined.viralcontigs.derep.fa.clstr"),
-        relpath("identify/viral/output/derep/linclust/combined.viralcontigs.derep.fa"),
-        relpath("identify/viral/output/derep/linclust/combined.viralcontigs.derep.fa.clstr"),
-        relpath("identify/viral/output/derep/dnaclust/combined.viralcontigs.derep.fa"),
-        relpath("identify/viral/output/derep/dnaclust/combined.viralcontigs.derep.fa.clstr"),
-        relpath("identify/viral/output/derep/vsearch/combined.viralcontigs.derep.fa"),
-        relpath("identify/viral/output/derep/vsearch/combined.viralcontigs.derep.fa.clstr"),
-        relpath("identify/viral/output/derep/viridic/combined.viralcontigs.derep.fa"),
-        relpath("identify/viral/output/derep/viridic/combined.viralcontigs.derep.fa.clstr"),
-    ]
+    final_targets = []
+    for method in ["checkv-megablast", "cd-hit-est", "vclust", "linclust", "dnaclust", "vsearch", "viridic"]:
+        final_targets.append(relpath(f"identify/viral/output/derep/{method}/combined.viralcontigs.derep.fa"))
+        final_targets.append(relpath(f"identify/viral/output/derep/{method}/combined.viralcontigs.derep.fa.clstr"))
+        final_targets.append(relpath(f"identify/viral/output/derep/{method}/combined.viralcontigs.derep.fa.flat.tsv"))
 else:
     final_targets = [
         relpath("identify/viral/output/derep/combined.viralcontigs.derep.fa"),
         relpath("identify/viral/output/derep/combined.viralcontigs.derep.fa.clstr"),
+        relpath("identify/viral/output/derep/combined.viralcontigs.derep.fa.flat.tsv"),
+
     ]
+
 
 rule cluster_fast_done:
     name: "clustering.smk Done. removing tmp files"
@@ -287,6 +279,28 @@ if cluster_method_input in ["checkv-megablast", "all"]:
             cp {input.clstr} {output.clstr}
             """
 
+    rule checkv_megablast_flatten_clusters:
+        name: "clustering.smk CheckV-MEGABLAST flatten clusters"
+        localrule: True
+        input:
+            final_clstr = os.path.join(relpath(f"identify/viral/tmp/derep/{cluster_method}/cluster-layers"), f"layer_{cluster_iter}", "chunk_0.fa.clstr"),
+        output:
+            flat = relpath(f"identify/viral/output/derep/{cluster_method}/combined.viralcontigs.derep.fa.flat.tsv") if cluster_method_input == "all" else relpath("identify/viral/output/derep/combined.viralcontigs.derep.fa.flat.tsv")
+        params:
+            layer_dir = relpath(f"identify/viral/tmp/derep/{cluster_method}/cluster-layers"),
+            script = "workflow/scripts/flatten_clusters.py",
+            cluster_iter = cluster_iter,
+            format = "tsv"
+        log: os.path.join(logdir, "checkv_megablast_flatten.log")
+        shell:
+            """
+            python {params.script} \
+                --final-clstr {input.final_clstr} \
+                --layer-dir {params.layer_dir} \
+                --cluster-iter {params.cluster_iter} \
+                --output {output.flat} \
+                --format {params.format} &> {log}
+            """
 
 # ----- CD-HIT-EST -----
 if cluster_method_input in ["cd-hit-est", "all"]:
@@ -378,6 +392,29 @@ if cluster_method_input in ["cd-hit-est", "all"]:
             cp {input.clstr} {output.clstr}
             """
 
+    rule cdhit_flatten_clusters:
+        name: "clustering.smk CD-HIT-EST flatten clusters"
+        localrule: True
+        input:
+            final_clstr = os.path.join(relpath(f"identify/viral/tmp/derep/{cluster_method}/cluster-layers"), f"layer_{cluster_iter}", "chunk_0.fa.clstr"),
+        output:
+            flat = relpath(f"identify/viral/output/derep/{cluster_method}/combined.viralcontigs.derep.fa.flat.tsv") if cluster_method_input == "all" else relpath("identify/viral/output/derep/combined.viralcontigs.derep.fa.flat.tsv")
+        params:
+            layer_dir = relpath(f"identify/viral/tmp/derep/{cluster_method}/cluster-layers"),
+            script = "workflow/scripts/flatten_clusters.py",
+            cluster_iter = cluster_iter,
+            format = "cdhit"
+        log: os.path.join(logdir, "cdhit_flatten.log")
+        shell:
+            """
+            python {params.script} \
+                --final-clstr {input.final_clstr} \
+                --layer-dir {params.layer_dir} \
+                --cluster-iter {params.cluster_iter} \
+                --output {output.flat} \
+                --format {params.format} \
+                --verbose &> {log}
+            """
 
 # ----- Vclust -----
 if cluster_method_input in ["vclust", "all"]:
@@ -564,6 +601,29 @@ if cluster_method_input in ["vclust", "all"]:
             cp {input.clstr} {output.clstr}
             """
 
+    rule vclust_flatten_clusters:
+        name: "clustering.smk Vclust flatten clusters"
+        localrule: True
+        input:
+            final_clstr = os.path.join(relpath(f"identify/viral/tmp/derep/{cluster_method}/cluster-layers"), f"layer_{cluster_iter}", "chunk_0.fa.clstr"),
+        output:
+            flat = relpath(f"identify/viral/output/derep/{cluster_method}/combined.viralcontigs.derep.fa.flat.tsv") if cluster_method_input == "all" else relpath("identify/viral/output/derep/combined.viralcontigs.derep.fa.flat.tsv")
+        params:
+            layer_dir = relpath(f"identify/viral/tmp/derep/{cluster_method}/cluster-layers"),
+            script = "workflow/scripts/flatten_clusters.py",
+            cluster_iter = cluster_iter,
+            format = "tsv"   # vclust outputs TSV
+        log: os.path.join(logdir, "vclust_flatten.log")
+        shell:
+            """
+            python {params.script} \
+                --final-clstr {input.final_clstr} \
+                --layer-dir {params.layer_dir} \
+                --cluster-iter {params.cluster_iter} \
+                --output {output.flat} \
+                --format {params.format} \
+                --verbose &> {log}
+            """
 
 # ----- Linclust -----
 if cluster_method_input in ["linclust", "all"]:
@@ -656,7 +716,7 @@ if cluster_method_input in ["linclust", "all"]:
         name: "clustering.smk MMSeqs2-Linclust filter dereplicated viral contigs"
         input:
             db = os.path.join(relpath(f"identify/viral/tmp/derep/{cluster_method}/cluster-layers"), "layer_{layer}", "chunk_{chunk}", "linclust.db"),
-            clstr_db = directory(os.path.join(relpath(f"identify/viral/tmp/derep/{cluster_method}/cluster-layers"), "layer_{layer}", "chunk_{chunk}", "cluster_db"))
+            clstr_db = os.path.join(relpath(f"identify/viral/tmp/derep/{cluster_method}/cluster-layers"), "layer_{layer}", "chunk_{chunk}", "cluster_db")  # removed directory()
         output:
             reps = os.path.join(relpath(f"identify/viral/tmp/derep/{cluster_method}/cluster-layers"), "layer_{layer}", "chunk_{chunk}", "cluster_representatives.txt"),
             fa = os.path.join(relpath(f"identify/viral/tmp/derep/{cluster_method}/cluster-layers"), "layer_{layer}", "chunk_{chunk}.fa"),
@@ -705,6 +765,29 @@ if cluster_method_input in ["linclust", "all"]:
             cp {input.clstr} {output.clstr}
             """
 
+    rule linclust_flatten_clusters:
+        name: "clustering.smk Linclust flatten clusters"
+        localrule: True
+        input:
+            final_clstr = os.path.join(relpath(f"identify/viral/tmp/derep/{cluster_method}/cluster-layers"), f"layer_{cluster_iter}", "chunk_0.fa.clstr"),
+        output:
+            flat = relpath(f"identify/viral/output/derep/{cluster_method}/combined.viralcontigs.derep.fa.flat.tsv") if cluster_method_input == "all" else relpath("identify/viral/output/derep/combined.viralcontigs.derep.fa.flat.tsv")
+        params:
+            layer_dir = relpath(f"identify/viral/tmp/derep/{cluster_method}/cluster-layers"),
+            script = "workflow/scripts/flatten_clusters.py",
+            cluster_iter = cluster_iter,
+            format = "tsv"   # linclust outputs TSV (cluster.tsv)
+        log: os.path.join(logdir, "linclust_flatten.log")
+        shell:
+            """
+            python {params.script} \
+                --final-clstr {input.final_clstr} \
+                --layer-dir {params.layer_dir} \
+                --cluster-iter {params.cluster_iter} \
+                --output {output.flat} \
+                --format {params.format} \
+                --verbose &> {log}
+            """
 
 # ----- DNACLUST -----
 if cluster_method_input in ["dnaclust", "all"]:
@@ -787,6 +870,30 @@ if cluster_method_input in ["dnaclust", "all"]:
             mkdir -p {params.outdir}
             cp {input.fa} {output.fa}
             cp {input.clstr} {output.clstr}
+            """
+
+    rule dnaclust_flatten_clusters:
+        name: "clustering.smk DNACLUST flatten clusters"
+        localrule: True
+        input:
+            final_clstr = os.path.join(relpath(f"identify/viral/tmp/derep/{cluster_method}/cluster-layers"), f"layer_{cluster_iter}", "chunk_0.fa.clstr"),
+        output:
+            flat = relpath(f"identify/viral/output/derep/{cluster_method}/combined.viralcontigs.derep.fa.flat.tsv") if cluster_method_input == "all" else relpath("identify/viral/output/derep/combined.viralcontigs.derep.fa.flat.tsv")
+        params:
+            layer_dir = relpath(f"identify/viral/tmp/derep/{cluster_method}/cluster-layers"),
+            script = "workflow/scripts/flatten_clusters.py",
+            cluster_iter = cluster_iter,
+            format = "tsv"   # dnaclust outputs TSV (clust_clusters.txt)
+        log: os.path.join(logdir, "dnaclust_flatten.log")
+        shell:
+            """
+            python {params.script} \
+                --final-clstr {input.final_clstr} \
+                --layer-dir {params.layer_dir} \
+                --cluster-iter {params.cluster_iter} \
+                --output {output.flat} \
+                --format {params.format} \
+                --verbose &> {log}
             """
 
 # ----- VSEARCH -----
@@ -874,6 +981,30 @@ if cluster_method_input in ["vsearch", "all"]:
             cp {input.clstr} {output.clstr}
             """
 
+    rule vsearch_flatten_clusters:
+        name: "clustering.smk VSEARCH flatten clusters"
+        localrule: True
+        input:
+            final_clstr = os.path.join(relpath(f"identify/viral/tmp/derep/{cluster_method}/cluster-layers"), f"layer_{cluster_iter}", "chunk_0.fa.clstr"),
+        output:
+            flat = relpath(f"identify/viral/output/derep/{cluster_method}/combined.viralcontigs.derep.fa.flat.tsv") if cluster_method_input == "all" else relpath("identify/viral/output/derep/combined.viralcontigs.derep.fa.flat.tsv")
+        params:
+            layer_dir = relpath(f"identify/viral/tmp/derep/{cluster_method}/cluster-layers"),
+            script = "workflow/scripts/flatten_clusters.py",
+            cluster_iter = cluster_iter,
+            format = "vsearch"   # vsearch outputs .uc format
+        log: os.path.join(logdir, "vsearch_flatten.log")
+        shell:
+            """
+            python {params.script} \
+                --final-clstr {input.final_clstr} \
+                --layer-dir {params.layer_dir} \
+                --cluster-iter {params.cluster_iter} \
+                --output {output.flat} \
+                --format {params.format} \
+                --verbose &> {log}
+            """
+
 # ----- VIRIDIC -----
 if cluster_method_input in ["viridic", "all"]:
     cluster_method = "viridic"
@@ -957,4 +1088,28 @@ if cluster_method_input in ["viridic", "all"]:
             mkdir -p {params.outdir}
             cp {input.fa} {output.fa}
             cp {input.clstr} {output.clstr}
+            """
+
+    rule viridic_flatten_clusters:
+        name: "clustering.smk VIRIDIC flatten clusters"
+        localrule: True
+        input:
+            final_clstr = os.path.join(relpath(f"identify/viral/tmp/derep/{cluster_method}/cluster-layers"), f"layer_{cluster_iter}", "chunk_0.fa.clstr"),
+        output:
+            flat = relpath(f"identify/viral/output/derep/{cluster_method}/combined.viralcontigs.derep.fa.flat.tsv") if cluster_method_input == "all" else relpath("identify/viral/output/derep/combined.viralcontigs.derep.fa.flat.tsv")
+        params:
+            layer_dir = relpath(f"identify/viral/tmp/derep/{cluster_method}/cluster-layers"),
+            script = "workflow/scripts/flatten_clusters.py",
+            cluster_iter = cluster_iter,
+            format = "tsv"   # viridic outputs TSV (clusters.tsv)
+        log: os.path.join(logdir, "viridic_flatten.log")
+        shell:
+            """
+            python {params.script} \
+                --final-clstr {input.final_clstr} \
+                --layer-dir {params.layer_dir} \
+                --cluster-iter {params.cluster_iter} \
+                --output {output.flat} \
+                --format {params.format} \
+                --verbose &> {log}
             """
