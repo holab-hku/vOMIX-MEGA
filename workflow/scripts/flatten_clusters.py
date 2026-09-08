@@ -1,6 +1,14 @@
 #!/usr/bin/env python3
 """
 Flatten hierarchical cluster files into a single TSV with all members.
+
+Inputs:
+  --final-clstr  : Path to the final .clstr file (layer cluster_iter, chunk 0)
+  --layer-dir    : Base directory containing all layers
+  --cluster-iter : Number of layers (final layer number)
+  --output       : Output TSV file (representative, member_list)
+  --format       : Format of .clstr files (cdhit, tsv, vsearch). Default: cdhit.
+  --verbose, -v  : Enable verbose logging (per-file details)
 """
 
 import os
@@ -12,8 +20,14 @@ from collections import defaultdict
 from rich.console import Console
 from rich.table import Table
 from rich.panel import Panel
+from rich import box
 
 console = Console()
+
+
+# ----------------------------------------------------------------------
+# Parsers
+# ----------------------------------------------------------------------
 
 
 def parse_tsv_clstr(filepath, verbose=False):
@@ -53,7 +67,7 @@ def parse_tsv_clstr(filepath, verbose=False):
                 continue
             parts = line.split("\t")
             if len(parts) < 2:
-                # If only one column, treat as singleton
+                # Singleton
                 rep = parts[0].strip()
                 cluster_map[rep] = [rep]
                 if verbose:
@@ -61,39 +75,38 @@ def parse_tsv_clstr(filepath, verbose=False):
                 continue
 
             rep = parts[0].strip()
-            # Combine remaining columns into a single string, then strip quotes
+            # Combine remaining columns, strip outer quotes
             rest = "\t".join(parts[1:]).strip()
-            # Remove outer quotes if present
             if rest.startswith('"') and rest.endswith('"'):
                 rest = rest[1:-1]
             elif rest.startswith("'") and rest.endswith("'"):
                 rest = rest[1:-1]
 
             if verbose and idx <= 3:
-                console.log(f"    Line {idx}: rep={rep}, rest={rest}")
+                console.log(
+                    f"    Line {idx}: rep={rep}, rest={rest[:100]}{'...' if len(rest)>100 else ''}"
+                )
 
             if not rest:
                 cluster_map[rep] = [rep]
                 continue
 
             # Split members
-            # First try comma
             if "," in rest:
                 members = [m.strip() for m in rest.split(",") if m.strip()]
             else:
-                # Try whitespace (tabs or spaces)
+                # Try whitespace
                 members = re.split(r"[\s,]+", rest)
                 members = [m for m in members if m and m != rep]
-                # If still no members, take the whole rest as one member
                 if not members and rest:
                     members = [rest]
 
             if not members:
                 members = [rep]
-            # Ensure rep is first (if not already)
+            # Ensure rep is included
             if rep not in members:
                 members.insert(0, rep)
-            # Remove duplicate rep if present more than once
+            # Remove duplicate rep if present
             if members.count(rep) > 1:
                 members = [rep] + [m for m in members if m != rep]
             cluster_map[rep] = members
@@ -162,6 +175,11 @@ def parse_clstr(filepath, format, verbose=False):
         raise ValueError(f"Unsupported format: {format}")
 
 
+# ----------------------------------------------------------------------
+# Flattening
+# ----------------------------------------------------------------------
+
+
 def flatten_clusters(layer_maps, final_reps, verbose=False):
     max_layer = max(layer_maps.keys()) if layer_maps else 0
     if verbose:
@@ -195,22 +213,50 @@ def flatten_clusters(layer_maps, final_reps, verbose=False):
     return flat_map
 
 
-def print_layer_summary(layer, cluster_map, verbose=True):
-    if not verbose or not cluster_map:
+# ----------------------------------------------------------------------
+# Summary table
+# ----------------------------------------------------------------------
+
+
+def print_layer_summary_table(layer_stats):
+    """
+    Print a rich table summarising layer statistics.
+    layer_stats: dict {layer: {'chunks': int, 'clusters': int, 'seqs': int, 'singletons': int}}
+    """
+    if not layer_stats:
         return
-    total_seqs = sum(len(members) for members in cluster_map.values())
-    num_clusters = len(cluster_map)
-    avg_size = total_seqs / num_clusters if num_clusters > 0 else 0
-    singletons = sum(1 for members in cluster_map.values() if len(members) == 1)
-    singleton_pct = singletons / num_clusters * 100 if num_clusters > 0 else 0
-    console.log(
-        f"    Layer {layer}: {num_clusters} clusters, {total_seqs} sequences, "
-        f"avg {avg_size:.2f}, {singletons} singletons ({singleton_pct:.1f}%)"
-    )
-    if singleton_pct > 90 and layer > 1:
-        console.print(
-            f"    [yellow]⚠ High singleton rate – parsing may be incorrect![/]"
+    table = Table(title="Layer Statistics", box=box.ROUNDED)
+    table.add_column("Layer", justify="center", style="cyan")
+    table.add_column("Chunks", justify="right")
+    table.add_column("Clusters", justify="right")
+    table.add_column("Sequences", justify="right")
+    table.add_column("Avg Size", justify="right", style="green")
+    table.add_column("Singletons", justify="right")
+    table.add_column("Singleton %", justify="right", style="yellow")
+
+    for layer in sorted(layer_stats.keys()):
+        stats = layer_stats[layer]
+        avg = stats["seqs"] / stats["clusters"] if stats["clusters"] > 0 else 0
+        singleton_pct = (
+            (stats["singletons"] / stats["clusters"] * 100)
+            if stats["clusters"] > 0
+            else 0
         )
+        table.add_row(
+            str(layer),
+            str(stats["chunks"]),
+            str(stats["clusters"]),
+            str(stats["seqs"]),
+            f"{avg:.2f}",
+            str(stats["singletons"]),
+            f"{singleton_pct:.1f}%",
+        )
+    console.print(table)
+
+
+# ----------------------------------------------------------------------
+# Main
+# ----------------------------------------------------------------------
 
 
 def main():
@@ -237,7 +283,10 @@ def main():
         help="Format of .clstr files (default: cdhit)",
     )
     parser.add_argument(
-        "-v", "--verbose", action="store_true", help="Enable verbose logging"
+        "-v",
+        "--verbose",
+        action="store_true",
+        help="Enable verbose logging (per-file details)",
     )
     args = parser.parse_args()
 
@@ -247,6 +296,9 @@ def main():
         console.log(f"Layer directory: {args.layer_dir}")
         console.log(f"Cluster iterations: {args.cluster_iter}")
         console.log(f"Output file: {args.output}")
+
+    # Collect statistics per layer
+    layer_stats = {}
 
     # Collect all cluster files per layer
     layer_maps = {}
@@ -274,11 +326,23 @@ def main():
                     console.print_exception()
         if combined:
             layer_maps[layer] = combined
-            print_layer_summary(layer, combined, args.verbose)
+            # Collect stats for this layer
+            total_seqs = sum(len(members) for members in combined.values())
+            num_clusters = len(combined)
+            singletons = sum(1 for members in combined.values() if len(members) == 1)
+            layer_stats[layer] = {
+                "chunks": len(files),
+                "clusters": num_clusters,
+                "seqs": total_seqs,
+                "singletons": singletons,
+            }
 
     if not layer_maps:
         console.print("[red]Error: No cluster files found in any layer.[/]")
         sys.exit(1)
+
+    # Print summary table
+    print_layer_summary_table(layer_stats)
 
     # Parse final cluster file to get final representatives
     try:
@@ -298,7 +362,18 @@ def main():
     final_reps = list(final_rep_map.keys())
     if args.verbose:
         console.log(f"Final layer: {len(final_reps)} representatives")
-        print_layer_summary(args.cluster_iter, final_rep_map, args.verbose)
+
+    # Add final layer statistics
+    total_seqs_final = sum(len(members) for members in final_rep_map.values())
+    singletons_final = sum(1 for members in final_rep_map.values() if len(members) == 1)
+    layer_stats[args.cluster_iter] = {
+        "chunks": 1,  # final file is chunk_0
+        "clusters": len(final_rep_map),
+        "seqs": total_seqs_final,
+        "singletons": singletons_final,
+    }
+    # Re-print summary with final layer included
+    print_layer_summary_table(layer_stats)
 
     # Flatten
     flat = flatten_clusters(layer_maps, final_reps, verbose=args.verbose)
