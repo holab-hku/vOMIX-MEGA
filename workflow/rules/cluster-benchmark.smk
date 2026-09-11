@@ -25,7 +25,7 @@ DATASET_PARAMS = {
         "copies_max": 20,
         "copies_distribution": "poisson",
         "mut_rate_min": 0.001,   # 99.9% ANI
-        "mut_rate_max": 0.07,    # 93% ANI (includes MIUViG boundary)
+        "mut_rate_max": 0.04,    # 93% ANI (includes MIUViG boundary)
         "indel_rate": 0.1,
         "lognormal_mu": 8.5,
         "lognormal_sigma": 1.2,
@@ -46,7 +46,7 @@ DATASET_PARAMS = {
         "copies_max": 20,
         "copies_distribution": "poisson",
         "mut_rate_min": 0.001,   # 99.9% ANI
-        "mut_rate_max": 0.07,    # 93% ANI
+        "mut_rate_max": 0.04,    # 93% ANI
         "indel_rate": 0.1,
         "lognormal_mu": 8.5,
         "lognormal_sigma": 1.2,
@@ -67,7 +67,7 @@ DATASET_PARAMS = {
         "copies_max": 20,
         "copies_distribution": "poisson",
         "mut_rate_min": 0.001,   # 99.9% ANI
-        "mut_rate_max": 0.07,    # 93% ANI
+        "mut_rate_max": 0.04,    # 93% ANI
         "indel_rate": 0.1,
         "lognormal_mu": 8.5,
         "lognormal_sigma": 1.2,
@@ -88,7 +88,7 @@ DATASET_PARAMS = {
         "copies_max": 20,
         "copies_distribution": "poisson",
         "mut_rate_min": 0.001,   # 99.9% ANI
-        "mut_rate_max": 0.07,    # 93% ANI
+        "mut_rate_max": 0.04,    # 93% ANI
         "indel_rate": 0.1,
         "lognormal_mu": 8.5,
         "lognormal_sigma": 1.2,
@@ -109,7 +109,7 @@ DATASET_PARAMS = {
         "copies_max": 20,
         "copies_distribution": "poisson",
         "mut_rate_min": 0.001,   # 99.9% ANI
-        "mut_rate_max": 0.07,    # 93% ANI
+        "mut_rate_max": 0.04,    # 93% ANI
         "indel_rate": 0.1,
         "lognormal_mu": 8.5,
         "lognormal_sigma": 1.2,
@@ -130,7 +130,7 @@ DATASET_PARAMS = {
         "copies_max": 20,
         "copies_distribution": "poisson",
         "mut_rate_min": 0.001,   # 99.9% ANI
-        "mut_rate_max": 0.07,    # 93% ANI
+        "mut_rate_max": 0.04,    # 93% ANI
         "indel_rate": 0.1,
         "lognormal_mu": 8.5,
         "lognormal_sigma": 1.2,
@@ -151,7 +151,7 @@ DATASET_PARAMS = {
         "copies_max": 20,
         "copies_distribution": "poisson",
         "mut_rate_min": 0.001,   # 99.9% ANI
-        "mut_rate_max": 0.07,    # 93% ANI
+        "mut_rate_max": 0.04,    # 93% ANI
         "indel_rate": 0.1,
         "lognormal_mu": 8.5,
         "lognormal_sigma": 1.2,
@@ -172,7 +172,7 @@ DATASET_PARAMS = {
         "copies_max": 8,
         "copies_distribution": "poisson",
         "mut_rate_min": 0.001,   # 99.9% ANI
-        "mut_rate_max": 0.07,    # 93% ANI
+        "mut_rate_max": 0.04,    # 93% ANI
         "indel_rate": 0.1,
         "lognormal_mu": 8.5,
         "lognormal_sigma": 1.2,
@@ -194,7 +194,7 @@ DATASET_PARAMS = {
         "copies_max": 20,
         "copies_distribution": "poisson",
         "mut_rate_min": 0.001,   # 99.9% ANI
-        "mut_rate_max": 0.30,    # 70% ANI (ICTV genus threshold)
+        "mut_rate_max": 0.15,    # 70% ANI (ICTV genus threshold)
         "indel_rate": 0.1,
         "lognormal_mu": 8.5,
         "lognormal_sigma": 1.2,

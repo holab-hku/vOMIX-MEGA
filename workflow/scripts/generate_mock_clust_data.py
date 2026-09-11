@@ -42,8 +42,8 @@ Copies per set:
   --copies-distribution  distribution for copies: 'uniform' or 'poisson' (default 'uniform')
 
 Mutation:
-  --mut-rate-min       minimum mutation rate (default 0.001, 99.9% ANI)
-  --mut-rate-max       maximum mutation rate (default 0.05, 95% ANI)
+  --mut-rate-min       minimum mutation rate (default 0.0001, 99.9% ANI)
+  --mut-rate-max       maximum mutation rate (default 0.15, 70% ANI)
   --indel-rate         fraction of mutations that are indels (default 0.1)
 
 Other:
