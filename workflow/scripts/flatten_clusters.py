@@ -132,7 +132,7 @@ def parse_cdhit_clstr(filepath, verbose=False):
                 current_rep = None
                 current_members = []
             elif line:
-                match = re.search(r">(\S+)", line)
+                match = re.search(r">([^\s]+?)(?:\.\.\.|\s|$)", line)
                 if match:
                     seq = match.group(1)
                     if "*" in line:
