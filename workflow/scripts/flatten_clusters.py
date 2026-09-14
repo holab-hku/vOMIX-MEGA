@@ -193,8 +193,6 @@ def flatten_clusters(layer_maps, final_reps, verbose=False):
         members = layer_maps[layer][seq]
         expanded = []
         for m in members:
-            if m == seq:
-                continue
             expanded.extend(expand(m, layer - 1))
         return expanded
 
