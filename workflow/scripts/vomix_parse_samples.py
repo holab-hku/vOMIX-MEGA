@@ -212,9 +212,13 @@ def validate_samples(samples, quiet=False, verbose=False):
 def read_sample_csv(filepath, datadir, verbose=False):
     """
     Read sample CSV using pandas.
-    - Requires a header row with the exact required columns.
-    - No extra columns are allowed.
-    - Raises a clear error if extra columns or invalid read_type are present.
+    - The FIRST 6 columns must be exactly:
+        sample_id, accession, assembly, R1, R2, read_type
+      Any columns AFTER the first 6 are allowed and silently ignored.
+    - If read_type is empty/missing, it is auto-detected from R1/R2:
+        R1 + R2 provided  -> "paired"
+        only R1 provided  -> "single"
+        neither provided  -> "paired" (paths auto-generated later)
     """
     if not os.path.isfile(filepath) or not filepath.endswith(".csv"):
         console.print(
@@ -252,39 +256,88 @@ def read_sample_csv(filepath, datadir, verbose=False):
 
     # Strip whitespace from column names
     df.columns = df.columns.str.strip()
+
     required_cols = ["sample_id", "accession", "assembly", "R1", "R2", "read_type"]
     required_lower = [c.lower() for c in required_cols]
 
-    # Check for missing required columns
-    missing = [c for c in required_lower if c not in df.columns.str.lower()]
-    if missing:
+    # Must have at least 6 columns
+    if df.shape[1] < 6:
         console.print(
             Panel.fit(
-                f"Missing required columns: {missing}\n"
-                f"Required columns are: {required_cols}",
+                f"CSV file has only {df.shape[1]} column(s).\n"
+                f"The first 6 columns must be exactly: {required_cols}",
                 title="Missing Columns",
                 border_style="red",
             )
         )
         sys.exit(1)
 
-    # Check for extra columns
-    extra = [c for c in df.columns if c.lower() not in required_lower]
-    if extra:
+    # The first 6 columns must match the required names (case-insensitive)
+    first_six_lower = [c.lower() for c in df.columns[:6]]
+    if first_six_lower != required_lower:
         console.print(
             Panel.fit(
-                f"Extra columns found: {extra}\n"
-                f"Only these columns are accepted: {required_cols}",
-                title="Extra Columns",
+                f"The first 6 columns must be exactly (in this order):\n"
+                f"  {required_cols}\n"
+                f"Found instead:\n"
+                f"  {list(df.columns[:6])}",
+                title="Column Name/Order Error",
                 border_style="red",
             )
         )
         sys.exit(1)
 
-    # Normalise column names to exact case
+    # Keep only the first 6 columns; ignore everything after
+    extra_cols = list(df.columns[6:])
+    df = df.iloc[:, :6].copy()
     df.columns = required_cols
+    if extra_cols:
+        if verbose:
+            console.log(
+                f"[yellow]Ignoring {len(extra_cols)} extra column(s):[/] {extra_cols}"
+            )
+        else:
+            console.print(f"[yellow]Notice:[/] ignoring extra column(s): {extra_cols}")
 
-    # Normalise data
+    # ----------------------------------------------------------------
+    # Auto-detect read_type when not provided
+    # ----------------------------------------------------------------
+    # Normalise the raw values so we can reliably check for "empty"
+    df["read_type"] = df["read_type"].fillna("").astype(str).str.strip()
+    df["R1"] = df["R1"].fillna("").astype(str).str.strip()
+    df["R2"] = df["R2"].fillna("").astype(str).str.strip()
+
+    r1_provided = df["R1"] != ""
+    r2_provided = df["R2"] != ""
+    auto_detected = df["read_type"] == ""
+
+    if auto_detected.any():
+        console.print(
+            Panel.fit(
+                "[yellow]No 'read_type' provided for one or more samples.[/]\n"
+                "Assuming short-read sequencing and auto-assigning read_type:\n"
+                "  [cyan]R1 + R2 present[/]  ->  [green]paired[/]\n"
+                "  [cyan]only R1 present[/]   ->  [green]single[/]\n"
+                "  [cyan]neither present[/]   ->  [green]paired[/] (paths will be auto-generated)",
+                title="Auto-detecting read_type",
+                border_style="yellow",
+            )
+        )
+        # Assign by row
+        df.loc[auto_detected & r1_provided & r2_provided, "read_type"] = "paired"
+        df.loc[auto_detected & r1_provided & ~r2_provided, "read_type"] = "single"
+        df.loc[auto_detected & ~r1_provided & ~r2_provided, "read_type"] = "paired"
+
+        if verbose:
+            for idx in df.index[auto_detected]:
+                row = df.loc[idx]
+                console.log(
+                    f"[cyan]  Row {idx}:[/] R1={'(set)' if row['R1'] else '(empty)'}, "
+                    f"R2={'(set)' if row['R2'] else '(empty)'} -> "
+                    f"read_type=[green]{row['read_type']}[/]"
+                )
+
+    # Final normalisation of read_type
     df["read_type"] = df["read_type"].fillna("paired")
     df["read_type"] = df["read_type"].astype(str).str.lower().str.strip()
     df["read_type"] = df["read_type"].replace("", "paired")
@@ -294,7 +347,8 @@ def read_sample_csv(filepath, datadir, verbose=False):
     if not invalid.empty:
         console.print(
             Panel.fit(
-                f"Invalid read_type(s) found:\n{invalid[['read_type']].drop_duplicates().to_string(index=False)}\n"
+                f"Invalid read_type(s) found:\n"
+                f"{invalid[['read_type']].drop_duplicates().to_string(index=False)}\n"
                 f"Allowed values: {sorted(ALLOWED_READ_TYPES)}",
                 title="Invalid Read Type",
                 border_style="red",
@@ -302,6 +356,9 @@ def read_sample_csv(filepath, datadir, verbose=False):
         )
         sys.exit(1)
 
+    # ----------------------------------------------------------------
+    # Fill sample_id, assembly, and R1/R2 paths
+    # ----------------------------------------------------------------
     df["sample_id"] = df["sample_id"].fillna(df["accession"])
     df["sample_id"] = df["sample_id"].astype(str).str.strip()
     df["sample_id"] = df["sample_id"].replace("", np.nan)
@@ -312,16 +369,19 @@ def read_sample_csv(filepath, datadir, verbose=False):
     if not datadir.endswith(os.sep):
         datadir = datadir + os.sep
 
-    df["R1"] = df["R1"].fillna(datadir + df["sample_id"] + "_1.fastq.gz")
-    df["R2"] = df["R2"].fillna(
-        df.apply(
-            lambda row: (
+    # Only auto-generate R1/R2 if they are missing
+    df["R1"] = df["R1"].where(df["R1"] != "", datadir + df["sample_id"] + "_1.fastq.gz")
+    df["R2"] = df.apply(
+        lambda row: (
+            row["R2"]
+            if row["R2"] != ""
+            else (
                 datadir + row["sample_id"] + "_2.fastq.gz"
                 if row["read_type"] == "paired"
                 else ""
-            ),
-            axis=1,
-        )
+            )
+        ),
+        axis=1,
     )
 
     df["accession"] = df["accession"].fillna("")
