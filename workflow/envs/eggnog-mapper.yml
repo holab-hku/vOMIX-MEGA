@@ -5,4 +5,5 @@ channels:
   - defaults
 dependencies:
   - eggnog-mapper=2.1.14
-  - biopython<=1.81
+  - biopython=1.79
+  - python=3.10
