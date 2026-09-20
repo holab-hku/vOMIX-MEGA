@@ -4,4 +4,6 @@ channels:
   - conda-forge
   - defaults
 dependencies:
-  - eggnog-mapper=2.1.15
+  - eggnog-mapper=2.1.14
+  - biopython=1.79
+  - python=3.10
