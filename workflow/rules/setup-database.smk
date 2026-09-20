@@ -277,7 +277,7 @@ rule eggnog_download:
     os.path.join(config['eggNOG-db'], "eggnog_proteins.dmnd")
   params:
     dbdir=config['eggNOG-db'],
-    outdir="workflow/database/eggNOGv2",
+    outdir=config['eggNOG-db'],
     tmpdir=os.path.join(tmpd, "eggNOGdb")
   conda: "../envs/eggnog-mapper.yml"
   log: os.path.join(logdir, "eggNOGv2_db.log")
