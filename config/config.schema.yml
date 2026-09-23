@@ -133,7 +133,7 @@ properties:
   PhaBox2-db:
     type: string
     description: "Path to PhaBox2 database directory for phage classification and analysis. Automatically downloaded if missing."
-    default: "database/phabox_db_v2"
+    default: "database/phabox_db_v2_1"
 
   genomad-db:
     type: string
@@ -229,7 +229,7 @@ properties:
   phabox2-db-name:
     type: string
     description: "Database name identifier for PhaBox2 tool execution. Automatically determined from the database version."
-    default: "phabox_db_v2"
+    default: "phabox_db_v2_1"
 
   phabox2-db-baselink:
     type: string

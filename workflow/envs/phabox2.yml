@@ -4,4 +4,4 @@ channels:
   - bioconda
   - defaults
 dependencies:
-  - phabox=2.1.5
+  - phabox=2.1.13
