@@ -15,3 +15,4 @@ dependencies:
   - scikit-learn=1.9.0
   - scipy=1.17.1
   - python-kaleido=0.2.1
+  - kaleido>=1
