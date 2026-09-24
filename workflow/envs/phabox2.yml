@@ -5,4 +5,4 @@ channels:
   - defaults
 dependencies:
   - phabox=2.1.13
-  - pandas<2.0
+  - pandas<3.0
