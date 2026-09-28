@@ -11,6 +11,27 @@ tmpd = vomix_module.tmpd
 # ------------------------------------------------------------
 
 DATASET_PARAMS = {
+    "Mock-1K": {
+        "total_sequences": 1000,
+        "virus": 0.5,
+        "prok": 0.3,
+        "euk": 0.2,
+        "seed": config.get("seed", 42),
+        "fragments_per_10kb": 1.0,
+        "min_fragments_per_genome": 10,
+        "max_fragments_per_genome": 500,
+        "copies_mean": 3.0,
+        "copies_min": 2,
+        "copies_max": 20,
+        "copies_distribution": "poisson",
+        "mut_rate_min": 0.001,   # 99.9% ANI
+        "mut_rate_max": 0.04,    # 93% ANI (includes MIUViG boundary)
+        "indel_rate": 0.1,
+        "lognormal_mu": 8.5,
+        "lognormal_sigma": 1.2,
+        "min_len": 500,
+        "max_len": 50000,
+    },
     "Mock-10K": {
         "total_sequences": 10000,
         "virus": 0.5,
@@ -343,6 +364,83 @@ rule download_euk_contaminants:
 # ------------------------------------------------------------
 # Mock dataset generation – explicit rules for each dataset
 # ------------------------------------------------------------
+
+# ----- Mock-1K -----
+rule mock_Mock_10K:
+    name: "cluster-benchmark.smk Mock-1K dataset"
+    output:
+        fna = os.path.join(datadir, "mock-data", "Mock-1K.fna"),
+        gt  = os.path.join(datadir, "mock-data", "Mock-1K.ground_truth.tsv")
+    input:
+        vir  = os.path.join(datadir, "mock-data", "genomes", "refseq_viral.fna"),
+        prok = os.path.join(datadir, "mock-data", "genomes", "refseq_prok.fna"),
+        euk  = os.path.join(datadir, "mock-data", "genomes", "refseq_euk.fna")
+    params:
+        tmpdir = os.path.join(tmpd, "Mock-1K"),
+        name   = "Mock-1K",
+        total_sequences = DATASET_PARAMS["Mock-1K"]["total_sequences"],
+        virus_frac = DATASET_PARAMS["Mock-1K"]["virus"],
+        prok_frac = DATASET_PARAMS["Mock-1K"]["prok"],
+        euk_frac = DATASET_PARAMS["Mock-1K"]["euk"],
+        seed = DATASET_PARAMS["Mock-1K"]["seed"],
+        fragments_per_10kb = DATASET_PARAMS["Mock-1K"]["fragments_per_10kb"],
+        min_fragments_per_genome = DATASET_PARAMS["Mock-1K"]["min_fragments_per_genome"],
+        max_fragments_per_genome = DATASET_PARAMS["Mock-1K"]["max_fragments_per_genome"],
+        copies_mean = DATASET_PARAMS["Mock-1K"]["copies_mean"],
+        copies_min = DATASET_PARAMS["Mock-1K"]["copies_min"],
+        copies_max = DATASET_PARAMS["Mock-1K"]["copies_max"],
+        copies_distribution = DATASET_PARAMS["Mock-1K"]["copies_distribution"],
+        mut_rate_min = DATASET_PARAMS["Mock-1K"]["mut_rate_min"],
+        mut_rate_max = DATASET_PARAMS["Mock-1K"]["mut_rate_max"],
+        indel_rate = DATASET_PARAMS["Mock-1K"]["indel_rate"],
+        lognormal_mu = DATASET_PARAMS["Mock-1K"]["lognormal_mu"],
+        lognormal_sigma = DATASET_PARAMS["Mock-1K"]["lognormal_sigma"],
+        min_len = DATASET_PARAMS["Mock-1K"]["min_len"],
+        max_len = DATASET_PARAMS["Mock-1K"]["max_len"],
+        script = "workflow/scripts/generate_mock_clust_data.py",
+        outdir = os.path.join(datadir, "mock-data"),
+    conda: "../envs/seqkit-biopython.yml"
+    log: os.path.join(logdir, "mock_Mock-1K.log")
+    benchmark: os.path.join(benchmarks, "mock_Mock-1K.benchmark")
+    threads: get_resources("Mock-1K")["threads"]
+    resources:
+        mem_mb = get_resources("Mock-1K")["mem_mb"],
+        disk_mb = get_resources("Mock-1K")["disk_mb"]
+    shell:
+        """
+        set -euo pipefail
+        rm -rf {params.tmpdir}
+        mkdir -p {params.tmpdir} {params.outdir}
+
+        python {params.script} \
+            --name {params.name} \
+            --total-sequences {params.total_sequences} \
+            --outdir {params.outdir} \
+            --viral-seq {input.vir} \
+            --prokaryotic-seq {input.prok} \
+            --eukaryotic-seq {input.euk} \
+            --virus-frac {params.virus_frac} \
+            --prokaryote-frac {params.prok_frac} \
+            --eukaryote-frac {params.euk_frac} \
+            --fragments-per-10kb {params.fragments_per_10kb} \
+            --min-fragments-per-genome {params.min_fragments_per_genome} \
+            --max-fragments-per-genome {params.max_fragments_per_genome} \
+            --copies-mean {params.copies_mean} \
+            --copies-min {params.copies_min} \
+            --copies-max {params.copies_max} \
+            --copies-distribution {params.copies_distribution} \
+            --mut-rate-min {params.mut_rate_min} \
+            --mut-rate-max {params.mut_rate_max} \
+            --indel-rate {params.indel_rate} \
+            --lognormal-mu {params.lognormal_mu} \
+            --lognormal-sigma {params.lognormal_sigma} \
+            --min-len {params.min_len} \
+            --max-len {params.max_len} \
+            --seed {params.seed} \
+            --verbose \
+            --force \
+            &> {log}
+        """
 
 # ----- Mock-10K -----
 rule mock_Mock_10K:
