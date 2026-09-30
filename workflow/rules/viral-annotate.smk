@@ -96,7 +96,7 @@ rule eggNOGmapper:
     mem_mb=lambda wildcards, attempt: attempt * 64 * 10**3
   shell:
     """
-    rm -rf {params.outdir}
+    rm -rf {params.outdir} {params.tmpdir}
     mkdir -p {params.tmpdir}/tmp {params.outdir}
 
     emapper.py \
