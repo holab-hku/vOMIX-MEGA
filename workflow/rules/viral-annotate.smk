@@ -107,7 +107,7 @@ rule eggNOGmapper:
         --data_dir {params.dbdir} \
         -m diamond \
         --cpu {threads} \
-        {params.parameters} 2> {log}
+        {params.parameters} > {log} 2>&1
     
     mv {params.tmpdir}/* {params.outdir}
     """
