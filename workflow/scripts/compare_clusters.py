@@ -9,55 +9,6 @@
 # clustering results.
 #
 # Dependencies: pandas, numpy, scikit-learn, rich
-#
-# ============================================================
-# METRIC REFERENCE
-# ============================================================
-#
-# --- Family A: Pooled pair-level metrics (classic clustering metrics) ---
-#   rand_index      Raw Rand Index = (TP_pairs + TN_pairs) / total_pairs.
-#   ARI             Adjusted Rand Index (chance-corrected).
-#   precision       TP_pairs / (TP_pairs + FP_pairs).
-#   recall          TP_pairs / (TP_pairs + FN_pairs).
-#   f1              Harmonic mean of pooled precision and recall.
-#
-# --- Family B: Adjusted (macro) pair-level metrics ---
-#   adjusted_precision      Mean of per-cluster pair precision.
-#   adjusted_recall         Mean of per-true-set pair recall.
-#   adjusted_f1             Harmonic mean of adjusted_precision & recall.
-#   adjusted_rand_index_macro Macro analogue of the Rand Index.
-#
-# --- Family C: Per-set macro metrics (set recovery) ---
-#   per_set_recall          Macro mean of recall_T over all sets.
-#   per_set_precision       Macro mean of precision_T over all sets.
-#   per_set_f1              Macro mean of f1_T over all sets.
-#   median_best_cluster_size Median |best_cluster_T| across all sets.
-#   mean_best_cluster_size   Mean   |best_cluster_T| across all sets.
-#
-# --- Family C-bis: Recovery rate buckets (per-set) ---
-#   Counts and fractions of ground-truth sets retrieved at >= 100%, 90%,
-#   80%, 70%, 60%, 50%, and <50%.
-#
-# --- Family D: Sequence-level assignment accuracy ---
-#   seq_accuracy_mapped     Fraction of sequences with match=True.
-#
-# --- Family E: Singleton statistics ---
-#   gt_singleton_count / rate   True singletons in dataset.
-#   pred_singleton_count / rate Predicted singletons (computed pre-merge).
-#
-# --- Family F: Cluster-size diagnostics ---
-#   Per predicted cluster purity, true set overlap, and pair precision.
-#
-# --- Family G: Input counts ---
-#   Sequence and cluster counts across input, ground truth, and merged sets.
-#
-# --- Family H: Pairwise agreement between cluster files ---
-#   CCS     Cluster Correspondence Score (includes TN pairs).
-#   CCR     Cluster Count Ratio (n_clusters_2 / n_clusters_1).
-#   RSS     Representative Sequence Stability (vectorized O(N log N)).
-#
-# --- Family I: Taxonomic purity ---
-#   taxonomic_agreement     Majority category consistency across clusters.
 # ============================================================
 
 import argparse
@@ -208,23 +159,11 @@ def pair_counts(pred, true):
     for p, t in zip(pred, true):
         joint[p][t] += 1
 
-    TP = 0
-    for p, true_counter in joint.items():
-        for t, cnt in true_counter.items():
-            if cnt >= 2:
-                TP += cnt * (cnt - 1) // 2
-
-    FP = 0
-    for p, cnt in pred_counts.items():
-        if cnt >= 2:
-            FP += cnt * (cnt - 1) // 2
-    FP -= TP
-
-    FN = 0
-    for t, cnt in true_counts.items():
-        if cnt >= 2:
-            FN += cnt * (cnt - 1) // 2
-    FN -= TP
+    TP = sum(
+        cnt * (cnt - 1) // 2 for tc in joint.values() for cnt in tc.values() if cnt >= 2
+    )
+    FP = sum(cnt * (cnt - 1) // 2 for cnt in pred_counts.values() if cnt >= 2) - TP
+    FN = sum(cnt * (cnt - 1) // 2 for cnt in true_counts.values() if cnt >= 2) - TP
 
     total_pairs = n * (n - 1) // 2
     TN = total_pairs - TP - FP - FN
@@ -237,14 +176,12 @@ def pair_counts(pred, true):
 
 
 def rand_index(pred_labels, true_labels):
-    """Raw Rand Index (TP + TN) / total_pairs."""
     TP, FP, FN, TN = pair_counts(pred_labels, true_labels)
     total = TP + FP + FN + TN
     return (TP + TN) / total if total > 0 else np.nan
 
 
 def adjusted_rand_index(true_labels, pred_labels):
-    """sklearn Adjusted Rand Index (chance-corrected)."""
     try:
         return adjusted_rand_score(true_labels, pred_labels)
     except Exception:
@@ -463,11 +400,6 @@ def per_set_metrics(merged_df):
 
 
 def map_clusters_to_truth(merged_df):
-    """
-    Maps predicted clusters to ground truth. Strips '_copy_\\d+' suffixes first.
-    If the base ID exists in the ground truth, it maps directly.
-    Otherwise, falls back to majority voting.
-    """
     mapping = {}
     if merged_df.empty:
         return mapping
@@ -494,10 +426,6 @@ def map_clusters_to_truth(merged_df):
 
 
 def ccs(labels1, labels2):
-    """
-    Cluster Correspondence Score.
-    Fraction of sequence pairs that both runs agree on (TP + TN) / total_pairs.
-    """
     n = len(labels1)
     if n < 2:
         return np.nan
@@ -507,17 +435,12 @@ def ccs(labels1, labels2):
 
 
 def ccr(labels1, labels2):
-    """Cluster Count Ratio: n_clusters_2 / n_clusters_1."""
     n1 = len(set(labels1))
     n2 = len(set(labels2))
     return n2 / n1 if n1 > 0 else np.nan
 
 
 def rss(cluster_df1, cluster_df2):
-    """
-    Representative Sequence Stability.
-    Vectorized implementation O(N log N) comparing representative sequence preservation.
-    """
     rep1 = cluster_df1.groupby("cluster_id")["sequence_id"].first().to_dict()
     rep2 = cluster_df2.groupby("cluster_id")["sequence_id"].first().to_dict()
 
@@ -561,7 +484,6 @@ def cluster_external_metrics(
     n_clusters_total = int(cluster_df["cluster_id"].nunique())
     n_sequences_gt = int(ground_truth_df["sequence_id"].nunique())
 
-    # Pre-calculate sizes and singletons directly on input datasets before inner merge
     pred_sizes_input = cluster_df.groupby("cluster_id").size().to_dict()
     pred_singletons_input = {cid for cid, sz in pred_sizes_input.items() if sz == 1}
 
@@ -618,7 +540,6 @@ def cluster_external_metrics(
     merged["cluster_assigned_mapped"] = merged["cluster_id"].map(mapping)
     merged["match"] = merged["cluster_assigned_mapped"] == merged["true_cluster"]
 
-    # Accurate singleton assignment using pre-merge inputs
     merged["gt_is_singleton"] = merged["true_cluster"].isin(gt_singletons_input)
     merged["pred_is_singleton"] = merged["cluster_id"].isin(pred_singletons_input)
     merged["pred_cluster_size"] = (
@@ -697,6 +618,9 @@ def cluster_external_metrics(
 
     if sample_id:
         merged["sample_id"] = sample_id
+        if not per_cluster_df.empty:
+            per_cluster_df["sample_id"] = sample_id
+
     if file_path:
         metrics["file_path"] = file_path
 
@@ -805,7 +729,7 @@ def main():
         "-o",
         "--output-dir",
         default="cluster_comparison_results",
-        help="Directory to save output CSVs.",
+        help="Directory to save output files.",
     )
     parser.add_argument(
         "-v", "--verbose", action="store_true", help="Print verbose execution log."
@@ -813,7 +737,7 @@ def main():
     parser.add_argument(
         "--dry-run",
         action="store_true",
-        help="Parse files without writing output CSVs.",
+        help="Parse files without writing output files.",
     )
 
     args = parser.parse_args()
@@ -825,11 +749,15 @@ def main():
         )
         sys.exit(1)
 
-    os.makedirs(args.output_dir, exist_ok=True)
+    per_sample_dir = os.path.join(args.output_dir, "per_sample")
+    os.makedirs(per_sample_dir, exist_ok=True)
+
     gt_df = parse_ground_truth(args.ground_truth, verbose=args.verbose)
 
     metrics_list = []
     cluster_dfs = []
+    all_merged_list = []
+    all_per_cluster_list = []
 
     with Progress(
         TextColumn("[progress.description]{task.description}"),
@@ -855,24 +783,55 @@ def main():
             )
             metrics_list.append(metrics)
 
-            if not args.dry_run and not merged_df.empty:
-                merged_df.to_csv(
-                    os.path.join(args.output_dir, f"{sample_id}_sequence_matches.csv"),
-                    index=False,
-                )
-                per_cluster_df.to_csv(
-                    os.path.join(
-                        args.output_dir, f"{sample_id}_per_cluster_summary.csv"
-                    ),
-                    index=False,
-                )
+            if not merged_df.empty:
+                all_merged_list.append(merged_df)
+            if not per_cluster_df.empty:
+                all_per_cluster_list.append(per_cluster_df)
+
+            if not args.dry_run:
+                if not merged_df.empty:
+                    merged_df.to_csv(
+                        os.path.join(
+                            per_sample_dir, f"{sample_id}_sequence_matches.tsv"
+                        ),
+                        sep="\t",
+                        index=False,
+                    )
+                if not per_cluster_df.empty:
+                    per_cluster_df.to_csv(
+                        os.path.join(
+                            per_sample_dir, f"{sample_id}_per_cluster_summary.tsv"
+                        ),
+                        sep="\t",
+                        index=False,
+                    )
             progress.update(task, advance=1)
 
-    # Save aggregated external metrics
-    metrics_summary_df = pd.DataFrame(metrics_list)
     if not args.dry_run:
+        # Concatenate and save all merged sequence matches into one file
+        if all_merged_list:
+            all_merged_df = pd.concat(all_merged_list, ignore_index=True)
+            all_merged_df.to_csv(
+                os.path.join(args.output_dir, "all_merged_with_gt.tsv"),
+                sep="\t",
+                index=False,
+            )
+
+        # Concatenate and save all predicted cluster summaries into one file
+        if all_per_cluster_list:
+            all_per_cluster_df = pd.concat(all_per_cluster_list, ignore_index=True)
+            all_per_cluster_df.to_csv(
+                os.path.join(args.output_dir, "all_predicted_clusters_summary.tsv"),
+                sep="\t",
+                index=False,
+            )
+
+        # Save aggregated external metrics
+        metrics_summary_df = pd.DataFrame(metrics_list)
         metrics_summary_df.to_csv(
-            os.path.join(args.output_dir, "external_metrics_summary.csv"), index=False
+            os.path.join(args.output_dir, "external_metrics_summary.tsv"),
+            sep="\t",
+            index=False,
         )
 
     # Display summary table in CLI
@@ -908,7 +867,9 @@ def main():
         pairwise_df = pd.DataFrame(pairwise_rows)
         if not args.dry_run:
             pairwise_df.to_csv(
-                os.path.join(args.output_dir, "pairwise_agreement.csv"), index=False
+                os.path.join(args.output_dir, "pairwise_agreement.tsv"),
+                sep="\t",
+                index=False,
             )
 
         pair_table = Table(title="Pairwise Run Agreement", box=box.ROUNDED)
