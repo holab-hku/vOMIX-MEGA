@@ -14,152 +14,56 @@
 # METRIC REFERENCE
 # ============================================================
 #
-# There are several "families" of metrics below. They can disagree
-# strongly when the clustering has a long-tailed distribution of
-# predicted cluster sizes (a few giant clusters + many small ones).
-#
 # --- Family A: Pooled pair-level metrics (classic clustering metrics) ---
-#
 #   rand_index      Raw Rand Index = (TP_pairs + TN_pairs) / total_pairs.
-#                   Range [0, 1]. Not chance-corrected.
 #   ARI             Adjusted Rand Index (chance-corrected).
-#                   sklearn.metrics.adjusted_rand_score.
-#                   Range roughly [-1, 1]; 0 = random, 1 = perfect.
 #   precision       TP_pairs / (TP_pairs + FP_pairs).
 #   recall          TP_pairs / (TP_pairs + FN_pairs).
 #   f1              Harmonic mean of pooled precision and recall.
 #
-#   A "pair" is an unordered pair of sequences (i, j).
-#   - TP pair: predicted same cluster AND truly same cluster.
-#   - FP pair: predicted same cluster BUT truly different clusters.
-#   - FN pair: predicted different clusters BUT truly same cluster.
-#   - TN pair: predicted different clusters AND truly different.
-#
-#   WARNING: Each cluster of size s contributes C(s, 2) = s*(s-1)/2
-#   pairs to the denominator. A single cluster of size 86 alone casts
-#   3,655 pair votes -- as many as 610 clean size-4 clusters. These
-#   metrics are therefore dominated by the largest predicted clusters
-#   and are NOT representative of typical behaviour.
-#
 # --- Family B: Adjusted (macro) pair-level metrics ---
-#
-#   adjusted_precision      Mean of per-cluster pair precision over
-#                           non-singleton clusters. Each cluster gets
-#                           ONE vote regardless of size.
-#                           Formula per cluster: TP_pairs / n_pairs.
-#
-#   adjusted_recall         Mean of per-true-set pair recall over
-#                           non-singleton true sets. Each true set
-#                           gets ONE vote regardless of size.
-#                           Formula per true set: TP_pairs / n_pairs.
-#
-#   adjusted_f1             Harmonic mean of adjusted_precision and
-#                           adjusted_recall.
-#
-#   adjusted_rand_index_macro
-#                           Harmonic mean of adjusted_precision and
-#                           adjusted_recall; a macro analogue of the
-#                           Rand Index that gives each cluster and each
-#                           true set an equal vote. Range [0, 1].
-#                           (Same value as adjusted_f1; kept as a
-#                           separately-named column for clarity.)
-#
-#   These are the "fair" versions of precision/recall when the
-#   algorithm has a handful of over-merged clusters. Use these for
-#   any headline claim about overall clustering quality.
+#   adjusted_precision      Mean of per-cluster pair precision.
+#   adjusted_recall         Mean of per-true-set pair recall.
+#   adjusted_f1             Harmonic mean of adjusted_precision & recall.
+#   adjusted_rand_index_macro Macro analogue of the Rand Index.
 #
 # --- Family C: Per-set macro metrics (set recovery) ---
-#
-#   For each ground-truth set T:
-#     best_cluster_T      Predicted cluster with the largest overlap with T.
-#     recall_T            |T ∩ best_cluster_T| / |T|
-#     precision_T         |T ∩ best_cluster_T| / |best_cluster_T|
-#     f1_T                Harmonic mean of the above.
-#
-#   per_set_recall             Macro mean of recall_T over all sets.
-#   per_set_precision          Macro mean of precision_T over all sets.
-#   per_set_f1                 Macro mean of f1_T over all sets.
-#   median_best_cluster_size   Median |best_cluster_T| across all sets.
-#   mean_best_cluster_size     Mean   |best_cluster_T| across all sets.
-#
-#   These answer: "for each source set, how much of it survived into
-#   one predicted cluster, and how clean was that cluster?".
+#   per_set_recall          Macro mean of recall_T over all sets.
+#   per_set_precision       Macro mean of precision_T over all sets.
+#   per_set_f1              Macro mean of f1_T over all sets.
+#   median_best_cluster_size Median |best_cluster_T| across all sets.
+#   mean_best_cluster_size   Mean   |best_cluster_T| across all sets.
 #
 # --- Family C-bis: Recovery rate buckets (per-set) ---
-#
-#   n_sets_total            Total number of distinct ground-truth sets.
-#   n_sets_fully_retrieved  Sets with recall_T == 1.0 (100% grouped).
-#   n_sets_at_least_90      Sets with recall_T >= 0.90.
-#   n_sets_at_least_80      Sets with recall_T >= 0.80.
-#   n_sets_at_least_70      Sets with recall_T >= 0.70.
-#   n_sets_at_least_60      Sets with recall_T >= 0.60.
-#   n_sets_at_least_50      Sets with recall_T >= 0.50.
-#   n_sets_below_50         Sets with recall_T <  0.50 (failures).
-#   pct_sets_*              Same counts expressed as fractions.
+#   Counts and fractions of ground-truth sets retrieved at >= 100%, 90%,
+#   80%, 70%, 60%, 50%, and <50%.
 #
 # --- Family D: Sequence-level assignment accuracy ---
-#
-#   For every predicted cluster, its members are mapped to the
-#   majority true_cluster ("cluster_assigned_mapped"). For each
-#   sequence, match=True iff its mapped label equals its own
-#   true_cluster.
-#
 #   seq_accuracy_mapped     Fraction of sequences with match=True.
 #
-#   Lenient -- a 60/40 mixed cluster still shows 60% True.
-#
 # --- Family E: Singleton statistics ---
+#   gt_singleton_count / rate   True singletons in dataset.
+#   pred_singleton_count / rate Predicted singletons (computed pre-merge).
 #
-#   gt_singleton_count      # sequences whose true set has size 1.
-#   gt_singleton_rate       gt_singleton_count / n_sequences_merged.
-#   pred_singleton_count    # sequences in a size-1 predicted cluster.
-#   pred_singleton_rate     pred_singleton_count / n_sequences_merged.
-#
-# --- Family F: Cluster-size diagnostics (in cluster-level) ---
-#
-#   Per predicted cluster:
-#     n_members             Number of sequences in this predicted cluster.
-#     n_true_clusters       Number of distinct true sets represented here.
-#     dominant_true_cluster The true set with the largest count.
-#     dominant_count        Count of members in the dominant true set.
-#     purity                dominant_count / n_members.
-#     n_pairs               C(n_members, 2), total pairs in the cluster.
-#     n_tp_pairs            Sum over true sets s of C(count_s, 2).
-#     n_fp_pairs            n_pairs - n_tp_pairs.
-#     pair_precision        n_tp_pairs / n_pairs.
-#
-#   Sort by n_fp_pairs descending to find exactly which clusters
-#   are causing low pooled precision.
+# --- Family F: Cluster-size diagnostics ---
+#   Per predicted cluster purity, true set overlap, and pair precision.
 #
 # --- Family G: Input counts ---
+#   Sequence and cluster counts across input, ground truth, and merged sets.
 #
-#   n_sequences_input       Unique sequence_ids in the cluster file.
-#   n_sequences_gt          Unique sequence_ids in the ground truth.
-#   n_sequences_merged      Sequences present in both (intersection).
-#   n_clusters_input        Number of distinct predicted cluster IDs.
-#   n_clusters              Number of predicted clusters in merged set.
-#
-# --- Family H: Pairwise agreement between two cluster files (optional) ---
-#
-#   CCS     Cluster Correspondence Score: fraction of all pairs that
-#           two clustering runs agree on.
-#   CCR     Cluster Count Ratio: n_clusters_2 / n_clusters_1.
-#   RSS     Representative Sequence Stability: fraction of clusters
-#           whose representative sequence is preserved in the other
-#           run when overlap >= 50%.
+# --- Family H: Pairwise agreement between cluster files ---
+#   CCS     Cluster Correspondence Score (includes TN pairs).
+#   CCR     Cluster Count Ratio (n_clusters_2 / n_clusters_1).
+#   RSS     Representative Sequence Stability (vectorized O(N log N)).
 #
 # --- Family I: Taxonomic purity ---
-#
-#   taxonomic_agreement     Mean over predicted clusters of the
-#                           fraction of members whose source_category
-#                           (viral/prokaryotic/eukaryotic) matches the
-#                           cluster's majority category.
-#
+#   taxonomic_agreement     Majority category consistency across clusters.
 # ============================================================
 
 import argparse
 import sys
 import os
+import re
 from itertools import combinations
 from collections import defaultdict, Counter
 
@@ -177,6 +81,7 @@ console = Console()
 # ============================================================
 #  Parsing helpers
 # ============================================================
+
 
 def parse_cluster_file(filepath, sep="auto", verbose=False):
     if verbose:
@@ -213,8 +118,13 @@ def parse_cluster_file(filepath, sep="auto", verbose=False):
 
     try:
         df = pd.read_csv(
-            filepath, header=None, sep=sep_char, quotechar='"',
-            skipinitialspace=True, engine="python", on_bad_lines="warn",
+            filepath,
+            header=None,
+            sep=sep_char,
+            quotechar='"',
+            skipinitialspace=True,
+            engine="python",
+            on_bad_lines="warn",
         )
     except pd.errors.ParserError as e:
         raise ValueError(f"Failed to parse {filepath} as '{sep_char}'-separated: {e}")
@@ -232,8 +142,9 @@ def parse_cluster_file(filepath, sep="auto", verbose=False):
     if len(first_vals) >= 2:
         col0 = first_vals.iloc[0]
         col1 = first_vals.iloc[1]
-        if (col0 in rep_keywords or any(kw in col0 for kw in rep_keywords)) and \
-           (col1 in set_keywords or any(kw in col1 for kw in set_keywords)):
+        if (col0 in rep_keywords or any(kw in col0 for kw in rep_keywords)) and (
+            col1 in set_keywords or any(kw in col1 for kw in set_keywords)
+        ):
             is_header = True
             if verbose:
                 console.log("[cyan]Detected header row, skipping.[/]")
@@ -246,12 +157,12 @@ def parse_cluster_file(filepath, sep="auto", verbose=False):
 
     records = []
     skipped = 0
-    for _, row in df.iterrows():
-        cluster = str(row["cluster_id"]).strip()
+    for row in df.itertuples(index=False):
+        cluster = str(row.cluster_id).strip()
         if not cluster or cluster.lower() == "nan":
             skipped += 1
             continue
-        members = str(row["cluster_set"]).split(",")
+        members = str(row.cluster_set).split(",")
         for seq in members:
             seq = seq.strip()
             if seq:
@@ -285,6 +196,7 @@ def parse_ground_truth(filepath, verbose=False):
 # ============================================================
 #  Pair-counting helpers
 # ============================================================
+
 
 def pair_counts(pred, true):
     n = len(pred)
@@ -323,6 +235,7 @@ def pair_counts(pred, true):
 #  Individual metrics
 # ============================================================
 
+
 def rand_index(pred_labels, true_labels):
     """Raw Rand Index (TP + TN) / total_pairs."""
     TP, FP, FN, TN = pair_counts(pred_labels, true_labels)
@@ -342,8 +255,11 @@ def pair_precision_recall_f1(pred_labels, true_labels):
     TP, FP, FN, _ = pair_counts(pred_labels, true_labels)
     precision = TP / (TP + FP) if (TP + FP) > 0 else 0.0
     recall = TP / (TP + FN) if (TP + FN) > 0 else 0.0
-    f1 = (2 * precision * recall / (precision + recall)
-          if (precision + recall) > 0 else 0.0)
+    f1 = (
+        2 * precision * recall / (precision + recall)
+        if (precision + recall) > 0
+        else 0.0
+    )
     return precision, recall, f1
 
 
@@ -369,6 +285,7 @@ def cluster_count(labels):
 #  Per-predicted-cluster summary
 # ============================================================
 
+
 def per_cluster_summary(merged_df):
     if merged_df.empty:
         return pd.DataFrame()
@@ -386,18 +303,22 @@ def per_cluster_summary(merged_df):
         tp_pairs = int(sum(int(c) * (int(c) - 1) // 2 for c in counts.values))
         fp_pairs = n_pairs - tp_pairs
         pair_prec = (tp_pairs / n_pairs) if n_pairs > 0 else np.nan
-        rows.append({
-            "cluster_id": cid,
-            "n_members": n,
-            "n_true_clusters": n_true,
-            "dominant_true_cluster": dominant,
-            "dominant_count": dom_count,
-            "purity": round(purity, 6),
-            "n_pairs": n_pairs,
-            "n_tp_pairs": tp_pairs,
-            "n_fp_pairs": fp_pairs,
-            "pair_precision": (round(pair_prec, 6) if not pd.isna(pair_prec) else np.nan),
-        })
+        rows.append(
+            {
+                "cluster_id": cid,
+                "n_members": n,
+                "n_true_clusters": n_true,
+                "dominant_true_cluster": dominant,
+                "dominant_count": dom_count,
+                "purity": round(purity, 6),
+                "n_pairs": n_pairs,
+                "n_tp_pairs": tp_pairs,
+                "n_fp_pairs": fp_pairs,
+                "pair_precision": (
+                    round(pair_prec, 6) if not pd.isna(pair_prec) else np.nan
+                ),
+            }
+        )
     df = pd.DataFrame(rows)
     if df.empty:
         return df
@@ -408,6 +329,7 @@ def per_cluster_summary(merged_df):
 # ============================================================
 #  Adjusted (macro) precision / recall
 # ============================================================
+
 
 def adjusted_precision_from_clusters(per_cluster_df):
     if per_cluster_df.empty:
@@ -446,30 +368,32 @@ def harmonic_mean(a, b):
 #  Per-set metrics (macro) with recovery buckets
 # ============================================================
 
+
 def per_set_metrics(merged_df):
+    empty_result = {
+        "per_set_recall": np.nan,
+        "per_set_precision": np.nan,
+        "per_set_f1": np.nan,
+        "median_best_cluster_size": np.nan,
+        "mean_best_cluster_size": np.nan,
+        "n_sets_total": 0,
+        "n_sets_fully_retrieved": 0,
+        "n_sets_at_least_90": 0,
+        "n_sets_at_least_80": 0,
+        "n_sets_at_least_70": 0,
+        "n_sets_at_least_60": 0,
+        "n_sets_at_least_50": 0,
+        "n_sets_below_50": 0,
+        "pct_sets_fully_retrieved": np.nan,
+        "pct_sets_at_least_90": np.nan,
+        "pct_sets_at_least_80": np.nan,
+        "pct_sets_at_least_70": np.nan,
+        "pct_sets_at_least_60": np.nan,
+        "pct_sets_at_least_50": np.nan,
+        "pct_sets_below_50": np.nan,
+    }
     if merged_df.empty:
-        return {
-            "per_set_recall": np.nan,
-            "per_set_precision": np.nan,
-            "per_set_f1": np.nan,
-            "median_best_cluster_size": np.nan,
-            "mean_best_cluster_size": np.nan,
-            "n_sets_total": 0,
-            "n_sets_fully_retrieved": 0,
-            "n_sets_at_least_90": 0,
-            "n_sets_at_least_80": 0,
-            "n_sets_at_least_70": 0,
-            "n_sets_at_least_60": 0,
-            "n_sets_at_least_50": 0,
-            "n_sets_below_50": 0,
-            "pct_sets_fully_retrieved": np.nan,
-            "pct_sets_at_least_90": np.nan,
-            "pct_sets_at_least_80": np.nan,
-            "pct_sets_at_least_70": np.nan,
-            "pct_sets_at_least_60": np.nan,
-            "pct_sets_at_least_50": np.nan,
-            "pct_sets_below_50": np.nan,
-        }
+        return empty_result
 
     recalls = []
     precisions = []
@@ -494,28 +418,7 @@ def per_set_metrics(merged_df):
         best_sizes.append(n_pred)
 
     if not recalls:
-        return {
-            "per_set_recall": np.nan,
-            "per_set_precision": np.nan,
-            "per_set_f1": np.nan,
-            "median_best_cluster_size": np.nan,
-            "mean_best_cluster_size": np.nan,
-            "n_sets_total": 0,
-            "n_sets_fully_retrieved": 0,
-            "n_sets_at_least_90": 0,
-            "n_sets_at_least_80": 0,
-            "n_sets_at_least_70": 0,
-            "n_sets_at_least_60": 0,
-            "n_sets_at_least_50": 0,
-            "n_sets_below_50": 0,
-            "pct_sets_fully_retrieved": np.nan,
-            "pct_sets_at_least_90": np.nan,
-            "pct_sets_at_least_80": np.nan,
-            "pct_sets_at_least_70": np.nan,
-            "pct_sets_at_least_60": np.nan,
-            "pct_sets_at_least_50": np.nan,
-            "pct_sets_below_50": np.nan,
-        }
+        return empty_result
 
     recalls_arr = np.array(recalls)
     n_sets = int(len(recalls_arr))
@@ -525,7 +428,7 @@ def per_set_metrics(merged_df):
     n_ge_70 = int((recalls_arr >= 0.70).sum())
     n_ge_60 = int((recalls_arr >= 0.60).sum())
     n_ge_50 = int((recalls_arr >= 0.50).sum())
-    n_lt_50 = int((recalls_arr <  0.50).sum())
+    n_lt_50 = int((recalls_arr < 0.50).sum())
 
     def _pct(n):
         return float(n / n_sets) if n_sets > 0 else np.nan
@@ -558,16 +461,30 @@ def per_set_metrics(merged_df):
 #  Cluster label matching
 # ============================================================
 
+
 def map_clusters_to_truth(merged_df):
+    """
+    Maps predicted clusters to ground truth. Strips '_copy_\\d+' suffixes first.
+    If the base ID exists in the ground truth, it maps directly.
+    Otherwise, falls back to majority voting.
+    """
     mapping = {}
     if merged_df.empty:
         return mapping
+
+    known_true = set(merged_df["true_cluster"].unique())
+
     for cid, group in merged_df.groupby("cluster_id"):
-        counts = group["true_cluster"].value_counts()
-        if len(counts) > 0:
-            mapping[cid] = counts.idxmax()
+        base_cid = re.sub(r"_copy_\d+$", "", str(cid))
+
+        if base_cid in known_true:
+            mapping[cid] = base_cid
         else:
-            mapping[cid] = cid
+            counts = group["true_cluster"].value_counts()
+            if len(counts) > 0:
+                mapping[cid] = counts.idxmax()
+            else:
+                mapping[cid] = cid
     return mapping
 
 
@@ -575,55 +492,67 @@ def map_clusters_to_truth(merged_df):
 #  Pairwise agreement
 # ============================================================
 
+
 def ccs(labels1, labels2):
+    """
+    Cluster Correspondence Score.
+    Fraction of sequence pairs that both runs agree on (TP + TN) / total_pairs.
+    """
     n = len(labels1)
     if n < 2:
         return np.nan
-    total_pairs = n * (n - 1) // 2
-    TP, _, _, _ = pair_counts(labels1, labels2)
-    return TP / total_pairs if total_pairs > 0 else 0.0
+    TP, FP, FN, TN = pair_counts(labels1, labels2)
+    total_pairs = TP + FP + FN + TN
+    return (TP + TN) / total_pairs if total_pairs > 0 else 0.0
 
 
 def ccr(labels1, labels2):
+    """Cluster Count Ratio: n_clusters_2 / n_clusters_1."""
     n1 = len(set(labels1))
     n2 = len(set(labels2))
     return n2 / n1 if n1 > 0 else np.nan
 
 
 def rss(cluster_df1, cluster_df2):
-    def cluster_to_seq(df):
-        d = defaultdict(list)
-        for _, row in df.iterrows():
-            d[row["cluster_id"]].append(row["sequence_id"])
-        return d
+    """
+    Representative Sequence Stability.
+    Vectorized implementation O(N log N) comparing representative sequence preservation.
+    """
+    rep1 = cluster_df1.groupby("cluster_id")["sequence_id"].first().to_dict()
+    rep2 = cluster_df2.groupby("cluster_id")["sequence_id"].first().to_dict()
 
-    map1 = cluster_to_seq(cluster_df1)
-    map2 = cluster_to_seq(cluster_df2)
-    rep1 = {c: sorted(seqs)[0] for c, seqs in map1.items()}
-    rep2 = {c: sorted(seqs)[0] for c, seqs in map2.items()}
+    merged = pd.merge(cluster_df1, cluster_df2, on="sequence_id", suffixes=("_1", "_2"))
+    if merged.empty:
+        return 0.0
+
+    overlap_counts = (
+        merged.groupby(["cluster_id_1", "cluster_id_2"])
+        .size()
+        .reset_index(name="overlap")
+    )
+    sizes1 = cluster_df1.groupby("cluster_id").size().to_dict()
+
+    best_matches = overlap_counts.sort_values(
+        "overlap", ascending=False
+    ).drop_duplicates("cluster_id_1")
 
     stable = 0
-    total = 0
-    for c1, seqs1 in map1.items():
-        set1 = set(seqs1)
-        best_c2 = None
-        best_overlap = 0
-        for c2, seqs2 in map2.items():
-            overlap = len(set1 & set(seqs2))
-            if overlap > best_overlap:
-                best_overlap = overlap
-                best_c2 = c2
-        if best_c2 is not None:
-            total += 1
-            overlap_frac = best_overlap / len(seqs1) if len(seqs1) > 0 else 0.0
-            if overlap_frac >= 0.5 and rep1[c1] == rep2[best_c2]:
-                stable += 1
+    total = len(sizes1)
+
+    for row in best_matches.itertuples():
+        c1, c2, ov = row.cluster_id_1, row.cluster_id_2, row.overlap
+        size1 = sizes1.get(c1, 0)
+
+        if (ov / size1) >= 0.5 and rep1.get(c1) == rep2.get(c2):
+            stable += 1
+
     return stable / total if total > 0 else 0.0
 
 
 # ============================================================
 #  Aggregated metrics
 # ============================================================
+
 
 def cluster_external_metrics(
     cluster_df, ground_truth_df, sample_id=None, file_path=None
@@ -632,16 +561,27 @@ def cluster_external_metrics(
     n_clusters_total = int(cluster_df["cluster_id"].nunique())
     n_sequences_gt = int(ground_truth_df["sequence_id"].nunique())
 
+    # Pre-calculate sizes and singletons directly on input datasets before inner merge
+    pred_sizes_input = cluster_df.groupby("cluster_id").size().to_dict()
+    pred_singletons_input = {cid for cid, sz in pred_sizes_input.items() if sz == 1}
+
+    gt_sizes_input = ground_truth_df.groupby("true_cluster").size().to_dict()
+    gt_singletons_input = {tid for tid, sz in gt_sizes_input.items() if sz == 1}
+
     merged = pd.merge(cluster_df, ground_truth_df, on="sequence_id", how="inner")
     n_sequences_merged = int(merged["sequence_id"].nunique()) if not merged.empty else 0
 
     if merged.empty:
-        return {
-            "n_sequences_input": n_sequences_input,
-            "n_sequences_gt": n_sequences_gt,
-            "n_sequences_merged": n_sequences_merged,
-            "n_clusters_input": n_clusters_total,
-        }, pd.DataFrame(), pd.DataFrame()
+        return (
+            {
+                "n_sequences_input": n_sequences_input,
+                "n_sequences_gt": n_sequences_gt,
+                "n_sequences_merged": n_sequences_merged,
+                "n_clusters_input": n_clusters_total,
+            },
+            pd.DataFrame(),
+            pd.DataFrame(),
+        )
 
     pred_labels = merged["cluster_id"].values
     true_labels = merged["true_cluster"].values
@@ -657,25 +597,16 @@ def cluster_external_metrics(
     adj_prec = adjusted_precision_from_clusters(per_cluster_df)
     adj_rec = adjusted_recall_from_merged(merged)
     adj_f1 = harmonic_mean(adj_prec, adj_rec)
-    # Macro analogue of the Rand Index: harmonic mean of macro precision and
-    # macro recall. Same numeric value as adjusted_f1 but reported separately
-    # as a named column to make its Rand-Index semantics explicit.
     adj_ri_macro = harmonic_mean(adj_prec, adj_rec)
 
     pset = per_set_metrics(merged)
 
     mapping = map_clusters_to_truth(merged)
 
-    gt_sizes = ground_truth_df.groupby("true_cluster").size()
-    gt_singletons = set(gt_sizes[gt_sizes == 1].index)
-    pred_sizes = merged.groupby("cluster_id").size()
-    pred_singletons = set(pred_sizes[pred_sizes == 1].index)
-
     gt_set_sizes = None
     if "set_id" in ground_truth_df.columns:
         gt_set_sizes = ground_truth_df.groupby("set_id").size()
 
-    cluster_size_map = merged.groupby("cluster_id").size().to_dict()
     cluster_purity_map = {}
     cluster_n_true_map = {}
     for cid, group in merged.groupby("cluster_id"):
@@ -686,11 +617,19 @@ def cluster_external_metrics(
     merged["cluster_assigned"] = merged["cluster_id"]
     merged["cluster_assigned_mapped"] = merged["cluster_id"].map(mapping)
     merged["match"] = merged["cluster_assigned_mapped"] == merged["true_cluster"]
-    merged["gt_is_singleton"] = merged["true_cluster"].isin(gt_singletons)
-    merged["pred_is_singleton"] = merged["cluster_id"].isin(pred_singletons)
-    merged["pred_cluster_size"] = merged["cluster_id"].map(cluster_size_map).fillna(0).astype(int)
-    merged["pred_cluster_purity"] = merged["cluster_id"].map(cluster_purity_map).fillna(0.0)
-    merged["pred_cluster_n_true"] = merged["cluster_id"].map(cluster_n_true_map).fillna(0).astype(int)
+
+    # Accurate singleton assignment using pre-merge inputs
+    merged["gt_is_singleton"] = merged["true_cluster"].isin(gt_singletons_input)
+    merged["pred_is_singleton"] = merged["cluster_id"].isin(pred_singletons_input)
+    merged["pred_cluster_size"] = (
+        merged["cluster_id"].map(pred_sizes_input).fillna(0).astype(int)
+    )
+    merged["pred_cluster_purity"] = (
+        merged["cluster_id"].map(cluster_purity_map).fillna(0.0)
+    )
+    merged["pred_cluster_n_true"] = (
+        merged["cluster_id"].map(cluster_n_true_map).fillna(0).astype(int)
+    )
 
     if "set_id" in merged.columns:
         if gt_set_sizes is not None:
@@ -698,8 +637,8 @@ def cluster_external_metrics(
                 merged["set_id"].map(gt_set_sizes).fillna(0).astype(int)
             )
         else:
-            merged["set_size_gt"] = (
-                merged.groupby("set_id")["sequence_id"].transform("size")
+            merged["set_size_gt"] = merged.groupby("set_id")["sequence_id"].transform(
+                "size"
             )
         correct_by_set = merged.loc[merged["match"]].groupby("set_id").size()
         merged["set_size_correctly_mapped"] = (
@@ -718,23 +657,18 @@ def cluster_external_metrics(
         "n_sequences_gt": n_sequences_gt,
         "n_sequences_merged": n_sequences_merged,
         "n_clusters_input": n_clusters_total,
-
         "seq_accuracy_mapped": seq_accuracy,
-
         "rand_index": ri,
         "ARI": ari,
         "adjusted_rand_index_macro": adj_ri_macro,
-
         "adjusted_precision": adj_prec,
         "adjusted_recall": adj_rec,
         "adjusted_f1": adj_f1,
-
         "per_set_recall": pset["per_set_recall"],
         "per_set_precision": pset["per_set_precision"],
         "per_set_f1": pset["per_set_f1"],
         "median_best_cluster_size": pset["median_best_cluster_size"],
         "mean_best_cluster_size": pset["mean_best_cluster_size"],
-
         "n_sets_total": pset["n_sets_total"],
         "n_sets_fully_retrieved": pset["n_sets_fully_retrieved"],
         "n_sets_at_least_90": pset["n_sets_at_least_90"],
@@ -750,13 +684,11 @@ def cluster_external_metrics(
         "pct_sets_at_least_60": pset["pct_sets_at_least_60"],
         "pct_sets_at_least_50": pset["pct_sets_at_least_50"],
         "pct_sets_below_50": pset["pct_sets_below_50"],
-
         "n_clusters": n_clusters,
         "precision": prec,
         "recall": rec,
         "f1": f1,
         "taxonomic_agreement": tax_agr,
-
         "gt_singleton_count": gt_singleton_count,
         "gt_singleton_rate": gt_singleton_rate,
         "pred_singleton_count": pred_singleton_count,
@@ -819,6 +751,7 @@ def cluster_agreement_metrics(cluster_df1, cluster_df2):
 #  CLI helpers
 # ============================================================
 
+
 def show_parameters(args):
     table = Table(title="Configuration", box=box.ROUNDED)
     table.add_column("Parameter", style="cyan", no_wrap=True)
@@ -840,278 +773,162 @@ def show_parameters(args):
 #  Main
 # ============================================================
 
+
 def main():
     parser = argparse.ArgumentParser(
-        description="Compare clustering outputs against ground truth.",
-        formatter_class=argparse.RawDescriptionHelpFormatter,
+        description="Compare clustering results against ground truth and evaluate pairwise agreement."
     )
-    parser.add_argument("--ground-truth", required=True)
-    parser.add_argument("--cluster-files", nargs="+", required=True)
-    parser.add_argument("--sample-names", nargs="*", default=None)
-    parser.add_argument("--output-dir", default=".")
-    parser.add_argument("--sep", choices=["auto", "tab", "comma"], default="auto")
-    parser.add_argument("-v", "--verbose", action="store_true")
-    parser.add_argument("-n", "--dry-run", action="store_true")
+    parser.add_argument(
+        "-g", "--ground-truth", required=True, help="Path to ground truth TSV file."
+    )
+    parser.add_argument(
+        "-c",
+        "--cluster-files",
+        nargs="+",
+        required=True,
+        help="One or more cluster files.",
+    )
+    parser.add_argument(
+        "-s",
+        "--sample-names",
+        nargs="+",
+        default=None,
+        help="Optional sample labels for each cluster file.",
+    )
+    parser.add_argument(
+        "--sep",
+        choices=["auto", "tab", "comma"],
+        default="auto",
+        help="Separator format (default: auto).",
+    )
+    parser.add_argument(
+        "-o",
+        "--output-dir",
+        default="cluster_comparison_results",
+        help="Directory to save output CSVs.",
+    )
+    parser.add_argument(
+        "-v", "--verbose", action="store_true", help="Print verbose execution log."
+    )
+    parser.add_argument(
+        "--dry-run",
+        action="store_true",
+        help="Parse files without writing output CSVs.",
+    )
+
     args = parser.parse_args()
-
-    if not os.path.isfile(args.ground_truth):
-        console.print(f"[bold red]ERROR:[/] Ground truth not found: {args.ground_truth}")
-        sys.exit(1)
-    for f in args.cluster_files:
-        if not os.path.isfile(f):
-            console.print(f"[bold red]ERROR:[/] Cluster file not found: {f}")
-            sys.exit(1)
-
-    console.rule("[bold green]Cluster Comparison Tool")
     show_parameters(args)
-    if args.dry_run:
-        console.print("[bold yellow]DRY RUN - no files will be written.[/]")
 
-    # ---- Set up output directories ----
-    merged_dir = None
-    clusters_dir = None
-    if not args.dry_run:
-        os.makedirs(args.output_dir, exist_ok=True)
-        merged_dir = os.path.join(args.output_dir, "sequence-level")
-        clusters_dir = os.path.join(args.output_dir, "cluster-level")
-        os.makedirs(merged_dir, exist_ok=True)
-        os.makedirs(clusters_dir, exist_ok=True)
-        console.log(f"[cyan]Per-sample merged GT files   -> {merged_dir}[/]")
-        console.log(f"[cyan]Per-sample cluster summaries -> {clusters_dir}[/]")
-
-    console.print("\n[bold]Loading data...[/]")
-    try:
-        gt = parse_ground_truth(args.ground_truth, verbose=args.verbose)
-    except Exception as e:
-        console.print(f"[bold red]Failed to parse ground truth:[/] {e}")
+    if args.sample_names and len(args.sample_names) != len(args.cluster_files):
+        console.print(
+            "[red]Error: --sample-names length must match --cluster-files length.[/]"
+        )
         sys.exit(1)
 
+    os.makedirs(args.output_dir, exist_ok=True)
+    gt_df = parse_ground_truth(args.ground_truth, verbose=args.verbose)
+
+    metrics_list = []
     cluster_dfs = []
-    sample_ids = []
-    file_paths = []
 
     with Progress(
         TextColumn("[progress.description]{task.description}"),
         BarColumn(),
-        TextColumn("[progress.percentage]{task.percentage:>3.0f}%"),
         TimeElapsedColumn(),
         console=console,
     ) as progress:
         task = progress.add_task(
-            "[cyan]Parsing cluster files...", total=len(args.cluster_files)
-        )
-        for i, f in enumerate(args.cluster_files):
-            try:
-                df = parse_cluster_file(f, sep=args.sep, verbose=args.verbose)
-                cluster_dfs.append(df)
-                file_paths.append(os.path.abspath(f))
-                sid = (
-                    args.sample_names[i]
-                    if args.sample_names and i < len(args.sample_names)
-                    else os.path.splitext(os.path.basename(f))[0]
-                )
-                sample_ids.append(sid)
-                progress.advance(task)
-            except Exception as e:
-                console.print(f"[bold red]Error parsing {f}:[/] {e}")
-                if args.verbose:
-                    console.print_exception()
-
-    if len(cluster_dfs) == 0:
-        console.print("[bold red]No valid cluster files loaded. Exiting.[/]")
-        sys.exit(1)
-    if len(cluster_dfs) == 1:
-        console.print(
-            "[cyan]Single cluster file detected - computing external metrics only "
-            "(pairwise agreement is skipped).[/]"
+            "Evaluating cluster files...", total=len(args.cluster_files)
         )
 
-    console.print("\n[bold]Computing external metrics...[/]")
-    external_summary = []
-    merged_tables = []
-    per_cluster_tables = {}
-
-    with Progress(
-        TextColumn("[progress.description]{task.description}"),
-        BarColumn(),
-        TextColumn("[progress.percentage]{task.percentage:>3.0f}%"),
-        TimeElapsedColumn(),
-        console=console,
-    ) as progress:
-        task = progress.add_task("[cyan]External metrics", total=len(cluster_dfs))
-        for sid, df, fpath in zip(sample_ids, cluster_dfs, file_paths):
-            metrics, merged, per_cluster_df = cluster_external_metrics(
-                df, gt, sample_id=sid, file_path=fpath
+        for i, cfile in enumerate(args.cluster_files):
+            sample_id = (
+                args.sample_names[i]
+                if args.sample_names
+                else os.path.basename(cfile).split(".")[0]
             )
-            if merged.empty:
-                console.print(
-                    f"[yellow]Warning: No overlap for sample {sid}. Skipping metrics.[/]"
+            c_df = parse_cluster_file(cfile, sep=args.sep, verbose=args.verbose)
+            cluster_dfs.append((sample_id, c_df))
+
+            metrics, merged_df, per_cluster_df = cluster_external_metrics(
+                c_df, gt_df, sample_id=sample_id, file_path=cfile
+            )
+            metrics_list.append(metrics)
+
+            if not args.dry_run and not merged_df.empty:
+                merged_df.to_csv(
+                    os.path.join(args.output_dir, f"{sample_id}_sequence_matches.csv"),
+                    index=False,
                 )
-            else:
-                metrics["sample_id"] = sid
-                external_summary.append(metrics)
-                merged_tables.append(merged)
-                per_cluster_tables[sid] = per_cluster_df
-
-                if not args.dry_run:
-                    # Per-sample merged GT file -> subfolder
-                    out_merged = os.path.join(
-                        merged_dir, f"{sid}_merged_with_gt.tsv"
-                    )
-                    merged.to_csv(out_merged, sep="\t", index=False)
-
-                    # Per-sample predicted-cluster summary -> subfolder
-                    out_clusters = os.path.join(
-                        clusters_dir, f"{sid}_predicted_clusters_summary.tsv"
-                    )
-                    per_cluster_df.to_csv(out_clusters, sep="\t", index=False)
-            progress.advance(task)
-
-    if external_summary:
-        summary_df = pd.DataFrame(external_summary)
-        cols = [
-            "sample_id",
-            "file_path",
-            "n_sequences_input",
-            "n_sequences_gt",
-            "n_sequences_merged",
-            "n_clusters_input",
-            "seq_accuracy_mapped",
-            "rand_index",
-            "ARI",
-            "adjusted_rand_index_macro",
-            "adjusted_precision",
-            "adjusted_recall",
-            "adjusted_f1",
-            "per_set_recall",
-            "per_set_precision",
-            "per_set_f1",
-            "median_best_cluster_size",
-            "mean_best_cluster_size",
-            "n_sets_total",
-            "n_sets_fully_retrieved",
-            "n_sets_at_least_90",
-            "n_sets_at_least_80",
-            "n_sets_at_least_70",
-            "n_sets_at_least_60",
-            "n_sets_at_least_50",
-            "n_sets_below_50",
-            "pct_sets_fully_retrieved",
-            "pct_sets_at_least_90",
-            "pct_sets_at_least_80",
-            "pct_sets_at_least_70",
-            "pct_sets_at_least_60",
-            "pct_sets_at_least_50",
-            "pct_sets_below_50",
-            "n_clusters",
-            "precision",
-            "recall",
-            "f1",
-            "taxonomic_agreement",
-            "gt_singleton_count",
-            "gt_singleton_rate",
-            "pred_singleton_count",
-            "pred_singleton_rate",
-        ]
-        cols = [c for c in cols if c in summary_df.columns]
-        summary_df = summary_df[cols]
-
-        if not args.dry_run:
-            summary_path = os.path.join(args.output_dir, "external_metrics_summary.tsv")
-            summary_df.to_csv(summary_path, sep="\t", index=False)
-            console.log(f"[green]OK[/] Summary written to [cyan]{summary_path}[/]")
-        else:
-            console.log("[yellow]Dry-run: would write external_metrics_summary.tsv[/]")
-    else:
-        console.print("[yellow]No external metrics computed.[/]")
-
-    if len(cluster_dfs) >= 2:
-        console.print("\n[bold]Computing pairwise agreement metrics...[/]")
-        pairwise_results = []
-        total_pairs = len(list(combinations(range(len(cluster_dfs)), 2)))
-        with Progress(
-            TextColumn("[progress.description]{task.description}"),
-            BarColumn(),
-            TextColumn("[progress.percentage]{task.percentage:>3.0f}%"),
-            TimeElapsedColumn(),
-            console=console,
-        ) as progress:
-            task = progress.add_task("[cyan]Pairwise", total=total_pairs)
-            for (i, df1, sid1), (j, df2, sid2) in combinations(
-                zip(range(len(cluster_dfs)), cluster_dfs, sample_ids), 2
-            ):
-                ag = cluster_agreement_metrics(df1, df2)
-                if ag:
-                    pairwise_results.append({
-                        "sample1": sid1, "sample2": sid2,
-                        "CCS": ag["CCS"], "CCR": ag["CCR"], "RSS": ag["RSS"],
-                    })
-                progress.advance(task)
-
-        if pairwise_results:
-            pair_df = pd.DataFrame(pairwise_results)[["sample1", "sample2", "CCS", "CCR", "RSS"]]
-            if not args.dry_run:
-                pair_path = os.path.join(args.output_dir, "pairwise_agreement.tsv")
-                pair_df.to_csv(pair_path, sep="\t", index=False)
-                console.log(f"[green]OK[/] Pairwise written to [cyan]{pair_path}[/]")
-            else:
-                console.log("[yellow]Dry-run: would write pairwise_agreement.tsv[/]")
-        else:
-            console.print("[yellow]No pairwise metrics computed.[/]")
-    else:
-        console.print("[yellow]Only one cluster file - skipping pairwise metrics.[/]")
-
-    if merged_tables:
-        combined = pd.concat(merged_tables, ignore_index=True)
-        if not args.dry_run:
-            combined_path = os.path.join(args.output_dir, "all_merged_with_gt.tsv")
-            combined.to_csv(combined_path, sep="\t", index=False)
-            console.log(f"[green]OK[/] Combined merged written to [cyan]{combined_path}[/]")
-
-    if per_cluster_tables:
-        combined_clusters = []
-        for sid, pcdf in per_cluster_tables.items():
-            if pcdf.empty:
-                continue
-            tmp = pcdf.copy()
-            tmp.insert(0, "sample_id", sid)
-            combined_clusters.append(tmp)
-        if combined_clusters:
-            combined_clusters_df = pd.concat(combined_clusters, ignore_index=True)
-            if not args.dry_run:
-                cc_path = os.path.join(
-                    args.output_dir, "all_predicted_clusters_summary.tsv"
+                per_cluster_df.to_csv(
+                    os.path.join(
+                        args.output_dir, f"{sample_id}_per_cluster_summary.csv"
+                    ),
+                    index=False,
                 )
-                combined_clusters_df.to_csv(cc_path, sep="\t", index=False)
-                console.log(
-                    f"[green]OK[/] Combined predicted-cluster summary written to "
-                    f"[cyan]{cc_path}[/]"
-                )
+            progress.update(task, advance=1)
 
-    console.rule("[bold green]Summary")
-    success_count = len(external_summary)
-    failure_count = len(cluster_dfs) - success_count
-    table = Table(title="Results Summary", box=box.SIMPLE)
-    table.add_column("Metric", style="cyan")
-    table.add_column("Value", style="white")
-    table.add_row("Samples processed", str(len(cluster_dfs)))
-    table.add_row("Successful external metrics", f"{success_count} / {len(cluster_dfs)}")
-    table.add_row(
-        "Failures", str(failure_count) if failure_count > 0 else "[green]None[/]"
-    )
-    table.add_row(
-        "Output directory",
-        args.output_dir if not args.dry_run else "[yellow]Dry-run (no files written)[/]",
-    )
+    # Save aggregated external metrics
+    metrics_summary_df = pd.DataFrame(metrics_list)
     if not args.dry_run:
-        table.add_row("Per-sample merged files", merged_dir)
-        table.add_row("Per-sample cluster summaries", clusters_dir)
-    console.print(table)
+        metrics_summary_df.to_csv(
+            os.path.join(args.output_dir, "external_metrics_summary.csv"), index=False
+        )
 
-    if failure_count > 0:
-        console.print("[yellow]Some samples failed - see messages above.[/]")
-    else:
-        console.print("[green]All samples processed successfully.[/]")
+    # Display summary table in CLI
+    summary_table = Table(title="Clustering Metric Summary", box=box.ROUNDED)
+    summary_table.add_column("Sample", style="cyan")
+    summary_table.add_column("Mapped Acc", style="magenta")
+    summary_table.add_column("ARI", style="green")
+    summary_table.add_column("Adj Precision", style="yellow")
+    summary_table.add_column("Adj Recall", style="yellow")
+    summary_table.add_column("Adj F1", style="bold yellow")
+    summary_table.add_column("Per-Set F1", style="blue")
+
+    for m in metrics_list:
+        summary_table.add_row(
+            str(m.get("file_path", "Sample")),
+            f"{m.get('seq_accuracy_mapped', 0):.4f}",
+            f"{m.get('ARI', 0):.4f}",
+            f"{m.get('adjusted_precision', 0):.4f}",
+            f"{m.get('adjusted_recall', 0):.4f}",
+            f"{m.get('adjusted_f1', 0):.4f}",
+            f"{m.get('per_set_f1', 0):.4f}",
+        )
+    console.print(summary_table)
+
+    # Pairwise agreement metrics if >= 2 runs
+    if len(cluster_dfs) >= 2:
+        console.print("\n[cyan]Computing pairwise agreement metrics...[/]")
+        pairwise_rows = []
+        for (id1, cdf1), (id2, cdf2) in combinations(cluster_dfs, 2):
+            agree = cluster_agreement_metrics(cdf1, cdf2)
+            pairwise_rows.append({"Run_1": id1, "Run_2": id2, **agree})
+
+        pairwise_df = pd.DataFrame(pairwise_rows)
+        if not args.dry_run:
+            pairwise_df.to_csv(
+                os.path.join(args.output_dir, "pairwise_agreement.csv"), index=False
+            )
+
+        pair_table = Table(title="Pairwise Run Agreement", box=box.ROUNDED)
+        pair_table.add_column("Run 1", style="cyan")
+        pair_table.add_column("Run 2", style="cyan")
+        pair_table.add_column("CCS", style="green")
+        pair_table.add_column("CCR", style="yellow")
+        pair_table.add_column("RSS", style="magenta")
+
+        for row in pairwise_rows:
+            pair_table.add_row(
+                row["Run_1"],
+                row["Run_2"],
+                f"{row['CCS']:.4f}",
+                f"{row['CCR']:.4f}",
+                f"{row['RSS']:.4f}",
+            )
+        console.print(pair_table)
+
+    console.print(f"[green]Done![/] Output saved to: [bold]{args.output_dir}[/]")
 
 
 if __name__ == "__main__":
